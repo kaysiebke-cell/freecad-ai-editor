@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Hintergrund -->
+  <rect x="2" y="2" width="60" height="60" rx="8" ry="8"
+        fill="#1E2A1E" stroke="#4A8A4A" stroke-width="2"/>
+
+  <!-- Code-Klammern -->
+  <text x="6" y="28" font-family="monospace" font-size="22" font-weight="bold"
+        fill="#4EC94E">&lt;/&gt;</text>
+
+  <!-- KI-Blitz -->
+  <polygon points="38,8 30,32 38,32 26,56 46,28 36,28 44,8"
+           fill="#E5A000" opacity="0.92"/>
+
+  <!-- Unterstrich-Linie -->
+  <line x1="6" y1="52" x2="58" y2="52"
+        stroke="#4A8A4A" stroke-width="2" stroke-linecap="round"/>
+</svg>
