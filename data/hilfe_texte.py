@@ -225,6 +225,8 @@ EDIT & CHECK
 
 Backup wird automatisch erstellt:
   → vor jedem „✅ Ersetzen"
+  → landet in __backups__/ neben der Originaldatei
+  → max. 3 Backups je Datei
 
 Beim Schließen mit ungespeicherten Änderungen:
   → Speichern / Verwerfen / Abbrechen"""),

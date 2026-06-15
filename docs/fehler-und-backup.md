@@ -36,9 +36,19 @@ Fehler + aktueller Code werden direkt an die KI gesendet → Korrigierter Code e
 # Backup-System
 
 - Vor jedem **✅ Ersetzen** wird automatisch eine `.bak`-Datei erstellt
+- Backups landen in einem eigenen Unterordner **`__backups__/`** neben der Originaldatei
 - Maximal **3 Backups** je Datei (älteste werden automatisch gelöscht)
 - **↩ Backup** im Aktionen-Panel lädt das neueste Backup in den Editor
 - Beim Schließen mit ungespeicherten Änderungen: Speichern / Verwerfen / Abbrechen
+
+```
+Makro-Ordner/
+├── mein_skript.py
+└── __backups__/
+    ├── mein_skript.py.20260615_201500.bak
+    ├── mein_skript.py.20260615_202100.bak
+    └── mein_skript.py.20260615_203000.bak
+```
 
 ---
 

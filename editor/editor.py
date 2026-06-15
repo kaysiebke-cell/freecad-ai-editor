@@ -1484,21 +1484,31 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
             self._set_status(f"⚠ Bereinigt – noch Syntax-Fehler Zeile {e.lineno}: {e.msg}")
 
     # ══ Backup ═════════════════════════════════════════════════════════════
+    def _backup_ordner(self) -> str:
+        ordner = os.path.join(os.path.dirname(self._pfad), "__backups__")
+        os.makedirs(ordner, exist_ok=True)
+        return ordner
+
     def _backup_erstellen(self) -> str:
-        bak_pfad = f"{self._pfad}.{datetime.now().strftime('%Y%m%d_%H%M%S')}.bak"
+        dateiname = os.path.basename(self._pfad)
+        bak_name = f"{dateiname}.{datetime.now().strftime('%Y%m%d_%H%M%S')}.bak"
+        bak_pfad = os.path.join(self._backup_ordner(), bak_name)
         try:
             shutil.copy2(self._pfad, bak_pfad)
-            alle = sorted(glob.glob(f"{self._pfad}.*.bak"))
+            alle = sorted(glob.glob(
+                os.path.join(self._backup_ordner(), f"{dateiname}.*.bak")))
             for alt in alle[:-3]:
                 os.remove(alt)
-            self._set_status(f"💾 Backup: {os.path.basename(bak_pfad)}", ms=3000)
+            self._set_status(f"💾 Backup: {bak_name}", ms=3000)
             return bak_pfad
         except Exception as e:
             self._set_status(f"⚠ Backup fehlgeschlagen: {e}")
             return ""
 
     def _backup_wiederherstellen(self):
-        alle = sorted(glob.glob(f"{self._pfad}.*.bak"))
+        dateiname = os.path.basename(self._pfad)
+        alle = sorted(glob.glob(
+            os.path.join(self._backup_ordner(), f"{dateiname}.*.bak")))
         if not alle:
             self._set_status("⚠ Kein Backup gefunden")
             return
