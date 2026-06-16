@@ -28,7 +28,7 @@ try:
 except ImportError:
     _HAS_REQUESTS = False
 
-_RE_WIDGET = re.compile(r'\[WIDGET:\s*([^\]]+)\]')
+_RE_BACKTICK = re.compile(r'`([^`]+)`')
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -256,8 +256,8 @@ class AssistentPanel(QtWidgets.QWidget):
     # ── Chunk-Streaming ──────────────────────────────────────────────────
     def _on_chunk(self, chunk: str):
         self._puffer.append(chunk)
-        # [WIDGET: ...] Marker aus Anzeige heraushalten, Rest sofort anzeigen
-        sauber = _RE_WIDGET.sub(r'<b>\1</b>', chunk)
+        # Backtick-Namen fett anzeigen
+        sauber = _RE_BACKTICK.sub(r'<b>\1</b>', chunk)
         cursor = self._anzeige.textCursor()
         cursor.movePosition(QtGui.QTextCursor.MoveOperation.End)
         self._anzeige.setTextCursor(cursor)
@@ -266,9 +266,24 @@ class AssistentPanel(QtWidgets.QWidget):
     def _on_fertig(self, vollstaendig: str):
         self._btn_fragen.setEnabled(True)
         self._anzeige.append("<br>")
-        # Widgets nacheinander aufleuchten lassen (2 s Abstand)
-        treffer = [m.group(1).strip() for m in _RE_WIDGET.finditer(vollstaendig)]
-        for i, name in enumerate(treffer):
+
+        from assistent_prompt import BEKANNTE_WIDGETS
+
+        # 1. Backtick-Format: `Name`
+        treffer = [m.group(1).strip() for m in _RE_BACKTICK.finditer(vollstaendig)]
+
+        # 2. Fallback: bekannte Widget-Namen direkt im Text suchen
+        if not treffer:
+            for w in BEKANNTE_WIDGETS:
+                if w in vollstaendig:
+                    treffer.append(w)
+
+        # Duplikate entfernen, Reihenfolge beibehalten
+        gesehen = set()
+        treffer_unique = [x for x in treffer
+                          if not (x in gesehen or gesehen.add(x))]
+
+        for i, name in enumerate(treffer_unique):
             QtCore.QTimer.singleShot(
                 i * 2200, lambda n=name: self.widget_blinken.emit(n))
 
