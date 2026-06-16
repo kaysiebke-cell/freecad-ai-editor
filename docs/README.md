@@ -32,7 +32,7 @@ FreeCAD-Automatisierung.
 - [KI-Anbieter einrichten](#ki-anbieter-einrichten)
 - [Erststart & Willkommen-Dialog](docs/erststart.md)
 - [Die Benutzeroberfläche](docs/oberflaeche.md)
-- [Panels im Detail](docs/panels.md)
+- [Panels im Detail](docs/panels.md) ← inkl. 🤝 Assistent & ♿ Barrierefreiheit
 - [KI-Workflow & Presets](docs/ki-workflow.md)
 - [FC11, FC12 & FC13 – Makro aus Beschreibung](docs/makro-generator.md)
 - [Snippets, API-Hints & Werkzeuge-Panel](docs/snippets-und-werkzeuge.md)
@@ -68,10 +68,12 @@ FreeCAD-Automatisierung.
 - KI-Tool-Calling für strukturierte FreeCAD-Operationen
 
 ### Benutzeroberfläche
-- 11 frei anordnbare Dock-Panels (verschieben, abdocken, zu Tabs zusammenfassen)
+- 13 frei anordnbare Dock-Panels (verschieben, abdocken, zu Tabs zusammenfassen)
 - Hell- und Dunkel-Modus vollständig unterstützt – keine hartkodieren Farben
 - Alle Panels einzeln per Toolbar ein-/ausschaltbar
 - Begrüßungs-Dialog bei Erststart (KI-Anbieter direkt einrichten)
+- **🤝 Interaktiver Assistent** – Fragen über den Editor stellen, KI antwortet mit nummerierten Schritten und lässt Buttons/Panels nacheinander aufleuchten
+- **♿ Barrierefreiheit-Panel** – Schriftgröße, Kontrast, Tastaturmodus (Alt+1–0), Einfache Ansicht, Tooltips immer sichtbar, Animationen reduzieren
 
 ---
 
@@ -216,6 +218,7 @@ export OPENROUTER_API_KEY=sk-or-...
 | **Tab** | Autovervollständigung bestätigen |
 | **Escape** | Autovervollständigung schließen |
 | **Strg+Enter** | Fehler-Übersetzer: sofort übersetzen |
+| **Alt+1 … Alt+0** | Panel-Buttons 1–10 öffnen (nur wenn Tastaturmodus aktiv im ♿ Panel) |
 
 ---
 
@@ -237,12 +240,13 @@ KI-Makro-Editor/
 │   └── qt_compat.py     # PySide6-Kompatibilitäts-Layer
 │
 ├── editor/
-│   ├── editor.py        # Hauptfenster (QMainWindow + 11 Dock-Panels + Toolbar)
+│   ├── editor.py        # Hauptfenster (QMainWindow + 13 Dock-Panels + Toolbar)
 │   ├── widgets/
 │   │   ├── editor_widgets.py   # CodeEditor, LinksTextEdit, LineNumberArea
 │   │   └── …
 │   ├── controller/
 │   │   ├── aktionen_sidebar.py   # Aktionen-Panel (Rechte Werkzeug-Leiste)
+│   │   ├── assistent.py          # 🤝 Interaktiver KI-Assistent (Chat + Highlighting)
 │   │   ├── bibliothek_tab.py     # Makro-Bibliothek
 │   │   ├── browser_controller.py # Datei-Browser
 │   │   ├── hints_controller.py   # API-Hints
@@ -256,12 +260,14 @@ KI-Makro-Editor/
 │   └── ki/
 │       ├── ki_mixin.py           # KI-Workflow (Laden, Fragen, Ersetzen …)
 │       ├── ki_backends.py        # Stream-Backends (19 Anbieter)
+│       ├── assistent_prompt.py   # System-Prompts für Assistent (Ollama/Cloud)
 │       └── …
 │
 ├── ui/
-│   ├── begruessung.py   # Willkommens-Dialog (Erststart, Anbieter einrichten)
-│   ├── manager.py       # FreeCAD Makro-Manager
-│   └── fehler.py        # Fehler-Anzeige
+│   ├── begruessung.py      # Willkommens-Dialog (Erststart, Anbieter einrichten)
+│   ├── barrierefreiheit.py # ♿ Barrierefreiheit-Panel (Schrift, Kontrast, Tastatur …)
+│   ├── manager.py          # FreeCAD Makro-Manager
+│   └── fehler.py           # Fehler-Anzeige
 │
 ├── data/
 │   ├── freecad_data.py  # Snippets (6 Kategorien) + API-Hints

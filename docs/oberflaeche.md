@@ -3,18 +3,20 @@
 # Die Benutzeroberfläche
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│  ⚙ Einst. │ 🤖 KI │ 🎛 Akt. │ 📦 Snip │ 💡 API │ 📂 Dat. │ … │ ❓ Hilfe │
-├──────────────┬──────────────────────────────────────────────────────────┤
-│              │                                                          │
-│  Dock-Panel  │         Code-Editor (Multi-Tab)                          │
-│  (links oder │                                                          │
-│   rechts     │                                                          │
-│   andockbar) │                                                          │
-│              ├──────────────────────────────────────────────────────────┤
-│              │  ⚠ Fehler-Panel (unten, einklappbar)                     │
-└──────────────┴──────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────┐
+│ ❓Hilfe │ ⚙ │ 🤖 │ 🎛 │ 📦 │ 💡 │ 📂 │ 🛠 │ 📚 │ 🔧 │ ⚠ │ ♿ │ 🔧 │ 🤝          │
+├──────────────┬───────────────────────────────────────────────────────────────────────┤
+│              │                                                                       │
+│  Dock-Panel  │         Code-Editor (Multi-Tab)                                       │
+│  (links oder │                                                                       │
+│   rechts     │                                                                       │
+│   andockbar) │                                                                       │
+│              ├───────────────────────────────────────────────────────────────────────┤
+│              │  ⚠ Fehler-Panel (unten, einklappbar)                                  │
+└──────────────┴───────────────────────────────────────────────────────────────────────┘
 ```
+
+**Toolbar-Buttons** schalten die 13 Panels ein und aus. Die Buttons zeigen standardmäßig nur das Emoji (32 px). Im `♿ Zugang`-Panel kann die Beschriftung mit „Icons mit Text" eingeblendet werden, z. B. `⚙ Einst.`.
 
 Alle Panels können:
 - **Frei verschoben** werden (Titelleiste ziehen)

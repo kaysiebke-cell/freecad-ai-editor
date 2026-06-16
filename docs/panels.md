@@ -184,4 +184,70 @@ ich brauch einen kasten mit loch zum anschrauben an die wand
 
 ## ⚠ Fehler-Panel
 
+Siehe [Fehler-Übersetzer & Backup-System](fehler-und-backup.md) für Details.
+
+---
+
+## 🤝 Assistent-Panel
+
+Ein interaktiver Schritt-für-Schritt-Assistent, der Fragen über den Editor auf Deutsch beantwortet
+und dabei die relevanten Buttons und Panels direkt aufleuchten lässt.
+
+**Verwendung:**
+1. `🤝 Assist.`-Button in der Toolbar klicken
+2. Frage ins Eingabefeld tippen, z. B.:
+   - *„wie übersetze ich einen Fehler?"*
+   - *„wie richte ich Ollama ein?"*
+   - *„wie benutze ich den Plan-Modus?"*
+3. **❓ Fragen** oder Enter drücken
+4. Die KI antwortet auf Deutsch in nummerierten Schritten
+5. Die genannten Panels/Buttons leuchten automatisch nacheinander auf (2,2 s Abstand)
+   – geschlossene Panels öffnen sich dabei automatisch
+
+**Hinweise:**
+- Funktioniert mit dem aktuell eingestellten KI-Anbieter (⚙ Einst.)
+- Für Ollama (lokal) wird ein kompakter System-Prompt verwendet – für Cloud-Anbieter der ausführlichere
+- **🗑 Verlauf löschen** leert die Chat-Anzeige
+
+---
+
+## ♿ Barrierefreiheit-Panel
+
+Anpassungen für Sehschwäche, Motorik und persönliche Vorlieben. Alle Einstellungen werden
+gespeichert und beim nächsten Start automatisch wiederhergestellt.
+
+### 👁 Sehschwäche
+
+| Einstellung | Funktion |
+|---|---|
+| **UI-Schriftgröße** (Slider 8–24 pt) | Schriftgröße aller Beschriftungen live anpassen |
+| **Editor-Schriftgröße** (Slider 8–24 pt) | Schriftgröße im Code-Editor anpassen |
+| **Hoher Kontrast** | Alle UI-Elemente: weiß auf schwarz (überschreibt das Theme) |
+| **Icons mit Text** | Toolbar-Buttons zeigen Emoji + Kurzname, z. B. `⚙ Einst.` statt nur `⚙` |
+
+### 🖐 Motorik
+
+| Einstellung | Funktion |
+|---|---|
+| **Button-Größe** Normal / Groß / Sehr groß | Höhe aller Buttons: 26 / 34 / 42 px |
+| **Tastaturmodus** | Alt+1 bis Alt+0 öffnen die Panels; Shortcut wird im Tooltip angezeigt |
+| **Einfache Ansicht** | Blendet selten genutzte Panels aus der Toolbar aus (Snip, API, Dat., Tools, Bib., Werkz., Helfer bleiben erhalten; Einst., KI, Akt., Fehler, ♿, Assist. bleiben sichtbar) |
+
+### 💬 Einfache Sprache
+
+| Einstellung | Funktion |
+|---|---|
+| **KI antwortet in einfacher Sprache** | KI verwendet kurze Sätze, vermeidet Fachbegriffe |
+| **Fachbegriffe automatisch erklären** | KI erklärt verwendete Begriffe direkt danach |
+| **KI-Antworten kürzer halten** | Kompakte Antworten ohne lange Erklärungen |
+
+### ⚙ Allgemein
+
+| Einstellung | Funktion |
+|---|---|
+| **Tooltips immer sichtbar** | Tooltip erscheint sofort beim Einfahren mit der Maus (kein Wartedelay) |
+| **Animationen reduzieren** | Button-Aufleuchten dauert 300 ms statt 1800 ms |
+
+---
+
 [← Zurück: Die Benutzeroberfläche](oberflaeche.md) | [Zur README](../README.md) | Weiter: [KI-Workflow & Presets →](ki-workflow.md)

@@ -68,10 +68,12 @@ FreeCAD-Automatisierung.
 - KI-Tool-Calling für strukturierte FreeCAD-Operationen
 
 ### Benutzeroberfläche
-- 11 frei anordnbare Dock-Panels (verschieben, abdocken, zu Tabs zusammenfassen)
+- 13 frei anordnbare Dock-Panels (verschieben, abdocken, zu Tabs zusammenfassen)
 - Hell- und Dunkel-Modus vollständig unterstützt – keine hartkodieren Farben
 - Alle Panels einzeln per Toolbar ein-/ausschaltbar
 - Begrüßungs-Dialog bei Erststart (KI-Anbieter direkt einrichten)
+- **🤝 Interaktiver Assistent** – Fragen stellen, KI antwortet mit Schritt-für-Schritt-Anleitung und lässt Buttons aufleuchten
+- **♿ Barrierefreiheit** – Schrift, Kontrast, Tastaturmodus (Alt+1–0), Einfache Ansicht, Tooltip-Delay, Animationen
 
 ---
 
@@ -237,7 +239,7 @@ KI-Makro-Editor/
 │   └── qt_compat.py     # PySide6-Kompatibilitäts-Layer
 │
 ├── editor/
-│   ├── editor.py        # Hauptfenster (QMainWindow + 11 Dock-Panels + Toolbar)
+│   ├── editor.py        # Hauptfenster (QMainWindow + 13 Dock-Panels + Toolbar)
 │   ├── widgets/
 │   │   ├── editor_widgets.py   # CodeEditor, LinksTextEdit, LineNumberArea
 │   │   └── …
