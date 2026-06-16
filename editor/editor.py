@@ -54,6 +54,7 @@ from bibliothek_tab import BibliothekTabMixin
 from barrierefreiheit import BarrierefreiheitPanel
 from freecad_helfer_panel import FreecadHelferPanel
 from vorschau_controller import VorschauController as VorschauMixin
+from assistent import AssistentPanel
 
 # Vorkompilierte Regex
 _RE_WORD_CHARS = re.compile(r"\w+")
@@ -679,6 +680,16 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         self.tabifyDockWidget(_dock_akt, _dock_helfer)
         _dock_helfer.hide()  # Standardmäßig geschlossen
 
+        # Interaktiver Assistent-Dock
+        self._assistent_panel = AssistentPanel(self)
+        self._assistent_panel.widget_blinken.connect(self._widget_blinken)
+        _dock_assistent = _make_dock("🤝  Assistent", "dock_assistent",
+                                     QtCore.Qt.RightDockWidgetArea,
+                                     self._assistent_panel,
+                                     closable=True)
+        self.tabifyDockWidget(_dock_akt, _dock_assistent)
+        _dock_assistent.hide()
+
         # Fehler-Panel als Dock unten
         fehler_panel_widget = QtWidgets.QWidget()
         fp = QtWidgets.QVBoxLayout(fehler_panel_widget)
@@ -834,6 +845,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         _panel_btn(_dock_fehler,   "⚠",  "Fehler",   _B)
         _panel_btn(_dock_bf,       "♿", "Zugang",   _L)
         _panel_btn(_dock_helfer,   "🔧", "Helfer",   _R)
+        _panel_btn(_dock_assistent,"🤝", "Assist.",  _R)
 
         # ── Dock-Layout nach dem ersten Zeigen wiederherstellen ──────────
         import json as _json
@@ -843,7 +855,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
 
         # Version hochzählen wenn Docks/Panels sich ändern — verhindert
         # Qt-Segfault durch inkompatibles gespeichertes Layout
-        _LAYOUT_VERSION = "v4"
+        _LAYOUT_VERSION = "v5"
 
         _GUARD_DATEI = os.path.join(
             os.path.expanduser("~"), ".ki_makro_editor_restore_guard")
@@ -1527,6 +1539,42 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, "Fehler", uebersetze_fehler(e))
 
+    # ══ Assistent-Highlighting ══════════════════════════════════════════════
+    def _widget_blinken(self, name: str):
+        """Lässt ein Widget kurz in der Highlight-Farbe aufleuchten.
+
+        Sucht automatisch alle QPushButton- und QDockWidget-Kinder nach dem
+        Namen — kein manuelles Register nötig. Vergleich ist emoji- und
+        leerzeichen-tolerant. Farbe kommt aus QPalette (kein Hardcoding).
+        """
+        import re as _re
+        def _bereinigen(s: str) -> str:
+            return _re.sub(r'\s+', ' ', _re.sub(r'[^\w\s]', '', s)).strip().lower()
+
+        ziel_key = _bereinigen(name)
+        treffer: list[QtWidgets.QWidget] = []
+
+        for btn in self.findChildren(QtWidgets.QPushButton):
+            if _bereinigen(btn.text()) == ziel_key:
+                treffer.append(btn)
+
+        for dock in self.findChildren(QtWidgets.QDockWidget):
+            if _bereinigen(dock.windowTitle()) == ziel_key:
+                treffer.append(dock)
+                if not dock.isVisible():
+                    dock.show()
+                    dock.raise_()
+
+        pal = self.palette()
+        farbe = pal.color(QtGui.QPalette.ColorRole.Highlight).name()
+
+        for widget in treffer:
+            orig = widget.styleSheet()
+            widget.setStyleSheet(
+                f"{orig}; background-color: {farbe}; border: 2px solid {farbe};")
+            QtCore.QTimer.singleShot(
+                1800, lambda w=widget, s=orig: w.setStyleSheet(s))
+
     # ══ Hilfe-Fenster ══════════════════════════════════════════════════════
     def _on_barrierefreiheit(self, schluessel, wert):
         """Wendet Barrierefreiheits-Einstellungen live an."""
@@ -1609,7 +1657,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
             import json as _json
             _state = self.saveState().toBase64().data().decode("ascii")
             with open(self._layout_state_datei, "w", encoding="utf-8") as _sf:
-                _json.dump({"version": "v4", "state": _state}, _sf)
+                _json.dump({"version": "v5", "state": _state}, _sf)
         except Exception:
             pass
         # ── Laufende Timer stoppen ────────────────────────────────────────
