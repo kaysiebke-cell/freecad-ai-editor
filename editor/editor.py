@@ -806,12 +806,14 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
             dock.raise_()
 
         def _panel_btn(dock, icon_text, label, standard_area=_L):
-            btn = QtWidgets.QPushButton(f"{icon_text}  {label}")
+            btn = QtWidgets.QPushButton(icon_text)
+            btn.setToolTip(label)
             btn.setCheckable(True)
             btn.setChecked(False)
             btn.setFixedHeight(26)
+            btn.setFixedWidth(32)
             btn.setStyleSheet(
-                f"QPushButton {{ border:none; border-radius:3px; padding:2px 6px;"
+                f"QPushButton {{ border:none; border-radius:3px; padding:2px 4px;"
                 f" font-size:{_fs}pt; }}"
                 f"QPushButton:checked {{ font-weight:bold; border:1px solid; }}"
                 f"QPushButton:hover {{ border:1px solid; }}"
