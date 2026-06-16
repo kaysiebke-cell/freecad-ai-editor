@@ -243,9 +243,15 @@ class AssistentPanel(QtWidgets.QWidget):
             kid = source.split()[0].lower()
             api_key = lade_api_key(kid)
 
-            from assistent_prompt import ASSISTENT_SYSTEM_PROMPT
+            from assistent_prompt import (
+                ASSISTENT_SYSTEM_PROMPT_OLLAMA,
+                ASSISTENT_SYSTEM_PROMPT_CLOUD,
+            )
+            prompt = (ASSISTENT_SYSTEM_PROMPT_OLLAMA
+                      if source.startswith("Ollama")
+                      else ASSISTENT_SYSTEM_PROMPT_CLOUD)
             self._thread = _AssistentKiThread(
-                source, model, api_key, ASSISTENT_SYSTEM_PROMPT, frage, self)
+                source, model, api_key, prompt, frage, self)
             self._thread.chunk.connect(self._on_chunk)
             self._thread.fertig.connect(self._on_fertig)
             self._thread.fehler.connect(self._on_fehler)
