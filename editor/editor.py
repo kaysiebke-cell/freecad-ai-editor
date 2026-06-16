@@ -671,30 +671,67 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
                                self._baue_bibliothek_tab())
         self.tabifyDockWidget(_dock_akt, _dock_bib)
 
-        # ── Kombiniertes Barrierefreiheits-/Hilfe-Dock (Tab-Gruppe) ─────────
-        # Enthält: 🤝 Assistent | 🔧 Helfer | ♿ Zugang | ❓ Hilfe
+        # ── Kombiniertes Barrierefreiheits-/Hilfe-Dock ───────────────────────
+        # Mini-Leiste mit Buttons nebeneinander (wie die Hauptleiste),
+        # darunter ein QStackedWidget das den Inhalt wechselt.
         _bf_gruppe_widget = QtWidgets.QWidget()
         _bg_lay = QtWidgets.QVBoxLayout(_bf_gruppe_widget)
         _bg_lay.setContentsMargins(0, 0, 0, 0)
         _bg_lay.setSpacing(0)
-        self._bf_tabs = QtWidgets.QTabWidget()
-        self._bf_tabs.setTabPosition(QtWidgets.QTabWidget.TabPosition.North)
-        self._bf_tabs.setDocumentMode(True)
+
+        # ── Mini-Leiste ────────────────────────────────────────────────────
+        _bg_leiste = QtWidgets.QWidget()
+        _bg_leiste.setStyleSheet(
+            "QWidget { border-bottom: 1px solid palette(mid); }")
+        _bg_leiste_lay = QtWidgets.QHBoxLayout(_bg_leiste)
+        _bg_leiste_lay.setContentsMargins(4, 2, 4, 2)
+        _bg_leiste_lay.setSpacing(2)
+
+        # ── Panel-Inhalte ──────────────────────────────────────────────────
+        self._bf_stack = QtWidgets.QStackedWidget()
 
         self._assistent_panel = AssistentPanel(self)
         self._assistent_panel.widget_blinken.connect(self._widget_blinken)
-        self._bf_tabs.addTab(self._assistent_panel, "🤝 Assistent")
+        self._bf_stack.addWidget(self._assistent_panel)       # Index 0
 
         self._helfer_panel = FreecadHelferPanel()
-        self._bf_tabs.addTab(self._helfer_panel, "🔧 Helfer")
+        self._bf_stack.addWidget(self._helfer_panel)          # Index 1
 
         self._bf_panel = BarrierefreiheitPanel()
         self._bf_panel.geaendert.connect(self._on_barrierefreiheit)
-        self._bf_tabs.addTab(self._bf_panel, "♿ Zugang")
+        self._bf_stack.addWidget(self._bf_panel)              # Index 2
 
-        self._bf_tabs.addTab(HilfeTab(), "❓ Hilfe")
+        self._bf_stack.addWidget(HilfeTab())                  # Index 3
 
-        _bg_lay.addWidget(self._bf_tabs)
+        # ── Buttons für die Mini-Leiste ────────────────────────────────────
+        _fs_bg = schrift.pt(schrift.STUFE_BASE)
+        _bg_btn_gruppe = QtWidgets.QButtonGroup(_bf_gruppe_widget)
+        _bg_btn_gruppe.setExclusive(True)
+
+        def _bg_btn(label, index):
+            btn = QtWidgets.QPushButton(label)
+            btn.setCheckable(True)
+            btn.setFixedHeight(26)
+            btn.setStyleSheet(
+                f"QPushButton {{ border:none; border-radius:3px; padding:2px 6px;"
+                f" font-size:{_fs_bg}pt; }}"
+                f"QPushButton:checked {{ font-weight:bold; border:1px solid; }}"
+                f"QPushButton:hover {{ border:1px solid; }}"
+            )
+            btn.clicked.connect(lambda: self._bf_stack.setCurrentIndex(index))
+            _bg_btn_gruppe.addButton(btn)
+            _bg_leiste_lay.addWidget(btn)
+            return btn
+
+        _bg_btn("🤝 Assist.", 0).setChecked(True)
+        _bg_btn("🔧 Helfer",  1)
+        _bg_btn("♿ Zugang",  2)
+        _bg_btn("❓ Hilfe",   3)
+        _bg_leiste_lay.addStretch()
+
+        _bg_lay.addWidget(_bg_leiste)
+        _bg_lay.addWidget(self._bf_stack, 1)
+
         _dock_bf_gruppe = _make_dock("♿  Hilfe & Zugang", "dock_bf_gruppe",
                                      QtCore.Qt.RightDockWidgetArea,
                                      _bf_gruppe_widget, closable=True)
@@ -1728,10 +1765,9 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
                 self.setStyleSheet("")
 
     def _zeige_hilfe(self):
-        """Öffnet das kombinierte Dock und wechselt zum ❓ Hilfe-Tab."""
-        if hasattr(self, "_bf_tabs"):
-            # Hilfe ist Tab-Index 3 im kombinierten Dock
-            self._bf_tabs.setCurrentIndex(3)
+        """Öffnet das kombinierte Dock und wechselt zum ❓ Hilfe-Panel."""
+        if hasattr(self, "_bf_stack"):
+            self._bf_stack.setCurrentIndex(3)   # Index 3 = Hilfe
         if hasattr(self, "_btn_bf_gruppe"):
             self._btn_bf_gruppe.setChecked(True)
 
