@@ -681,11 +681,14 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
 
         # ── Mini-Leiste ────────────────────────────────────────────────────
         _bg_leiste = QtWidgets.QWidget()
-        _bg_leiste.setStyleSheet(
-            "QWidget { border-bottom: 1px solid palette(mid); }")
         _bg_leiste_lay = QtWidgets.QHBoxLayout(_bg_leiste)
         _bg_leiste_lay.setContentsMargins(4, 2, 4, 2)
         _bg_leiste_lay.setSpacing(2)
+
+        # Trennlinie unter der Leiste (QFrame statt CSS-Kaskade)
+        _bg_separator = QtWidgets.QFrame()
+        _bg_separator.setFrameShape(QtWidgets.QFrame.Shape.HLine)
+        _bg_separator.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
 
         # ── Panel-Inhalte ──────────────────────────────────────────────────
         self._bf_stack = QtWidgets.QStackedWidget()
@@ -715,8 +718,9 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
             btn.setStyleSheet(
                 f"QPushButton {{ border:none; border-radius:3px; padding:2px 6px;"
                 f" font-size:{_fs_bg}pt; }}"
-                f"QPushButton:checked {{ font-weight:bold; border:1px solid; }}"
-                f"QPushButton:hover {{ border:1px solid; }}"
+                f"QPushButton:checked {{ font-weight:bold;"
+                f" border:1px solid palette(shadow); }}"
+                f"QPushButton:hover {{ border:1px solid palette(shadow); }}"
             )
             btn.clicked.connect(lambda: self._bf_stack.setCurrentIndex(index))
             _bg_btn_gruppe.addButton(btn)
@@ -730,6 +734,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         _bg_leiste_lay.addStretch()
 
         _bg_lay.addWidget(_bg_leiste)
+        _bg_lay.addWidget(_bg_separator)
         _bg_lay.addWidget(self._bf_stack, 1)
 
         _dock_bf_gruppe = _make_dock("♿  Hilfe & Zugang", "dock_bf_gruppe",
@@ -863,8 +868,9 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
             btn.setStyleSheet(
                 f"QPushButton {{ border:none; border-radius:3px; padding:2px 4px;"
                 f" font-size:{_fs}pt; }}"
-                f"QPushButton:checked {{ font-weight:bold; border:1px solid; }}"
-                f"QPushButton:hover {{ border:1px solid; }}"
+                f"QPushButton:checked {{ font-weight:bold;"
+                f" border:1px solid palette(shadow); }}"
+                f"QPushButton:hover {{ border:1px solid palette(shadow); }}"
             )
             def _on_click(checked, d=dock, a=standard_area):
                 if checked:
