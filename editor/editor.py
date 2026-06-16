@@ -758,6 +758,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         self.addToolBar(QtCore.Qt.TopToolBarArea, _tb)
 
         _fs = schrift.pt(schrift.STUFE_BASE)
+        self._panel_btns: list = []   # [(btn, emoji, label), …] für icon_text
 
         # ── Intelligente Panel-Steuerung ──────────────────────────────────
         _L = QtCore.Qt.LeftDockWidgetArea
@@ -812,6 +813,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
             btn.setChecked(False)
             btn.setFixedHeight(26)
             btn.setFixedWidth(32)
+            self._panel_btns.append((btn, icon_text, label))
             btn.setStyleSheet(
                 f"QPushButton {{ border:none; border-radius:3px; padding:2px 4px;"
                 f" font-size:{_fs}pt; }}"
@@ -848,6 +850,13 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         _panel_btn(_dock_bf,       "♿", "Zugang",   _L)
         _panel_btn(_dock_helfer,   "🔧", "Helfer",   _R)
         _panel_btn(_dock_assistent,"🤝", "Assist.",  _R)
+
+        # Beschriftung sofort anwenden wenn in vorheriger Sitzung aktiviert
+        from barrierefreiheit import _get_bool as _bf_bool
+        if _bf_bool("BF_IconText", False):
+            for _pb, _ico, _lbl in self._panel_btns:
+                _pb.setText(f"{_ico}  {_lbl}")
+                _pb.setFixedWidth(72)
 
         # ── Dock-Layout nach dem ersten Zeigen wiederherstellen ──────────
         import json as _json
@@ -1624,6 +1633,15 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
             for btn in self.findChildren(QtWidgets.QPushButton):
                 if btn.height() in (26, 34, 42):
                     btn.setFixedHeight(hoehe)
+
+        elif schluessel == "icon_text":
+            for btn, ico, lbl in getattr(self, "_panel_btns", []):
+                if wert:
+                    btn.setText(f"{ico}  {lbl}")
+                    btn.setFixedWidth(72)
+                else:
+                    btn.setText(ico)
+                    btn.setFixedWidth(32)
 
         elif schluessel == "kontrast":
             if wert:
