@@ -232,19 +232,23 @@ class AssistentPanel(QtWidgets.QWidget):
         self._anzeige.append("<b>Assistent:</b> ")
         self._puffer.clear()
 
-        # KI-Einstellungen aus dem Editor lesen
-        source  = self._editor._src_box.currentText()
-        model   = self._editor._model_box.currentText()
-        from params import lade_api_key
-        kid = source.split()[0].lower()
-        api_key = lade_api_key(kid)
+        try:
+            # KI-Einstellungen aus dem Editor lesen
+            source  = self._editor._src_box.currentText()
+            model   = self._editor._model_box.currentText()
+            from params import lade_api_key
+            kid = source.split()[0].lower()
+            api_key = lade_api_key(kid)
 
-        from editor.ki.assistent_prompt import ASSISTENT_SYSTEM_PROMPT
-        self._thread = _AssistentKiThread(
-            source, model, api_key, ASSISTENT_SYSTEM_PROMPT, frage, self)
-        self._thread.chunk.connect(self._on_chunk)
-        self._thread.fertig.connect(self._on_fertig)
-        self._thread.fehler.connect(self._on_fehler)
+            from assistent_prompt import ASSISTENT_SYSTEM_PROMPT
+            self._thread = _AssistentKiThread(
+                source, model, api_key, ASSISTENT_SYSTEM_PROMPT, frage, self)
+            self._thread.chunk.connect(self._on_chunk)
+            self._thread.fertig.connect(self._on_fertig)
+            self._thread.fehler.connect(self._on_fehler)
+        except Exception as e:
+            self._on_fehler(f"Start fehlgeschlagen: {e}")
+            return
         self._thread.start()
 
     # ── Chunk-Streaming ──────────────────────────────────────────────────
