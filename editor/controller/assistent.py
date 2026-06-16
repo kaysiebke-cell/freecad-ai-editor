@@ -264,9 +264,11 @@ class AssistentPanel(QtWidgets.QWidget):
     def _on_fertig(self, vollstaendig: str):
         self._btn_fragen.setEnabled(True)
         self._anzeige.append("<br>")
-        # Alle [WIDGET: name] aus der vollständigen Antwort extrahieren und blinken
-        for match in _RE_WIDGET.finditer(vollstaendig):
-            self.widget_blinken.emit(match.group(1).strip())
+        # Widgets nacheinander aufleuchten lassen (2 s Abstand)
+        treffer = [m.group(1).strip() for m in _RE_WIDGET.finditer(vollstaendig)]
+        for i, name in enumerate(treffer):
+            QtCore.QTimer.singleShot(
+                i * 2200, lambda n=name: self.widget_blinken.emit(n))
 
     def _on_fehler(self, msg: str):
         self._btn_fragen.setEnabled(True)
