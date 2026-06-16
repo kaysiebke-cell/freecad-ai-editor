@@ -1545,37 +1545,58 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
     def _widget_blinken(self, name: str):
         """Lässt ein Widget kurz in der Highlight-Farbe aufleuchten.
 
-        Sucht automatisch alle QPushButton- und QDockWidget-Kinder nach dem
-        Namen — kein manuelles Register nötig. Vergleich ist emoji- und
-        leerzeichen-tolerant. Farbe kommt aus QPalette (kein Hardcoding).
+        Sucht Docks über Substring-Match im Titel und Toolbar-Panel-Buttons
+        über deren Tooltip. Emoji und Leerzeichen werden ignoriert.
+        Farbe kommt aus QPalette (kein Hardcoding).
         """
         import re as _re
-        def _bereinigen(s: str) -> str:
-            return _re.sub(r'\s+', ' ', _re.sub(r'[^\w\s]', '', s)).strip().lower()
 
-        ziel_key = _bereinigen(name)
+        def _kern(s: str) -> str:
+            """Nur Buchstaben+Ziffern, lowercase — kein Emoji, kein Leerzeichen."""
+            return _re.sub(r'[^\w]', '', s, flags=_re.UNICODE).replace('_', '').lower()
+
+        ziel = _kern(name)
+        if not ziel:
+            return
+
+        pal    = self.palette()
+        farbe  = pal.color(QtGui.QPalette.ColorRole.Highlight).name()
         treffer: list[QtWidgets.QWidget] = []
 
-        for btn in self.findChildren(QtWidgets.QPushButton):
-            if _bereinigen(btn.text()) == ziel_key:
-                treffer.append(btn)
-
+        # ── Docks: Substring-Match im bereinigten Titel ────────────────────
         for dock in self.findChildren(QtWidgets.QDockWidget):
-            if _bereinigen(dock.windowTitle()) == ziel_key:
+            titel = _kern(dock.windowTitle())
+            if titel and (ziel in titel or titel in ziel):
                 treffer.append(dock)
                 if not dock.isVisible():
                     dock.show()
                     dock.raise_()
 
-        pal = self.palette()
-        farbe = pal.color(QtGui.QPalette.ColorRole.Highlight).name()
+        # ── Toolbar-Panel-Buttons: Match über Tooltip ──────────────────────
+        for tb in self.findChildren(QtWidgets.QToolBar):
+            for btn in tb.findChildren(QtWidgets.QPushButton):
+                tip = _kern(btn.toolTip())
+                if tip and (ziel in tip or tip in ziel):
+                    treffer.append(btn)
+
+        if not treffer:
+            return
 
         for widget in treffer:
             orig = widget.styleSheet()
-            widget.setStyleSheet(
-                f"{orig}; background-color: {farbe}; border: 2px solid {farbe};")
-            QtCore.QTimer.singleShot(
-                1800, lambda w=widget, s=orig: w.setStyleSheet(s))
+            if isinstance(widget, QtWidgets.QDockWidget):
+                # Nur Titelleiste des Docks einfärben (bleibt auch als Tab sichtbar)
+                widget.setStyleSheet(
+                    f"QDockWidget::title {{ background-color: {farbe}; }}")
+                QtCore.QTimer.singleShot(
+                    1800, lambda w=widget, s=orig: w.setStyleSheet(s))
+            else:
+                # Zweite QPushButton-Regel hängt sich ans Ende – überschreibt Farbe
+                widget.setStyleSheet(
+                    orig + f"\nQPushButton {{ background-color: {farbe};"
+                           f" border: 2px solid {farbe}; }}")
+                QtCore.QTimer.singleShot(
+                    1800, lambda w=widget, s=orig: w.setStyleSheet(s))
 
     # ══ Hilfe-Fenster ══════════════════════════════════════════════════════
     def _on_barrierefreiheit(self, schluessel, wert):
