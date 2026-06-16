@@ -758,7 +758,10 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         self.addToolBar(QtCore.Qt.TopToolBarArea, _tb)
 
         _fs = schrift.pt(schrift.STUFE_BASE)
-        self._panel_btns: list = []   # [(btn, emoji, label), …] für icon_text
+        self._panel_btns: list = []          # [(btn, emoji, label), …] für icon_text
+        self._panel_btns_optional: list = [] # Buttons die in Einfacher Ansicht verschwinden
+        self._animationen_reduziert: bool = False
+        self._tastatur_shortcuts: list = []
 
         # ── Intelligente Panel-Steuerung ──────────────────────────────────
         _L = QtCore.Qt.LeftDockWidgetArea
@@ -806,7 +809,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
             dock.show()
             dock.raise_()
 
-        def _panel_btn(dock, icon_text, label, standard_area=_L):
+        def _panel_btn(dock, icon_text, label, standard_area=_L, optional=False):
             btn = QtWidgets.QPushButton(icon_text)
             btn.setToolTip(label)
             btn.setCheckable(True)
@@ -814,6 +817,8 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
             btn.setFixedHeight(26)
             btn.setFixedWidth(32)
             self._panel_btns.append((btn, icon_text, label))
+            if optional:
+                self._panel_btns_optional.append(btn)
             btn.setStyleSheet(
                 f"QPushButton {{ border:none; border-radius:3px; padding:2px 4px;"
                 f" font-size:{_fs}pt; }}"
@@ -840,23 +845,34 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         _panel_btn(_dock_cfg,      "⚙",  "Einst.",  _L)
         _panel_btn(_dock_ki,       "🤖", "KI",       _L)
         _panel_btn(_dock_akt,      "🎛", "Akt.",     _R)
-        _panel_btn(_dock_snip,     "📦", "Snip",     _L)
-        _panel_btn(_dock_hints,    "💡", "API",      _L)
-        _panel_btn(_dock_files,    "📂", "Dat.",     _L)
-        _panel_btn(_dock_kitools,  "🛠", "Tools",    _R)
-        _panel_btn(_dock_bib,      "📚", "Bib.",     _R)
-        _panel_btn(_dock_werkzeuge,"🔧", "Werkz.",   _R)
+        _panel_btn(_dock_snip,     "📦", "Snip",     _L,  optional=True)
+        _panel_btn(_dock_hints,    "💡", "API",      _L,  optional=True)
+        _panel_btn(_dock_files,    "📂", "Dat.",     _L,  optional=True)
+        _panel_btn(_dock_kitools,  "🛠", "Tools",    _R,  optional=True)
+        _panel_btn(_dock_bib,      "📚", "Bib.",     _R,  optional=True)
+        _panel_btn(_dock_werkzeuge,"🔧", "Werkz.",   _R,  optional=True)
         _panel_btn(_dock_fehler,   "⚠",  "Fehler",   _B)
         _panel_btn(_dock_bf,       "♿", "Zugang",   _L)
-        _panel_btn(_dock_helfer,   "🔧", "Helfer",   _R)
+        _panel_btn(_dock_helfer,   "🔧", "Helfer",   _R,  optional=True)
         _panel_btn(_dock_assistent,"🤝", "Assist.",  _R)
 
-        # Beschriftung sofort anwenden wenn in vorheriger Sitzung aktiviert
+        # Barrierefreiheits-Einstellungen beim Start wiederherstellen
         from barrierefreiheit import _get_bool as _bf_bool
         if _bf_bool("BF_IconText", False):
             for _pb, _ico, _lbl in self._panel_btns:
                 _pb.setText(f"{_ico}  {_lbl}")
                 _pb.setFixedWidth(72)
+        if _bf_bool("BF_EinfacheAnsicht", False):
+            for _pb in self._panel_btns_optional:
+                _pb.setVisible(False)
+        if _bf_bool("BF_AnimationReduzieren", False):
+            self._animationen_reduziert = True
+        if _bf_bool("BF_TooltipsImmer", False):
+            QtCore.QTimer.singleShot(
+                500, lambda: self._on_barrierefreiheit("tooltips_immer", True))
+        if _bf_bool("BF_Tastaturmodus", False):
+            QtCore.QTimer.singleShot(
+                500, lambda: self._on_barrierefreiheit("tastaturmodus", True))
 
         # ── Dock-Layout nach dem ersten Zeigen wiederherstellen ──────────
         import json as _json
@@ -1591,21 +1607,22 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         if not treffer:
             return
 
+        # Animationen reduziert → kurzes Aufleuchten statt langer Pause
+        ms = 300 if getattr(self, "_animationen_reduziert", False) else 1800
+
         for widget in treffer:
             orig = widget.styleSheet()
             if isinstance(widget, QtWidgets.QDockWidget):
-                # Nur Titelleiste des Docks einfärben (bleibt auch als Tab sichtbar)
                 widget.setStyleSheet(
                     f"QDockWidget::title {{ background-color: {farbe}; }}")
                 QtCore.QTimer.singleShot(
-                    1800, lambda w=widget, s=orig: w.setStyleSheet(s))
+                    ms, lambda w=widget, s=orig: w.setStyleSheet(s))
             else:
-                # Zweite QPushButton-Regel hängt sich ans Ende – überschreibt Farbe
                 widget.setStyleSheet(
                     orig + f"\nQPushButton {{ background-color: {farbe};"
                            f" border: 2px solid {farbe}; }}")
                 QtCore.QTimer.singleShot(
-                    1800, lambda w=widget, s=orig: w.setStyleSheet(s))
+                    ms, lambda w=widget, s=orig: w.setStyleSheet(s))
 
     # ══ Hilfe-Fenster ══════════════════════════════════════════════════════
     def _on_barrierefreiheit(self, schluessel, wert):
@@ -1642,6 +1659,66 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
                 else:
                     btn.setText(ico)
                     btn.setFixedWidth(32)
+
+        elif schluessel == "einfache_ansicht":
+            for btn in getattr(self, "_panel_btns_optional", []):
+                btn.setVisible(not wert)
+
+        elif schluessel == "animation":
+            self._animationen_reduziert = bool(wert)
+
+        elif schluessel == "tooltips_immer":
+            if wert:
+                if not hasattr(self, "_tooltip_filter"):
+                    class _TooltipFilter(QtCore.QObject):
+                        def eventFilter(self_, obj, event):
+                            if (event.type() == QtCore.QEvent.Type.Enter
+                                    and isinstance(obj, QtWidgets.QWidget)
+                                    and obj.toolTip()):
+                                QtWidgets.QToolTip.showText(
+                                    obj.mapToGlobal(
+                                        QtCore.QPoint(0, obj.height())),
+                                    obj.toolTip(), obj)
+                            return False
+                    self._tooltip_filter = _TooltipFilter(self)
+                QtWidgets.QApplication.instance().installEventFilter(
+                    self._tooltip_filter)
+            else:
+                if hasattr(self, "_tooltip_filter"):
+                    QtWidgets.QApplication.instance().removeEventFilter(
+                        self._tooltip_filter)
+                QtWidgets.QToolTip.hideText()
+
+        elif schluessel == "tastaturmodus":
+            # Bestehende Shortcuts bereinigen
+            for sc in getattr(self, "_tastatur_shortcuts", []):
+                sc.setEnabled(False)
+            self._tastatur_shortcuts.clear()
+
+            # Original-Tooltips wiederherstellen
+            for btn, ico, lbl in getattr(self, "_panel_btns", []):
+                btn.setToolTip(lbl)
+
+            if wert:
+                # Alt+1 … Alt+9 und Alt+0 für die Panel-Buttons
+                _tasten = ["Alt+1", "Alt+2", "Alt+3", "Alt+4", "Alt+5",
+                           "Alt+6", "Alt+7", "Alt+8", "Alt+9", "Alt+0",
+                           "Alt+-", "Alt+="]
+                sichtbare = [
+                    (btn, ico, lbl)
+                    for btn, ico, lbl in getattr(self, "_panel_btns", [])
+                    if btn.isVisible()
+                ]
+                for i, (btn, ico, lbl) in enumerate(sichtbare):
+                    if i >= len(_tasten):
+                        break
+                    taste = _tasten[i]
+                    sc = QtWidgets.QShortcut(
+                        QtGui.QKeySequence(taste), self)
+                    sc.activated.connect(btn.click)
+                    sc.setEnabled(True)
+                    self._tastatur_shortcuts.append(sc)
+                    btn.setToolTip(f"{lbl}  [{taste}]")
 
         elif schluessel == "kontrast":
             if wert:
