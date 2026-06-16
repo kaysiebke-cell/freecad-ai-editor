@@ -69,12 +69,14 @@ class _AssistentKiThread(QtCore.QThread):
             self.fehler.emit(str(e))
 
     def _stream_ollama(self):
+        import os as _os
         prompt = f"{self._system}\n\nFrage: {self._frage}"
         r = _requests.post(
             "http://localhost:11434/api/generate",
             json={"model": self._model, "prompt": prompt, "stream": True,
-                  "options": {"temperature": 0.3, "num_ctx": 2048, "num_predict": 1024}},
-            stream=True, timeout=120)
+                  "options": {"temperature": 0.3, "num_ctx": 4096,
+                               "num_predict": 512, "num_thread": _os.cpu_count() or 4}},
+            stream=True, timeout=None)
         r.raise_for_status()
         teile = []
         for line in r.iter_lines():
