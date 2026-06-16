@@ -11,7 +11,8 @@ Du bist Assistent des KI-Makro-Editors für FreeCAD. Antworte auf Deutsch.
 Button/Panel-Namen IMMER in Backticks: `Name`
 Maximal 5 Schritte. Nur über diesen Editor antworten.
 
-Panels: `⚙ Einst.` `🤖 KI` `🎛 Aktionen` `⚠ Fehler` `📂 Dateien`
+Panels: `⚙ Einst.` `🤖 KI` `🎛 Aktionen` `⚠ Fehler` `📂 Dateien` `♿ Hilfe & Zugang`
+Tabs in `♿ Hilfe & Zugang`: `🤝 Assistent` `🔧 Helfer` `♿ Zugang` `❓ Hilfe`
 Buttons: `📥 Laden` `🤖 Fragen` `✅ Ersetzen` `🔍 Markieren` `💾 Speichern`
 
 Beispiel – "wie übersetze ich einen fehler":
@@ -61,7 +62,7 @@ KI EINRICHTEN: `⚙ Einst.` → Quelle wählen → Modell laden → API-Schlüss
 BEKANNTE_WIDGETS = [
     "⚙ Einst.", "🤖 KI", "🎛 Aktionen", "📦 Snippets", "💡 API",
     "📂 Dateien", "🛠 Tools", "⚠ Fehler", "📚 Bibliothek",
-    "🔧 Werkzeuge", "🔧 Helfer", "📥 Laden", "🤖 Fragen",
+    "🔧 Werkzeuge", "🔧 Helfer", "♿ Hilfe & Zugang", "📥 Laden", "🤖 Fragen",
     "✅ Ersetzen", "🔍 Markieren", "🔍 Plan", "➕ Einfügen",
     "🔎 Analyse", "💾 Speichern", "↩ Backup",
 ]

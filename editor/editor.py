@@ -671,24 +671,34 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
                                self._baue_bibliothek_tab())
         self.tabifyDockWidget(_dock_akt, _dock_bib)
 
-        # ── Dock 8: FreeCAD Helfer (Legastheniker / Einsteiger) ──────────────
-        self._helfer_panel = FreecadHelferPanel()
-        _dock_helfer = _make_dock("🔧  Helfer", "dock_helfer",
-                                  QtCore.Qt.RightDockWidgetArea,
-                                  self._helfer_panel,
-                                  closable=True)
-        self.tabifyDockWidget(_dock_akt, _dock_helfer)
-        _dock_helfer.hide()  # Standardmäßig geschlossen
+        # ── Kombiniertes Barrierefreiheits-/Hilfe-Dock (Tab-Gruppe) ─────────
+        # Enthält: 🤝 Assistent | 🔧 Helfer | ♿ Zugang | ❓ Hilfe
+        _bf_gruppe_widget = QtWidgets.QWidget()
+        _bg_lay = QtWidgets.QVBoxLayout(_bf_gruppe_widget)
+        _bg_lay.setContentsMargins(0, 0, 0, 0)
+        _bg_lay.setSpacing(0)
+        self._bf_tabs = QtWidgets.QTabWidget()
+        self._bf_tabs.setTabPosition(QtWidgets.QTabWidget.TabPosition.North)
+        self._bf_tabs.setDocumentMode(True)
 
-        # Interaktiver Assistent-Dock
         self._assistent_panel = AssistentPanel(self)
         self._assistent_panel.widget_blinken.connect(self._widget_blinken)
-        _dock_assistent = _make_dock("🤝  Assistent", "dock_assistent",
+        self._bf_tabs.addTab(self._assistent_panel, "🤝 Assistent")
+
+        self._helfer_panel = FreecadHelferPanel()
+        self._bf_tabs.addTab(self._helfer_panel, "🔧 Helfer")
+
+        self._bf_panel = BarrierefreiheitPanel()
+        self._bf_panel.geaendert.connect(self._on_barrierefreiheit)
+        self._bf_tabs.addTab(self._bf_panel, "♿ Zugang")
+
+        self._bf_tabs.addTab(HilfeTab(), "❓ Hilfe")
+
+        _bg_lay.addWidget(self._bf_tabs)
+        _dock_bf_gruppe = _make_dock("♿  Hilfe & Zugang", "dock_bf_gruppe",
                                      QtCore.Qt.RightDockWidgetArea,
-                                     self._assistent_panel,
-                                     closable=True)
-        self.tabifyDockWidget(_dock_akt, _dock_assistent)
-        _dock_assistent.hide()
+                                     _bf_gruppe_widget, closable=True)
+        _dock_bf_gruppe.hide()
 
         # Fehler-Panel als Dock unten
         fehler_panel_widget = QtWidgets.QWidget()
@@ -738,15 +748,9 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
                                      self._werkzeug_leiste)
         self.tabifyDockWidget(_dock_akt, _dock_werkzeuge)
 
-        # ── Barrierefreiheits-Dock ────────────────────────────────────────────
-        self._bf_panel = BarrierefreiheitPanel()
-        self._bf_panel.geaendert.connect(self._on_barrierefreiheit)
-        _dock_bf = _make_dock("♿  Barrierefreiheit", "dock_barrierefreiheit",
-                              QtCore.Qt.LeftDockWidgetArea, self._bf_panel)
-
         for _d in (_dock_cfg, _dock_ki, _dock_snip, _dock_hints, _dock_files,
                    _dock_kitools, _dock_akt, _dock_bib, _dock_werkzeuge,
-                   _dock_fehler, _dock_bf):
+                   _dock_fehler):
             _d.hide()
 
         # ── Panel-Toolbar: Toggle-Buttons komplett neu ────────────────────
@@ -835,26 +839,20 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
             _tb.addWidget(btn)
             return btn
 
-        _btn_hilfe = QtWidgets.QPushButton("❓  Hilfe")
-        _btn_hilfe.setFixedHeight(26)
-        _btn_hilfe.setStyleSheet(theme.STY_TAB_BTN())
-        _btn_hilfe.clicked.connect(self._zeige_hilfe)
-        _tb.addWidget(_btn_hilfe)
         _tb.addSeparator()
 
-        _panel_btn(_dock_cfg,      "⚙",  "Einst.",  _L)
-        _panel_btn(_dock_ki,       "🤖", "KI",       _L)
-        _panel_btn(_dock_akt,      "🎛", "Akt.",     _R)
-        _panel_btn(_dock_snip,     "📦", "Snip",     _L,  optional=True)
-        _panel_btn(_dock_hints,    "💡", "API",      _L,  optional=True)
-        _panel_btn(_dock_files,    "📂", "Dat.",     _L,  optional=True)
-        _panel_btn(_dock_kitools,  "🛠", "Tools",    _R,  optional=True)
-        _panel_btn(_dock_bib,      "📚", "Bib.",     _R,  optional=True)
-        _panel_btn(_dock_werkzeuge,"🔧", "Werkz.",   _R,  optional=True)
-        _panel_btn(_dock_fehler,   "⚠",  "Fehler",   _B)
-        _panel_btn(_dock_bf,       "♿", "Zugang",   _L)
-        _panel_btn(_dock_helfer,   "🔧", "Helfer",   _R,  optional=True)
-        _panel_btn(_dock_assistent,"🤝", "Assist.",  _R)
+        _panel_btn(_dock_cfg,       "⚙",  "Einst.",        _L)
+        _panel_btn(_dock_ki,        "🤖", "KI",             _L)
+        _panel_btn(_dock_akt,       "🎛", "Akt.",           _R)
+        _panel_btn(_dock_snip,      "📦", "Snip",           _L,  optional=True)
+        _panel_btn(_dock_hints,     "💡", "API",            _L,  optional=True)
+        _panel_btn(_dock_files,     "📂", "Dat.",           _L,  optional=True)
+        _panel_btn(_dock_kitools,   "🛠", "Tools",          _R,  optional=True)
+        _panel_btn(_dock_bib,       "📚", "Bib.",           _R,  optional=True)
+        _panel_btn(_dock_werkzeuge, "🔧", "Werkz.",         _R,  optional=True)
+        _panel_btn(_dock_fehler,    "⚠",  "Fehler",         _B)
+        self._btn_bf_gruppe = _panel_btn(
+            _dock_bf_gruppe, "♿", "Hilfe & Zugang",  _R)
 
         # Barrierefreiheits-Einstellungen beim Start wiederherstellen
         from barrierefreiheit import _get_bool as _bf_bool
@@ -882,7 +880,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
 
         # Version hochzählen wenn Docks/Panels sich ändern — verhindert
         # Qt-Segfault durch inkompatibles gespeichertes Layout
-        _LAYOUT_VERSION = "v5"
+        _LAYOUT_VERSION = "v6"
 
         _GUARD_DATEI = os.path.join(
             os.path.expanduser("~"), ".ki_makro_editor_restore_guard")
@@ -1730,33 +1728,12 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
                 self.setStyleSheet("")
 
     def _zeige_hilfe(self):
-        """Öffnet das Hilfe-Fenster als schwebendes, nicht-modales Fenster."""
-        if hasattr(self, "_hilfe_fenster") and self._hilfe_fenster is not None:
-            try:
-                self._hilfe_fenster.raise_()
-                self._hilfe_fenster.activateWindow()
-                return
-            except RuntimeError:
-                pass
-
-        dlg = QtWidgets.QDialog(self)
-        dlg.setWindowTitle("❓  Hilfe  –  KI-Makro-Editor")
-        _scr = QtWidgets.QApplication.primaryScreen().availableGeometry()
-        dlg.resize(520, min(680, int(_scr.height() * 0.82)))
-        dlg.setModal(False)
-        dlg.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        dlg.setWindowFlags(
-            QtCore.Qt.Window
-            | QtCore.Qt.WindowMinimizeButtonHint
-            | QtCore.Qt.WindowMaximizeButtonHint
-            | QtCore.Qt.WindowCloseButtonHint)
-        layout = QtWidgets.QVBoxLayout(dlg)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(HilfeTab())
-
-        dlg.destroyed.connect(lambda: setattr(self, "_hilfe_fenster", None))
-        self._hilfe_fenster = dlg
-        dlg.show()
+        """Öffnet das kombinierte Dock und wechselt zum ❓ Hilfe-Tab."""
+        if hasattr(self, "_bf_tabs"):
+            # Hilfe ist Tab-Index 3 im kombinierten Dock
+            self._bf_tabs.setCurrentIndex(3)
+        if hasattr(self, "_btn_bf_gruppe"):
+            self._btn_bf_gruppe.setChecked(True)
 
     # ══ Theme-Wechsel (Hell ↔ Dunkel) ═════════════════════════════════════════
     def changeEvent(self, event):
@@ -1775,7 +1752,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
             import json as _json
             _state = self.saveState().toBase64().data().decode("ascii")
             with open(self._layout_state_datei, "w", encoding="utf-8") as _sf:
-                _json.dump({"version": "v5", "state": _state}, _sf)
+                _json.dump({"version": "v6", "state": _state}, _sf)
         except Exception:
             pass
         # ── Laufende Timer stoppen ────────────────────────────────────────
