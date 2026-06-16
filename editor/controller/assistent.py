@@ -220,7 +220,8 @@ class AssistentPanel(QtWidgets.QWidget):
     def _fragen(self):
         if not _HAS_REQUESTS:
             self._anzeige.append(
-                "<b style='color:red;'>⚠ requests-Modul nicht installiert.</b><br>")
+                f"<b style='color:{self.palette().color(QtGui.QPalette.ColorRole.BrightText).name()};'>"
+                f"⚠ requests-Modul nicht installiert.</b><br>")
             return
         frage = self._eingabe.text().strip()
         if not frage:
@@ -289,7 +290,8 @@ class AssistentPanel(QtWidgets.QWidget):
 
     def _on_fehler(self, msg: str):
         self._btn_fragen.setEnabled(True)
-        self._anzeige.append(f"<br><b style='color:red;'>⚠ {msg}</b><br>")
+        farbe = self.palette().color(QtGui.QPalette.ColorRole.BrightText).name()
+        self._anzeige.append(f"<br><b style='color:{farbe};'>⚠ {msg}</b><br>")
 
     def _verlauf_loeschen(self):
         self._anzeige.clear()
