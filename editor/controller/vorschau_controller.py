@@ -100,16 +100,12 @@ class VorschauController:
         # Titelzeile
         tz = QtWidgets.QHBoxLayout()
         tl = QtWidgets.QLabel("👁  Live-Vorschau  —  FreeCAD 3D-Viewport  (drehbar)")
-        tl.setStyleSheet(
-            f"font-weight:bold;font-size:{schrift.pt(schrift.STUFE_LG)}pt;")
+        tl.setStyleSheet(theme.STY_VORSCHAU_TITEL(schrift.pt(schrift.STUFE_LG)))
         tz.addWidget(tl)
         tz.addStretch()
         bx = QtWidgets.QPushButton("✕  Schließen")
         bx.setFixedHeight(22)
-        bx.setStyleSheet(
-            "QPushButton{border:1px solid ;"
-            f"border-radius:3px;font-size:{schrift.pt(schrift.STUFE_BASE)}pt;padding:0 8px;}}"
-            "QPushButton:hover{}")
+        bx.setStyleSheet(theme.STY_VORSCHAU_CLOSE_BTN(schrift.pt(schrift.STUFE_BASE)))
         bx.clicked.connect(self.vorschau_schliessen)
         tz.addWidget(bx)
         root.addLayout(tz)
@@ -118,14 +114,14 @@ class VorschauController:
         self._vorschau_status_lbl = QtWidgets.QLabel(
             "Bereit — '▶ Ausführen' drücken")
         self._vorschau_status_lbl.setStyleSheet(
-            f"font-size:{schrift.pt(schrift.STUFE_BASE)}pt;")
+            theme.STY_VORSCHAU_STATUS(schrift.pt(schrift.STUFE_BASE)))
         root.addWidget(self._vorschau_status_lbl)
 
         # Container für den eingebetteten View
         self._vorschau_container = QtWidgets.QWidget()
+        self._vorschau_container.setObjectName("VorschauContainer")
         self._vorschau_container.setMinimumHeight(300)
-        self._vorschau_container.setStyleSheet(
-            "border:1px solid ;border-radius:3px;")
+        self._vorschau_container.setStyleSheet(theme.STY_VORSCHAU_CONTAINER)
         container_lay = QtWidgets.QVBoxLayout(self._vorschau_container)
         container_lay.setContentsMargins(0, 0, 0, 0)
 
@@ -136,26 +132,20 @@ class VorschauController:
             "FreeCAD-Viewport erscheint hier<br>"
             "nach ▶ Ausführen</span>")
         self._vorschau_placeholder.setAlignment(QtCore.Qt.AlignCenter)
-        self._vorschau_placeholder.setStyleSheet(
-            "border:none;")
+        self._vorschau_placeholder.setStyleSheet(theme.STY_VORSCHAU_PLACEHOLDER)
         container_lay.addWidget(self._vorschau_placeholder)
         root.addWidget(self._vorschau_container, stretch=1)
 
         # Log (klein)
         log_lbl = QtWidgets.QLabel("Ausgabe:")
-        log_lbl.setStyleSheet(
-            f"font-size:{schrift.pt(schrift.STUFE_SM)}pt;font-weight:bold;"
-            "letter-spacing:1px;")
+        log_lbl.setStyleSheet(theme.STY_VORSCHAU_LOG_LABEL(schrift.pt(schrift.STUFE_SM)))
         root.addWidget(log_lbl)
 
         self._vorschau_log_box = QtWidgets.QPlainTextEdit()
         self._vorschau_log_box.setReadOnly(True)
         self._vorschau_log_box.setFont(QtGui.QFont("Courier New", 9))
         self._vorschau_log_box.setMaximumHeight(70)
-        self._vorschau_log_box.setStyleSheet(
-            "QPlainTextEdit{"
-            "font-family:'Courier New',monospace;"
-            "border:1px solid ;border-radius:3px;}")
+        self._vorschau_log_box.setStyleSheet(theme.STY_VORSCHAU_LOG_BOX)
         root.addWidget(self._vorschau_log_box)
 
         # Buttons
@@ -183,8 +173,7 @@ class VorschauController:
 
         warn = QtWidgets.QLabel(
             "⚠  Code wird direkt in FreeCAD ausgeführt — Änderungen am Dokument sind real.")
-        warn.setStyleSheet(
-            f"font-size:{schrift.pt(schrift.STUFE_SM)}pt;padding:1px 0;")
+        warn.setStyleSheet(theme.STY_VORSCHAU_WARN(schrift.pt(schrift.STUFE_SM)))
         warn.setWordWrap(True)
         root.addWidget(warn)
 
@@ -488,4 +477,5 @@ class VorschauController:
     def _vorschau_status(self, text: str, farbe: str = ""):
         if self._vorschau_status_lbl:
             self._vorschau_status_lbl.setText(text)
-            self._vorschau_status_lbl.setStyleSheet(f"font-size:{schrift.pt(schrift.STUFE_BASE)}pt;")
+            self._vorschau_status_lbl.setStyleSheet(
+                theme.STY_VORSCHAU_STATUS(schrift.pt(schrift.STUFE_BASE)))

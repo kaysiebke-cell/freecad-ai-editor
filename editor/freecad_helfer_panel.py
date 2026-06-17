@@ -21,6 +21,8 @@ import sys
 import threading
 
 from qt_compat import QtCore, QtWidgets, QtGui
+import theme
+import schrift
 
 # anbieter_formate liegt in data/ — Pfad einmalig eintragen wenn nötig
 try:
@@ -193,7 +195,7 @@ class _DiffBlase(QtWidgets.QFrame):
         layout.setSpacing(2)
 
         kopf = QtWidgets.QLabel("✏️ Deine Korrekturen:")
-        kopf.setStyleSheet("font-size: 10px; font-weight: bold;")
+        kopf.setStyleSheet(theme.STY_HELFER_BLASE_KOPF())
         layout.addWidget(kopf)
 
         self._lbl = QtWidgets.QLabel()
@@ -215,9 +217,7 @@ class _DiffBlase(QtWidgets.QFrame):
         fg     = pal.color(QtGui.QPalette.WindowText)
         self.setStyleSheet(
             f"QFrame {{ background-color: {bg.name()}; border-radius: 8px; }}")
-        self._lbl.setStyleSheet(
-            f"color: {fg.name()}; background: transparent; "
-            f"border: none; font-size: 12px; line-height: 1.6;")
+        self._lbl.setStyleSheet(theme.STY_HELFER_DIFF_TEXT(fg.name()))
 
     def changeEvent(self, event):
         if event.type() == QtCore.QEvent.PaletteChange:
@@ -278,9 +278,7 @@ class _ChatBubble(QtWidgets.QFrame):
         fg  = pal.color(QtGui.QPalette.WindowText)
         self._bubble.setStyleSheet(
             f"QFrame {{ background-color: {bg.name()}; border-radius: 10px; }}")
-        self._lbl.setStyleSheet(
-            f"color: {fg.name()}; background: transparent; "
-            f"border: none; line-height: 1.6;")
+        self._lbl.setStyleSheet(theme.STY_HELFER_BUBBLE_TEXT(fg.name()))
 
     def changeEvent(self, event):
         if event.type() == QtCore.QEvent.PaletteChange:
@@ -329,7 +327,7 @@ class _BildVorschau(QtWidgets.QFrame):
         rechts.setSpacing(4)
 
         info = QtWidgets.QLabel(f"📎  {pixmap.width()} × {pixmap.height()} px")
-        info.setStyleSheet("font-size: 11px; font-weight: bold;")
+        info.setStyleSheet(theme.STY_HELFER_BLASE_KOPF())
         rechts.addWidget(info)
 
         entf = QtWidgets.QPushButton("✕  Bild entfernen")
@@ -392,7 +390,7 @@ class FreecadHelferPanel(QtWidgets.QWidget):
         # Kopfzeile
         kopf = QtWidgets.QHBoxLayout()
         titel = QtWidgets.QLabel("🔧 FreeCAD Helfer")
-        titel.setStyleSheet("font-weight: bold; font-size: 13pt;")
+        titel.setStyleSheet(theme.STY_HELFER_TITEL())
         kopf.addWidget(titel)
         kopf.addStretch()
 
@@ -405,7 +403,7 @@ class FreecadHelferPanel(QtWidgets.QWidget):
         kopf.addWidget(self._modell_box)
 
         self._status_lbl = QtWidgets.QLabel("")
-        self._status_lbl.setStyleSheet("font-size: 11px;")
+        self._status_lbl.setStyleSheet(theme.STY_HELFER_LABEL_SM())
         kopf.addWidget(self._status_lbl)
         root.addLayout(kopf)
 
@@ -414,7 +412,7 @@ class FreecadHelferPanel(QtWidgets.QWidget):
             "Schreib einfach, was du bauen möchtest — Rechtschreibung ist egal. "
             "Der Helfer macht daraus eine saubere Beschreibung für FC11.")
         info.setWordWrap(True)
-        info.setStyleSheet("font-size: 11px;")
+        info.setStyleSheet(theme.STY_HELFER_LABEL_SM())
         root.addWidget(info)
 
         # Chat-Bereich
@@ -479,8 +477,7 @@ class FreecadHelferPanel(QtWidgets.QWidget):
         # Vision-Warnung (nur sichtbar wenn Bild angehängt + falsches Modell)
         self._vision_warnung = QtWidgets.QLabel("")
         self._vision_warnung.setWordWrap(True)
-        self._vision_warnung.setStyleSheet(
-            "font-size: 10px; padding: 3px 6px; border-radius: 4px;")
+        self._vision_warnung.setStyleSheet(theme.STY_HELFER_VISION_WARN_BASE())
         self._vision_warnung.setVisible(False)
         root.addWidget(self._vision_warnung)
 
@@ -576,8 +573,7 @@ class FreecadHelferPanel(QtWidgets.QWidget):
             bg     = QtGui.QColor.fromHsl(40, 200, 40 if dunkel else 230).name()
             fg     = QtGui.QColor.fromHsl(40, 200, 200 if dunkel else 60).name()
             self._vision_warnung.setStyleSheet(
-                f"font-size: 10px; padding: 3px 6px; border-radius: 4px; "
-                f"background-color: {bg}; color: {fg};")
+                theme.STY_HELFER_VISION_WARN(bg, fg))
             self._vision_warnung.setText(
                 f"⚠  '{modell}' unterstützt keine Bilder. "
                 f"Wechsle zu llava oder moondream — "

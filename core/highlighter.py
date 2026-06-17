@@ -30,7 +30,7 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
         from qt_compat import QtWidgets, QtGui as _QtGui
         app = QtWidgets.QApplication.instance()
         pal = app.palette() if app else _QtGui.QPalette()
-        dunkel = pal.color(_QtGui.QPalette.Base).lightness() < 128
+        dunkel = theme.ist_dunkel()
         if dunkel != self._letztes_dunkel:
             self._letztes_dunkel = dunkel
             self._aufbau()
@@ -115,26 +115,34 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
 
     # ── Einzeilige Regeln anwenden ────────────────────────────────────────────
     def highlightBlock(self, text: str):
-        # 0) Erst die gesamte Zeile mit der Standard-Textfarbe belegen,
-        #    damit FreeCADs QSS-Grau keine Chance hat durchzukommen.
+        # 0) Prüfen ob sich Hell/Dunkel geändert hat – ggf. Farben neu aufbauen.
+        #    Wird hier inline geprüft (nicht via aktualisiere_theme), damit kein
+        #    rehighlight() mitten im laufenden Zyklus ausgelöst wird.
+        dunkel = theme.ist_dunkel()
+        if dunkel != self._letztes_dunkel:
+            self._letztes_dunkel = dunkel
+            self._aufbau()
+
+        # 1) Gesamte Zeile mit der Modus-korrekten Standard-Textfarbe belegen,
+        #    damit FreeCADs globales QSS die Textfarbe nicht überschreibt.
         if text:
             self.setFormat(0, len(text), self._default_fmt)
 
-        # 1) Einzeilige Regeln
+        # 2) Einzeilige Regeln
         for regex, fmt in self._regeln:
             it = regex.globalMatch(text)
             while it.hasNext():
                 m = it.next()
                 self.setFormat(m.capturedStart(), m.capturedLength(), fmt)
 
-        # 2) Kommentare (überschreiben vorherige Highlights)
+        # 3) Kommentare (überschreiben vorherige Highlights)
         it = self._kommentar_re.globalMatch(text)
         while it.hasNext():
             m = it.next()
             self.setFormat(m.capturedStart(), m.capturedLength(),
                            self._kommentar_fmt)
 
-        # 3) Triple-Strings (Multiline – State 1 = """, State 2 = ''')
+        # 4) Triple-Strings (Multiline – State 1 = """, State 2 = ''')
         self._handle_triple(text, '"""', 1)
         self._handle_triple(text, "'''", 2)
 

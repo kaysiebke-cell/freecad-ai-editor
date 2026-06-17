@@ -29,14 +29,7 @@ class HilfeTab(QtWidgets.QWidget):
     ]
     _FARBE_DEFAULT = ("", "")
 
-    _STY_BODY = (
-        "QPlainTextEdit{"
-        " "
-        f"font-family:'Courier New', monospace; font-size:{schrift.pt(schrift.STUFE_BASE)}pt;"
-        "text-align:left;"
-        "border-radius:0 0 4px 4px;"
-        "border:1px solid ; border-top:none;}"
-    )
+    _STY_BODY = theme.STY_HILFE_BODY
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -48,13 +41,7 @@ class HilfeTab(QtWidgets.QWidget):
             pass
         self.setFont(self._ui_font)
         self.setObjectName("HilfeTab")
-        self.setStyleSheet(
-            "#HilfeTab QLabel, #HilfeTab QPushButton,"
-            "#HilfeTab QLineEdit, #HilfeTab QScrollArea {"
-            "  font-family: 'Ubuntu'; text-align: left; }"
-            "#HilfeTab QPlainTextEdit {"
-            "  font-family: 'Courier New', monospace; text-align: left; }"
-        )
+        self.setStyleSheet(theme.STY_HILFE_TAB)
         self._mono_font = QtGui.QFont("Courier New", 10)
         try:
             from main import emoji_font
@@ -72,15 +59,13 @@ class HilfeTab(QtWidgets.QWidget):
         such_zeile = QtWidgets.QHBoxLayout()
         icon = QtWidgets.QLabel("🔍")
         icon.setFont(self._ui_font)
-        icon.setStyleSheet(f"font-size:{schrift.pt(schrift.STUFE_XL)}pt; font-family:'Ubuntu','Noto Color Emoji';")
+        icon.setStyleSheet(theme.STY_ICON_BTN_BORDERLESS(schrift.pt(schrift.STUFE_XL)))
         such_zeile.addWidget(icon)
         self._suche = QtWidgets.QLineEdit()
         self._suche.setFont(self._ui_font)
         self._suche.setPlaceholderText("Hilfe durchsuchen …")
         self._suche.setClearButtonEnabled(True)
-        self._suche.setStyleSheet(
-            "QLineEdit{"
-            "border:1px solid ;border-radius:3px;padding:3px;}")
+        self._suche.setStyleSheet(theme.STY_HILFE_SUCHE)
         such_zeile.addWidget(self._suche)
         layout.addLayout(such_zeile)
 
@@ -100,10 +85,10 @@ class HilfeTab(QtWidgets.QWidget):
         scroll.setWidget(container)
         layout.addWidget(scroll, stretch=1)
 
-        ver = QtWidgets.QLabel("KI-Makro-Editor  •  v1.1")
+        ver = QtWidgets.QLabel("FreeCAD MultiAI Panel  •  v1.1")
         ver.setFont(self._ui_font)
         ver.setAlignment(QtCore.Qt.AlignCenter)
-        ver.setStyleSheet(f"font-size:{schrift.pt(schrift.STUFE_SM)}pt;padding-top:4px;")
+        ver.setStyleSheet(theme.STY_VORSCHAU_STATUS(schrift.pt(schrift.STUFE_SM)))
         layout.addWidget(ver)
 
         self._suche.textChanged.connect(self._filtern)
@@ -118,48 +103,22 @@ class HilfeTab(QtWidgets.QWidget):
         btn = QtWidgets.QPushButton(f"▶  {titel.replace('&', '&&')}")
         btn.setCheckable(True)
         btn.setFont(self._ui_font)
-        btn.setStyleSheet(
-            f"QPushButton{{text-align:left; padding:5px 8px;"
-            f"font-family:'Ubuntu','Noto Color Emoji';"
-            f"font-size:{schrift.pt(schrift.STUFE_LG)}pt; font-weight:bold;"
-            f"border:none; border-radius:4px;"
-            f"QPushButton:hover{{}}"
-            f"QPushButton:pressed{{}}")
+        btn.setStyleSheet(theme.STY_SECTION_HEAD_BTN(schrift.pt(schrift.STUFE_LG)))
 
-        lbl = QtWidgets.QPlainTextEdit()
+        # QLabel statt QPlainTextEdit: heightForWidth() regelt Höhe automatisch,
+        # kein manueller setFixedHeight-Hack nötig.
+        lbl = QtWidgets.QLabel()
         lbl.setFont(self._mono_font)
-        lbl.setReadOnly(True)
-
-        _txt_opt = lbl.document().defaultTextOption()
-        _txt_opt.setAlignment(QtCore.Qt.AlignLeft)
-        _txt_opt.setWrapMode(QtGui.QTextOption.WordWrap)
-        lbl.document().setDefaultTextOption(_txt_opt)
-        lbl.setPlainText(inhalt)
-
-        _bfmt = QtGui.QTextBlockFormat()
-        _bfmt.setAlignment(QtCore.Qt.AlignLeft)
-        _cur = lbl.textCursor()
-        _cur.select(QtGui.QTextCursor.Document)
-        _cur.mergeBlockFormat(_bfmt)
-        _cur.clearSelection()
-        lbl.setTextCursor(_cur)
-
-        lbl.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
-        lbl.setFrameShape(QtWidgets.QFrame.NoFrame)
-        lbl.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        lbl.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        lbl.setWordWrap(True)
+        lbl.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+        lbl.setText(inhalt)
         lbl.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
-        fm = QtGui.QFontMetrics(self._mono_font)
-        n_zeilen  = inhalt.count('\n') + 1
-        _DOC_MARGIN = 8
-        lbl.setFixedHeight(fm.lineSpacing() * n_zeilen + _DOC_MARGIN * 2 + 4)
-        lbl.setStyleSheet(self._STY_BODY)
-        lbl.document().setDocumentMargin(_DOC_MARGIN)
-        lbl.setVisible(False)
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         lbl.setTextInteractionFlags(
             QtCore.Qt.TextSelectableByMouse
             | QtCore.Qt.TextSelectableByKeyboard)
+        lbl.setStyleSheet(self._STY_BODY)
+        lbl.setVisible(False)
 
         def _toggle(checked, b=btn, l=lbl):
             l.setVisible(checked)

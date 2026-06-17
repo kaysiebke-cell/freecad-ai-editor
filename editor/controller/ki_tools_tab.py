@@ -101,8 +101,7 @@ class KiToolsTabMixin:
 
         info1 = QtWidgets.QLabel(
             "Wird automatisch an jeden KI-Prompt angehängt.")
-        info1.setStyleSheet(
-            f"font-size:{schrift.pt(schrift.STUFE_SM)}pt; font-style:italic;")
+        info1.setStyleSheet(theme.STY_KI_INFO_LABEL())
         info1.setWordWrap(True)
         sek1.addWidget(info1)
 
@@ -124,8 +123,7 @@ class KiToolsTabMixin:
 
         info2 = QtWidgets.QLabel(
             "FreeCAD-Operationen ohne Code — sicher & rückgängig machbar.")
-        info2.setStyleSheet(
-            f"font-size:{schrift.pt(schrift.STUFE_SM)}pt; font-style:italic;")
+        info2.setStyleSheet(theme.STY_KI_INFO_LABEL())
         info2.setWordWrap(True)
         sek2.addWidget(info2)
 
@@ -135,9 +133,7 @@ class KiToolsTabMixin:
                 btn_start = QtWidgets.QPushButton(f"▶  {name}")
                 btn_start.setFixedHeight(26)
                 btn_start.setToolTip(defn.beschreibung)
-                btn_start.setStyleSheet(
-                    f"QPushButton{{text-align:left; padding:2px 6px;"
-                    f"font-size:{schrift.pt(schrift.STUFE_BASE)}pt;}}")
+                btn_start.setStyleSheet(theme.STY_KI_WERKZEUG_BTN())
                 sek2.addWidget(btn_start)
 
                 # Logik verdrahten: Klick öffnet den Werkzeug-Dialog
@@ -274,7 +270,7 @@ class KiToolsTabMixin:
 
         btn_ausfuehren = QtWidgets.QPushButton("▶  Ausführen")
         btn_ausfuehren.setMinimumHeight(32)
-        btn_ausfuehren.setStyleSheet("QPushButton{font-weight:bold; padding:4px 16px;}")
+        btn_ausfuehren.setStyleSheet(theme.STY_KI_AUSFUEHREN_BTN)
         btn_zeile.addWidget(btn_ausfuehren)
 
         btn_in_editor = QtWidgets.QPushButton("📥  In Editor")

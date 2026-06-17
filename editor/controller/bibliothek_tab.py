@@ -94,7 +94,7 @@ class BibliothekTabMixin:
         self._bib_beschr_lbl = QtWidgets.QLabel("")
         self._bib_beschr_lbl.setWordWrap(True)
         self._bib_beschr_lbl.setStyleSheet(
-            f"font-size:{schrift.pt(schrift.STUFE_SM)}pt; padding:2px;")
+            theme.STY_LABEL_SM(schrift.pt(schrift.STUFE_SM)))
         vl.addWidget(self._bib_beschr_lbl)
 
         self._bib_code_vorschau = QtWidgets.QPlainTextEdit()
@@ -112,8 +112,7 @@ class BibliothekTabMixin:
 
         self._bib_btn_ausfuehren = QtWidgets.QPushButton("▶ Ausführen")
         self._bib_btn_ausfuehren.setMinimumHeight(28)
-        self._bib_btn_ausfuehren.setStyleSheet(
-            "QPushButton{font-weight:bold;} QPushButton:hover{}")
+        self._bib_btn_ausfuehren.setStyleSheet(theme.STY_BOLD_BTN)
         self._bib_btn_ausfuehren.setEnabled(False)
         self._bib_btn_ausfuehren.clicked.connect(self._bib_ausfuehren)
         btn_zeile.addWidget(self._bib_btn_ausfuehren)
@@ -141,7 +140,7 @@ class BibliothekTabMixin:
         # ── Statuszeile ───────────────────────────────────────────────────
         self._bib_status = QtWidgets.QLabel("")
         self._bib_status.setStyleSheet(
-            f"font-size:{schrift.pt(schrift.STUFE_SM)}pt; padding:2px;")
+            theme.STY_LABEL_SM(schrift.pt(schrift.STUFE_SM)))
         _bib_verstecke.append(self._bib_status)
         layout.addWidget(self._bib_status)
 
@@ -351,13 +350,13 @@ class BibliothekTabMixin:
 
         status_lbl = QtWidgets.QLabel("")
         status_lbl.setStyleSheet(
-            f"font-size:{schrift.pt(schrift.STUFE_SM)}pt;")
+            theme.STY_LABEL_SM_NP(schrift.pt(schrift.STUFE_SM)))
         vl.addWidget(status_lbl)
 
         btn_zeile = QtWidgets.QHBoxLayout()
         btn_ok = QtWidgets.QPushButton("💾 Speichern")
         btn_ok.setMinimumHeight(30)
-        btn_ok.setStyleSheet("QPushButton{font-weight:bold;}")
+        btn_ok.setStyleSheet(theme.STY_BOLD_BTN)
         btn_ab = QtWidgets.QPushButton("Abbrechen")
         btn_zeile.addWidget(btn_ok)
         btn_zeile.addWidget(btn_ab)

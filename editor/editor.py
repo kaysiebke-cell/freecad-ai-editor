@@ -40,6 +40,7 @@ import theme
 import schrift
 from highlighter import PythonHighlighter
 from fehler import uebersetze_fehler
+import params
 from params import (KI_PRESETS, KI_PRESET_KATEGORIEN, lade_kontext, speichere_kontext,
                     lade_api_key, speichere_api_key, speichere_quelle, lade_quelle)
 from hilfe import HilfeTab
@@ -77,6 +78,9 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         super().__init__(parent)
         self._pfad      = pfad
         self._geaendert = False
+        # Farbschema sofort laden – muss vor allen Widget-Erstellungen stehen,
+        # damit apply_input_bg_* beim ersten Aufruf die korrekte Farbe nutzen.
+        theme.set_farbschema(params.farbschema_dunkel())
         self.setWindowTitle(f"Makro-Editor  –  {os.path.basename(pfad)}")
         _scr = QtWidgets.QApplication.primaryScreen().availableGeometry()
         self.resize(min(1080, int(_scr.width()  * 0.80)),
@@ -110,18 +114,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         # FIX: 'Noto Color Emoji' aus QPlainTextEdit/QTextEdit entfernt –
         #      auf Linux ersetzt Qt sonst Ziffern durch Emoji-Glyphen
         #      (mit falschem Zeichenabstand / sichtbaren Lücken).
-        self.setStyleSheet(
-            "QLabel, QPushButton, QLineEdit, QComboBox, QCheckBox,"
-            "QDoubleSpinBox, QSpinBox, QTabBar::tab, QToolTip,"
-            "QGroupBox, QRadioButton, QMenu, QMenuBar {"
-            "  font-family: 'Ubuntu', 'Noto Color Emoji'; text-align: left; }"
-            "QListWidget, QListView, QTreeWidget, QTreeView {"
-            "  font-family: 'Ubuntu', 'Noto Color Emoji'; text-align: left; }"
-            "QListWidget::item, QListView::item { text-align: left; }"
-            "QPlainTextEdit, QTextEdit {"
-            "  font-family: 'Courier New', monospace; text-align: left; }"
-            "_BlauBanner { background-color: palette(highlight); }"
-        )
+        self.setStyleSheet(theme.STY_HAUPTFENSTER_FONT())
         # ──────────────────────────────────────────────────────────────────
 
         self._alive = True
@@ -317,12 +310,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         self._editor_tab_widget.setMovable(True)
         self._editor_tab_widget.setDocumentMode(True)
         self._editor_tab_widget.setStyleSheet(
-            "QTabWidget::pane{ border:none; }"
-            "QTabBar::tab{ padding:5px 14px;"
-            f" font-size:{schrift.pt(schrift.STUFE_BASE)}pt;"
-            " border:none; border-right:1px solid ; min-width:60px; max-width:200px;}"
-            "QTabBar::tab:selected{ border-bottom:2px solid ;}"
-            "QTabBar::tab:hover{}")
+            theme.STY_EDITOR_TABS(schrift.pt(schrift.STUFE_BASE)))
         self._editor_tab_widget.tabCloseRequested.connect(self._tab_schliessen)
         self._editor_tab_widget.currentChanged.connect(self._tab_gewechselt)
 
@@ -337,7 +325,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         # ── Status-Leiste ─────────────────────────────────────────────────
         self._status = QtWidgets.QLabel("Bereit.")
         self._status.setStyleSheet(
-            f"font-size:{schrift.pt(schrift.STUFE_BASE)}pt;")
+            theme.STY_STATUS_LABEL(schrift.pt(schrift.STUFE_BASE)))
         self.statusBar().addWidget(self._status, stretch=1)
         self.statusBar().setSizeGripEnabled(True)
 
@@ -370,9 +358,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
 
         def _cfg_lbl(text):
             l = QtWidgets.QLabel(text)
-            l.setStyleSheet(
-                f"font-size:{schrift.pt(schrift.STUFE_XS)}pt; font-weight:bold;"
-                " padding-top:6px; padding-bottom:2px; border-bottom:1px solid ;")
+            l.setStyleSheet(theme.STY_ABSCHNITT_LABEL(schrift.pt(schrift.STUFE_XS)))
             return l
 
         _cfg_l.addWidget(_cfg_lbl("KI-QUELLE"))
@@ -407,6 +393,26 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         _r3.addWidget(self._btn_modus_experte)
         _r3.addStretch()
         _cfg_l.addLayout(_r3)
+
+        _cfg_l.addWidget(_cfg_lbl("FARBSCHEMA"))
+        _r_farbe = QtWidgets.QHBoxLayout()
+        _r_farbe.setSpacing(6)
+        self._btn_farbe_dunkel = QtWidgets.QPushButton("🌙 Dunkel")
+        self._btn_farbe_hell   = QtWidgets.QPushButton("☀ Hell")
+        self._btn_farbe_dunkel.setCheckable(True)
+        self._btn_farbe_hell.setCheckable(True)
+        _farbe_gruppe = QtWidgets.QButtonGroup(self)
+        _farbe_gruppe.addButton(self._btn_farbe_dunkel)
+        _farbe_gruppe.addButton(self._btn_farbe_hell)
+        _ist_dunkel = params.farbschema_dunkel()
+        self._btn_farbe_dunkel.setChecked(_ist_dunkel)
+        self._btn_farbe_hell.setChecked(not _ist_dunkel)
+        self._btn_farbe_dunkel.clicked.connect(lambda: self._on_farbschema(True))
+        self._btn_farbe_hell.clicked.connect(lambda: self._on_farbschema(False))
+        _r_farbe.addWidget(self._btn_farbe_dunkel)
+        _r_farbe.addWidget(self._btn_farbe_hell)
+        _r_farbe.addStretch()
+        _cfg_l.addLayout(_r_farbe)
 
         _cfg_l.addWidget(_cfg_lbl("API-SCHLÜSSEL"))
         _cfg_l.addWidget(self._key_anbieter)
@@ -455,7 +461,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         _btn_verlauf_reset.setFixedSize(22, 18)
         _btn_verlauf_reset.setToolTip("Gesprächsverlauf zurücksetzen")
         _btn_verlauf_reset.setStyleSheet(
-            f"QPushButton{{border:none;font-size:{schrift.pt(schrift.STUFE_LG)}pt;}}")
+            theme.STY_ICON_BTN_BORDERLESS(schrift.pt(schrift.STUFE_LG)))
         _btn_verlauf_reset.clicked.connect(self._ki_verlauf_reset)
         _input_hdr.addWidget(_btn_verlauf_reset)
 
@@ -463,7 +469,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         _btn_sitzung_sp.setFixedSize(22, 18)
         _btn_sitzung_sp.setToolTip("Sitzung speichern\n(Chat-Verlauf + KI-Antwort als .json)")
         _btn_sitzung_sp.setStyleSheet(
-            f"QPushButton{{border:none;font-size:{schrift.pt(schrift.STUFE_LG)}pt;}}")
+            theme.STY_ICON_BTN_BORDERLESS(schrift.pt(schrift.STUFE_LG)))
         _btn_sitzung_sp.clicked.connect(self._sitzung_speichern)
         _input_hdr.addWidget(_btn_sitzung_sp)
 
@@ -471,7 +477,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         _btn_sitzung_ld.setFixedSize(22, 18)
         _btn_sitzung_ld.setToolTip("Sitzung laden\n(gespeicherten Chat-Verlauf wiederherstellen)")
         _btn_sitzung_ld.setStyleSheet(
-            f"QPushButton{{border:none;font-size:{schrift.pt(schrift.STUFE_LG)}pt;}}")
+            theme.STY_ICON_BTN_BORDERLESS(schrift.pt(schrift.STUFE_LG)))
         _btn_sitzung_ld.clicked.connect(self._sitzung_laden)
         _input_hdr.addWidget(_btn_sitzung_ld)
         _input_l.addLayout(_input_hdr)
@@ -483,16 +489,13 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         _opt = self.find_area.document().defaultTextOption()
         _opt.setAlignment(QtCore.Qt.AlignLeft)
         self.find_area.document().setDefaultTextOption(_opt)
-        self.find_area.setStyleSheet(
-            "QPlainTextEdit{font-family:'Courier New',monospace;"
-            "border:1px solid; border-radius:3px;}"
-            "QPlainTextEdit:focus{border:1px solid;}")
+        self.find_area.setStyleSheet(theme.STY_KI_INPUT_FIELD())
         theme.apply_input_bg_suche(self.find_area)
         self.find_area.setPlaceholderText(
             "Suchbegriff oder Codeblock …\n"
             "/ + Snippet-Name → Autocomplete")
-        _hl_find = PythonHighlighter(self.find_area.document())
-        QtCore.QTimer.singleShot(200, _hl_find.aktualisiere_theme)
+        self._hl_find = PythonHighlighter(self.find_area.document())
+        QtCore.QTimer.singleShot(200, self._hl_find.aktualisiere_theme)
         _input_l.addWidget(self.find_area)
         _ki_splitter.addWidget(_input_w)
 
@@ -508,12 +511,11 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         _opt2 = self._ki_area.document().defaultTextOption()
         _opt2.setAlignment(QtCore.Qt.AlignLeft)
         self._ki_area.document().setDefaultTextOption(_opt2)
-        self._ki_area.setStyleSheet(
-            "QPlainTextEdit{font-family:'Courier New',monospace; border:1px solid;}")
+        self._ki_area.setStyleSheet(theme.STY_KI_OUTPUT_FIELD())
         theme.apply_input_bg_ki(self._ki_area)
         self._ki_area.setPlaceholderText("KI-Antwort erscheint hier …")
-        _hl_ki = PythonHighlighter(self._ki_area.document())
-        QtCore.QTimer.singleShot(200, _hl_ki.aktualisiere_theme)
+        self._hl_ki = PythonHighlighter(self._ki_area.document())
+        QtCore.QTimer.singleShot(200, self._hl_ki.aktualisiere_theme)
         _output_l.addWidget(self._ki_area)
         _ki_splitter.addWidget(_output_w)
 
@@ -559,9 +561,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
 
         def _abschnitt(text):
             lbl = QtWidgets.QLabel(text)
-            lbl.setStyleSheet(
-                f"font-size:{schrift.pt(schrift.STUFE_XS)}pt; font-weight:bold;"
-                " padding-top:8px; padding-bottom:2px; border-bottom:1px solid ;")
+            lbl.setStyleSheet(theme.STY_ABSCHNITT_LABEL(schrift.pt(schrift.STUFE_XS)))
             _akt_l.addWidget(lbl)
 
         def _abtn(label, tip, slot=None, enabled=True, h=28):
@@ -715,13 +715,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
             btn = QtWidgets.QPushButton(label)
             btn.setCheckable(True)
             btn.setFixedHeight(26)
-            btn.setStyleSheet(
-                f"QPushButton {{ border:none; border-radius:3px; padding:2px 6px;"
-                f" font-size:{_fs_bg}pt; }}"
-                f"QPushButton:checked {{ font-weight:bold;"
-                f" border:1px solid palette(shadow); }}"
-                f"QPushButton:hover {{ border:1px solid palette(shadow); }}"
-            )
+            btn.setStyleSheet(theme.STY_MINI_TAB_BTN(_fs_bg))
             btn.clicked.connect(lambda: self._bf_stack.setCurrentIndex(index))
             _bg_btn_gruppe.addButton(btn)
             _bg_leiste_lay.addWidget(btn)
@@ -737,7 +731,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         _bg_lay.addWidget(_bg_separator)
         _bg_lay.addWidget(self._bf_stack, 1)
 
-        _dock_bf_gruppe = _make_dock("♿  Hilfe & Zugang", "dock_bf_gruppe",
+        _dock_bf_gruppe = _make_dock("♿  Hilfe+Zugang", "dock_bf_gruppe",
                                      QtCore.Qt.RightDockWidgetArea,
                                      _bf_gruppe_widget, closable=True)
         _dock_bf_gruppe.hide()
@@ -800,7 +794,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         _tb.setObjectName("toolbar_panels")
         _tb.setMovable(False)
         _tb.setFloatable(False)
-        _tb.setStyleSheet("QToolBar { border: none; spacing: 2px; padding: 2px 4px; }")
+        _tb.setStyleSheet(theme.STY_TOOLBAR)
         self.addToolBar(QtCore.Qt.TopToolBarArea, _tb)
 
         _fs = schrift.pt(schrift.STUFE_BASE)
@@ -865,13 +859,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
             self._panel_btns.append((btn, icon_text, label))
             if optional:
                 self._panel_btns_optional.append(btn)
-            btn.setStyleSheet(
-                f"QPushButton {{ border:none; border-radius:3px; padding:2px 4px;"
-                f" font-size:{_fs}pt; }}"
-                f"QPushButton:checked {{ font-weight:bold;"
-                f" border:1px solid palette(shadow); }}"
-                f"QPushButton:hover {{ border:1px solid palette(shadow); }}"
-            )
+            btn.setStyleSheet(theme.STY_PANEL_BTN(_fs))
             def _on_click(checked, d=dock, a=standard_area):
                 if checked:
                     _zeige_panel(d, a)
@@ -895,14 +883,15 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         _panel_btn(_dock_werkzeuge, "🔧", "Werkz.",         _R,  optional=True)
         _panel_btn(_dock_fehler,    "⚠",  "Fehler",         _B)
         self._btn_bf_gruppe = _panel_btn(
-            _dock_bf_gruppe, "♿", "Hilfe & Zugang",  _R)
+            _dock_bf_gruppe, "♿", "Hilfe+Zugang",  _R)
 
         # Barrierefreiheits-Einstellungen beim Start wiederherstellen
         from barrierefreiheit import _get_bool as _bf_bool
         if _bf_bool("BF_IconText", False):
             for _pb, _ico, _lbl in self._panel_btns:
                 _pb.setText(f"{_ico}  {_lbl}")
-                _pb.setFixedWidth(72)
+                _pb.setMinimumWidth(44)
+                _pb.setMaximumWidth(16777215)
         if _bf_bool("BF_EinfacheAnsicht", False):
             for _pb in self._panel_btns_optional:
                 _pb.setVisible(False)
@@ -1666,6 +1655,30 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
                     ms, lambda w=widget, s=orig: w.setStyleSheet(s))
 
     # ══ Hilfe-Fenster ══════════════════════════════════════════════════════
+    def _on_farbschema(self, dunkel: bool) -> None:
+        """Wechselt das Farbschema und aktualisiert alle Editoren sofort."""
+        params.set_farbschema_dunkel(dunkel)
+        theme.set_farbschema(dunkel)
+        # Code-Editoren: Stylesheet + Highlighter neu aufbauen
+        for tab in getattr(self, "_tabs", []):
+            editor = tab.get("editor")
+            if editor:
+                editor.setStyleSheet(theme.STY_CODE_EDITOR())
+            hl = tab.get("highlighter")
+            if hl:
+                hl.aktualisiere_theme()
+        # KI-Felder: Highlighter + Hintergrundtint neu setzen
+        if hasattr(self, "_hl_find"):
+            self._hl_find.aktualisiere_theme()
+        if hasattr(self, "_hl_ki"):
+            self._hl_ki.aktualisiere_theme()
+        if hasattr(self, "find_area"):
+            theme.apply_input_bg_suche(self.find_area)
+        if hasattr(self, "_ki_area"):
+            theme.apply_input_bg_ki(self._ki_area)
+        if hasattr(self, "_kontext"):
+            theme.apply_input_bg_kontext(self._kontext)
+
     def _on_barrierefreiheit(self, schluessel, wert):
         """Wendet Barrierefreiheits-Einstellungen live an."""
         if schluessel == "schrift_groesse":
@@ -1696,7 +1709,8 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
             for btn, ico, lbl in getattr(self, "_panel_btns", []):
                 if wert:
                     btn.setText(f"{ico}  {lbl}")
-                    btn.setFixedWidth(72)
+                    btn.setMinimumWidth(44)
+                    btn.setMaximumWidth(16777215)
                 else:
                     btn.setText(ico)
                     btn.setFixedWidth(32)
@@ -1763,10 +1777,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
 
         elif schluessel == "kontrast":
             if wert:
-                self.setStyleSheet(
-                    "QWidget { color: #ffffff; background-color: #000000; }"
-                    "QPushButton { background: #222; border: 2px solid #fff; }"
-                    "QPlainTextEdit, QTextEdit { background: #000; color: #fff; }")
+                self.setStyleSheet(theme.STY_HOCHKONTRAST)
             else:
                 self.setStyleSheet("")
 
@@ -1859,11 +1870,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin, Vorsc
         editor.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
         # FIX: 'Noto Color Emoji' entfernt – verursacht auf Linux falsche
         #      Zifferndarstellung (Emoji-Glyphen mit Variation-Selector-Lücken)
-        editor.setStyleSheet(
-            f"QPlainTextEdit{{"
-            f"font-family:'Courier New',monospace;"
-            f"color:{theme.SYNTAX_TEXT_FARBE};"
-            f"}}")
+        editor.setStyleSheet(theme.STY_CODE_EDITOR())
         opt = editor.document().defaultTextOption()
         opt.setAlignment(QtCore.Qt.AlignLeft)
         # WordWrap NICHT setzen: Editor ist NoWrap → Konflikt → Riesenlücken

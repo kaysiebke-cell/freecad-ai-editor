@@ -35,18 +35,9 @@ def _mkbtn(text, primary=False, parent=None):
     b.setMinimumHeight(36)
     b.setCursor(QtCore.Qt.PointingHandCursor)
     if primary:
-        b.setStyleSheet(
-            "QPushButton {   border:none;"
-            f" border-radius:6px; font-weight:bold; font-size:{schrift.pt(schrift.STUFE_XL)}pt; padding:6px 20px; }}"
-            "QPushButton:hover {}"
-            "QPushButton:pressed {}"
-        )
+        b.setStyleSheet(theme.STY_PRIMARY_BTN(schrift.pt(schrift.STUFE_XL)))
     else:
-        b.setStyleSheet(
-            "QPushButton {   border:1px solid ;"
-            f" border-radius:6px; font-size:{schrift.pt(schrift.STUFE_LG)}pt; padding:5px 14px; }}"
-            "QPushButton:hover {}"
-        )
+        b.setStyleSheet(theme.STY_SECONDARY_BTN(schrift.pt(schrift.STUFE_LG)))
     return b
 
 
@@ -77,16 +68,16 @@ class AnbieterKarte(QtWidgets.QFrame):
         layout.setSpacing(14)
 
         icon = QtWidgets.QLabel(daten["icon"])
-        icon.setStyleSheet(f"font-size:{schrift.pt(schrift.STUFE_ICON)}pt;  border:none;")
+        icon.setStyleSheet(theme.STY_ICON_BTN_BORDERLESS(schrift.pt(schrift.STUFE_ICON)))
         icon.setFixedWidth(32)
         layout.addWidget(icon)
 
         texte = QtWidgets.QVBoxLayout()
         texte.setSpacing(2)
         name = QtWidgets.QLabel(daten["name"])
-        name.setStyleSheet(f" font-weight:bold; font-size:{schrift.pt(schrift.STUFE_XL)}pt;  border:none;")
+        name.setStyleSheet(theme.STY_ABSCHNITT_LABEL_LG(schrift.pt(schrift.STUFE_XL)))
         sub = QtWidgets.QLabel(daten["sub"])
-        sub.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_LG)}pt;  border:none;")
+        sub.setStyleSheet(theme.STY_STATUS_LABEL(schrift.pt(schrift.STUFE_LG)))
         texte.addWidget(name)
         texte.addWidget(sub)
         layout.addLayout(texte)
@@ -113,7 +104,7 @@ class BegrüssungsDialog(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Willkommen beim KI-Makro-Editor")
+        self.setWindowTitle("Willkommen beim FreeCAD MultiAI Panel")
         self.setModal(True)
         self.setFixedWidth(460)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -121,16 +112,7 @@ class BegrüssungsDialog(QtWidgets.QDialog):
             QtCore.Qt.Dialog | QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowCloseButtonHint
         )
         self.setFont(QtGui.QFont("Ubuntu", 10))
-        self.setStyleSheet(
-            "QDialog {}"
-            "QWidget {}"
-            "QLabel  {}"
-            "QFrame  {}"
-            "QLineEdit {   border:1px solid ;"
-            f"            border-radius:5px; padding:6px 10px; font-size:{schrift.pt(schrift.STUFE_LG)}pt;"
-            "            font-family:'Courier New', monospace; }"
-            "QLineEdit:focus {}"
-        )
+        self.setStyleSheet(theme.STY_BEGRUESSUNG_DIALOG(schrift.pt(schrift.STUFE_LG)))
 
         self._anbieter_id = None
         self._karten: dict[str, AnbieterKarte] = {}
@@ -173,12 +155,11 @@ class BegrüssungsDialog(QtWidgets.QDialog):
         else:
             # Fallback: Pfad-Hinweis damit der User weiß wo das GIF hin muss
             self._gif_label.setText(
-                "⚙️  KI-Makro-Editor\n\n"
+                "⚙️  FreeCAD MultiAI Panel\n\n"
                 f"GIF nicht gefunden:\n{_GIF}"
             )
             self._gif_label.setStyleSheet(
-                f" font-size:{schrift.pt(schrift.STUFE_LG)}pt;  border:none;"
-            )
+                theme.STY_STATUS_LABEL(schrift.pt(schrift.STUFE_LG)))
             self._gif_label.setWordWrap(True)
 
         gif_box.addWidget(self._gif_label)
@@ -188,25 +169,23 @@ class BegrüssungsDialog(QtWidgets.QDialog):
         sep = QtWidgets.QFrame()
         sep.setFrameShape(QtWidgets.QFrame.HLine)
         sep.setFixedHeight(1)
-        sep.setStyleSheet(" border:none;")
+        sep.setStyleSheet(theme.STY_BORDER_NONE)
         v.addWidget(sep)
 
         # ── Info-Bereich ─────────────────────────────────────────────────────
         info = QtWidgets.QWidget()
-        info.setStyleSheet(" border:none;")
+        info.setStyleSheet(theme.STY_BORDER_NONE)
         ib = QtWidgets.QVBoxLayout(info)
         ib.setContentsMargins(28, 18, 28, 20)
         ib.setSpacing(0)
 
-        titel = QtWidgets.QLabel("⚙️  KI-gestützter Makro-Editor")
-        titel.setStyleSheet(
-            f" font-size:{schrift.pt(schrift.STUFE_XL)}pt; font-weight:bold; "
-        )
+        titel = QtWidgets.QLabel("⚙️  FreeCAD MultiAI Panel")
+        titel.setStyleSheet(theme.STY_ABSCHNITT_LABEL_LG(schrift.pt(schrift.STUFE_XL)))
         sub = QtWidgets.QLabel(
             "Schreibe, analysiere und debugge FreeCAD-Makros\n"
             "mit KI-Unterstützung — lokal oder in der Cloud."
         )
-        sub.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_LG)}pt; ")
+        sub.setStyleSheet(theme.STY_STATUS_LABEL(schrift.pt(schrift.STUFE_LG)))
         sub.setWordWrap(True)
 
         ib.addWidget(titel)
@@ -215,7 +194,7 @@ class BegrüssungsDialog(QtWidgets.QDialog):
         ib.addSpacing(12)
 
         merkmale = QtWidgets.QLabel("🤖 KI  ·  📦 Snippets  ·  💡 API-Hints  ·  ⚠ Fehler-Debug")
-        merkmale.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_BASE)}pt; ")
+        merkmale.setStyleSheet(theme.STY_STATUS_LABEL(schrift.pt(schrift.STUFE_BASE)))
         ib.addWidget(merkmale)
         ib.addSpacing(16)
 
@@ -249,12 +228,12 @@ class BegrüssungsDialog(QtWidgets.QDialog):
         v.setSpacing(0)
 
         schritt = QtWidgets.QLabel("SCHRITT 1 VON 2")
-        schritt.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_BASE)}pt; letter-spacing:3px; font-weight:bold;")
+        schritt.setStyleSheet(theme.STY_ABSCHNITT_LABEL(schrift.pt(schrift.STUFE_BASE)))
         titel = QtWidgets.QLabel("Welchen KI-Anbieter möchtest du nutzen?")
-        titel.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_XL)}pt; font-weight:bold;")
+        titel.setStyleSheet(theme.STY_ABSCHNITT_LABEL_LG(schrift.pt(schrift.STUFE_XL)))
         titel.setWordWrap(True)
         hint = QtWidgets.QLabel("Kann jederzeit über die Toolbar oben links geändert werden.")
-        hint.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_LG)}pt;")
+        hint.setStyleSheet(theme.STY_STATUS_LABEL(schrift.pt(schrift.STUFE_LG)))
         hint.setWordWrap(True)
 
         v.addWidget(schritt)
@@ -282,11 +261,11 @@ class BegrüssungsDialog(QtWidgets.QDialog):
         v.setSpacing(0)
 
         schritt = QtWidgets.QLabel("SCHRITT 2 VON 2")
-        schritt.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_BASE)}pt; letter-spacing:3px; font-weight:bold;")
+        schritt.setStyleSheet(theme.STY_ABSCHNITT_LABEL(schrift.pt(schrift.STUFE_BASE)))
         self._key_titel = QtWidgets.QLabel("API-Schlüssel eingeben")
-        self._key_titel.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_XL)}pt; font-weight:bold;")
+        self._key_titel.setStyleSheet(theme.STY_ABSCHNITT_LABEL_LG(schrift.pt(schrift.STUFE_XL)))
         self._key_hint = QtWidgets.QLabel("Wird in den FreeCAD-Einstellungen gespeichert.")
-        self._key_hint.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_LG)}pt;")
+        self._key_hint.setStyleSheet(theme.STY_STATUS_LABEL(schrift.pt(schrift.STUFE_LG)))
         self._key_hint.setWordWrap(True)
 
         v.addWidget(schritt)
@@ -297,14 +276,14 @@ class BegrüssungsDialog(QtWidgets.QDialog):
         v.addSpacing(22)
 
         self._key_label = QtWidgets.QLabel("Anthropic API-Key (sk-ant-…)")
-        self._key_label.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_LG)}pt;")
+        self._key_label.setStyleSheet(theme.STY_STATUS_LABEL(schrift.pt(schrift.STUFE_LG)))
         self._key_feld = QtWidgets.QLineEdit()
         self._key_feld.setEchoMode(QtWidgets.QLineEdit.Password)
         self._key_feld.setPlaceholderText("sk-ant-api03-…")
         self._key_feld.setMinimumHeight(38)
 
         self._toggle_vis = QtWidgets.QCheckBox("Schlüssel anzeigen")
-        self._toggle_vis.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_LG)}pt; ")
+        self._toggle_vis.setStyleSheet(theme.STY_STATUS_LABEL(schrift.pt(schrift.STUFE_LG)))
         self._toggle_vis.stateChanged.connect(
             lambda s: self._key_feld.setEchoMode(
                 QtWidgets.QLineEdit.Normal if s == QtCore.Qt.Checked
@@ -316,10 +295,7 @@ class BegrüssungsDialog(QtWidgets.QDialog):
             "⚠  Schlüssel werden unverschlüsselt in den FreeCAD-Einstellungen\n"
             "    gespeichert. Keine Schlüssel mit vollen Konto-Berechtigungen nutzen."
         )
-        warnung.setStyleSheet(
-            f" font-size:{schrift.pt(schrift.STUFE_BASE)}pt; "
-            " border:1px solid ; border-radius:5px; padding:8px;"
-        )
+        warnung.setStyleSheet(theme.STY_WARN_BOX(schrift.pt(schrift.STUFE_BASE)))
         warnung.setWordWrap(True)
 
         v.addWidget(self._key_label)
@@ -351,15 +327,15 @@ class BegrüssungsDialog(QtWidgets.QDialog):
         v.setAlignment(QtCore.Qt.AlignCenter)
 
         check = QtWidgets.QLabel("✅")
-        check.setStyleSheet(f"font-size:{schrift.pt(schrift.STUFE_ICON)}pt; ")
+        check.setStyleSheet(theme.STY_ICON_BTN_BORDERLESS(schrift.pt(schrift.STUFE_ICON)))
         check.setAlignment(QtCore.Qt.AlignCenter)
 
         self._fertig_titel = QtWidgets.QLabel("Alles bereit!")
-        self._fertig_titel.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_XL)}pt; font-weight:bold;")
+        self._fertig_titel.setStyleSheet(theme.STY_ABSCHNITT_LABEL_LG(schrift.pt(schrift.STUFE_XL)))
         self._fertig_titel.setAlignment(QtCore.Qt.AlignCenter)
 
         self._fertig_text = QtWidgets.QLabel("")
-        self._fertig_text.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_LG)}pt;")
+        self._fertig_text.setStyleSheet(theme.STY_STATUS_LABEL(schrift.pt(schrift.STUFE_LG)))
         self._fertig_text.setAlignment(QtCore.Qt.AlignCenter)
         self._fertig_text.setWordWrap(True)
 
@@ -367,10 +343,7 @@ class BegrüssungsDialog(QtWidgets.QDialog):
             "💡 Tipp: Trage einmalig einen Projekt-Kontext\n"
             "im gelben Feld ein — dann kennt die KI dein Projekt."
         )
-        tipp.setStyleSheet(
-            f" font-size:{schrift.pt(schrift.STUFE_LG)}pt; "
-            " border:1px solid ; border-radius:5px; padding:10px;"
-        )
+        tipp.setStyleSheet(theme.STY_TIPP_BOX(schrift.pt(schrift.STUFE_LG)))
         tipp.setAlignment(QtCore.Qt.AlignCenter)
         tipp.setWordWrap(True)
 

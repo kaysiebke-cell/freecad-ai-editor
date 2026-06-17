@@ -1,4 +1,4 @@
-# KI-Makro-Editor für FreeCAD
+# FreeCAD MultiAI Panel für FreeCAD
 
 Ein moderner, KI-gestützter Python-Editor als FreeCAD-Plugin mit frei anordenbaren Panels,
 Syntax-Highlighting, 19 unterstützten KI-Anbietern und umfangreichen Werkzeugen zur
@@ -8,7 +8,7 @@ FreeCAD-Automatisierung.
 
 ## Vorschau
 
-![KI-Makro-Editor Demo](assets/ki-makro-editor-demo.gif)
+![FreeCAD MultiAI Panel Demo](assets/ki-makro-editor-demo.gif)
 
 > *Tool zur Aufnahme: [Peek](https://github.com/phw/peek) unter Linux*
 
@@ -18,7 +18,7 @@ FreeCAD-Automatisierung.
 
 1. **Pflicht-Paket installieren:** `pip install requests`
 2. **Repo klonen/herunterladen** und in den FreeCAD-`Mod`-Ordner legen (Ordnername: `freecad-ai-editor`, ohne Leerzeichen)
-3. **FreeCAD neu starten** und die Workbench **„FreeCAD AI Editor"** auswählen
+3. **FreeCAD neu starten** und die Workbench **„FreeCAD MultiAI Panel"** auswählen
 4. **KI-Anbieter einrichten** im Begrüßungs-Dialog (z. B. lokal mit Ollama oder mit eigenem API-Key) – fertig!
 
 > Details zu den Pfaden je Betriebssystem (Linux/Flatpak/Windows/macOS) findest du unter [Voraussetzungen & Installation](#voraussetzungen--installation).
@@ -150,7 +150,7 @@ ln -s /pfad/zum/freecad-ai-editor ~/.var/app/org.freecad.FreeCAD/data/FreeCAD/v1
 
 > **Wichtig für Linux:** FreeCAD 1.x speichert Benutzerdaten unter `v1-1/` – ältere Anleitungen ohne diesen Unterordner funktionieren nicht.
 
-3. FreeCAD neu starten → die Workbench **„FreeCAD AI Editor"** erscheint im Workbench-Menü
+3. FreeCAD neu starten → die Workbench **„FreeCAD MultiAI Panel"** erscheint im Workbench-Menü
 
 ---
 
@@ -225,7 +225,7 @@ export OPENROUTER_API_KEY=sk-or-...
 ## Projektstruktur
 
 ```
-KI-Makro-Editor/
+FreeCAD MultiAI Panel/
 │
 ├── main.py              # Einstiegspunkt (FreeCAD-Makro / Seitenleiste)
 ├── InitGui.py           # FreeCAD-GUI-Integration (Toolbar-Button)

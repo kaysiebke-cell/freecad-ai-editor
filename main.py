@@ -107,7 +107,7 @@ def erstelle_leiste():
 
     # Benutzerdefinierte Titelleiste
     tb = QtWidgets.QWidget()
-    tb.setStyleSheet("border:none;")
+    tb.setStyleSheet(theme.STY_DOCK_TITLE_BAR)
     tb.setFixedHeight(26)
     tbl = QtWidgets.QHBoxLayout(tb)
     tbl.setContentsMargins(6, 0, 2, 5)
@@ -123,14 +123,7 @@ def erstelle_leiste():
             self.setFixedSize(18, 18)
             self.setAlignment(QtCore.Qt.AlignCenter)
             self.setToolTip(tooltip)
-            rl = "4px" if rad_l else "0px"
-            rr = "4px" if rad_r else "0px"
-            self.setStyleSheet(
-                f"QLabel{{"
-                f"border-top-left-radius:{rl};border-bottom-left-radius:{rl};"
-                f"border-top-right-radius:{rr};border-bottom-right-radius:{rr};"
-                f"font-size:{schrift.pt(schrift.STUFE_LG)}pt;}}"
-                "QLabel:hover{}")
+            self.setStyleSheet(theme.STY_DOCK_ICON_LABEL(rad_l, rad_r))
 
         def mousePressEvent(self, e):
             if e.button() == QtCore.Qt.LeftButton:

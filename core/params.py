@@ -207,3 +207,10 @@ def ist_erststart() -> bool:
 
 def erststart_erledigt():
     App.ParamGet(PREF_KEY).SetBool("ErstStartErledigt", True)
+
+def farbschema_dunkel() -> bool:
+    """True = Dunkelmod, False = Hellmod."""
+    return App.ParamGet(PREF_KEY).GetBool("FarbschemaDunkel", True)
+
+def set_farbschema_dunkel(dunkel: bool) -> None:
+    App.ParamGet(PREF_KEY).SetBool("FarbschemaDunkel", dunkel)

@@ -37,12 +37,7 @@ class MakroLeiste(QtWidgets.QWidget):
         except Exception:
             pass
         self.setFont(_f)
-        self.setStyleSheet("QLabel, QPushButton, QLineEdit, QComboBox, QCheckBox,"
-            "QDoubleSpinBox, QSpinBox, QTabBar::tab, QToolTip,"
-            "QGroupBox, QRadioButton, QMenu, QMenuBar {"
-            "  font-family: 'Ubuntu', 'Noto Color Emoji'; }"
-            "QPlainTextEdit, QTextEdit {"
-            "  font-family: 'Courier New', 'Noto Color Emoji'; }")
+        self.setStyleSheet(theme.STY_MAKRO_LEISTE_FONT)
         self._makro_pfad = lade_pfad()
         self._offene_editoren: dict = {}
         self._makro_buttons: list = []          # Cache für Buttons: (Button-Objekt, datei_name_lowered, relativer_ordner_pfad)
@@ -75,14 +70,14 @@ class MakroLeiste(QtWidgets.QWidget):
         btn_r.setToolTip("Makroliste neu laden")
         btn_r.setMinimumHeight(34)
         btn_r.setFixedWidth(36)
-        btn_r.setStyleSheet(f"font-size:{schrift.pt(schrift.STUFE_XL)}pt;font-weight:bold;")
+        btn_r.setStyleSheet(theme.STY_REFRESH_BTN())
         btn_r.clicked.connect(self._manueller_refresh)
         row.addWidget(btn_r)
         root.addLayout(row)
 
         self.chk_auto = QtWidgets.QCheckBox("Auto-Refresh bei Dateiänderung")
         self.chk_auto.setChecked(True)
-        self.chk_auto.setStyleSheet(f"font-size:{schrift.pt(schrift.STUFE_BASE)}pt;")
+        self.chk_auto.setStyleSheet(theme.STY_MAKRO_CHECKBOX())
         self.chk_auto.stateChanged.connect(self._toggle_auto_refresh)
         root.addWidget(self.chk_auto)
 
@@ -90,7 +85,7 @@ class MakroLeiste(QtWidgets.QWidget):
         self.suche.setPlaceholderText("🔍  Makro oder Ordner suchen …")
         self.suche.setClearButtonEnabled(True)
         self.suche.setMinimumHeight(28)
-        self.suche.setStyleSheet("margin-bottom:4px;")
+        self.suche.setStyleSheet(theme.STY_MAKRO_SUCHE)
         self.suche.textChanged.connect(self._filter_makros)
         root.addWidget(self.suche)
 
@@ -99,7 +94,7 @@ class MakroLeiste(QtWidgets.QWidget):
         self.chk_inhalt.setToolTip(
             "Durchsucht den Inhalt aller Makro-Dateien nach dem Suchbegriff.\n"
             "Treffer: Klick öffnet die Datei direkt im Editor.")
-        self.chk_inhalt.setStyleSheet(f"font-size:{schrift.pt(schrift.STUFE_BASE)}pt;")
+        self.chk_inhalt.setStyleSheet(theme.STY_MAKRO_CHECKBOX())
         self.chk_inhalt.stateChanged.connect(lambda: self._filter_makros(self.suche.text()))
         root.addWidget(self.chk_inhalt)
 
@@ -115,7 +110,7 @@ class MakroLeiste(QtWidgets.QWidget):
         root.addWidget(scroll, stretch=1)
 
         self.status = QtWidgets.QLabel("")
-        self.status.setStyleSheet(f"font-size:{schrift.pt(schrift.STUFE_BASE)}pt;")
+        self.status.setStyleSheet(theme.STY_MAKRO_STATUS())
         root.addWidget(self.status)
 
         linie = QtWidgets.QFrame()
@@ -196,12 +191,7 @@ class MakroLeiste(QtWidgets.QWidget):
                 ordner_anzeige = self._trenne_namen(ordner_name)
                 
                 lbl = QtWidgets.QLabel(f"📂  {ordner_anzeige}")
-                lbl.setStyleSheet(
-                    f" font-weight: bold; font-size: 13px; "
-                    f"padding-top: 8px; padding-left: {indent_lbl}px; "
-                    " "
-                    "margin-bottom: 2px;"
-                )
+                lbl.setStyleSheet(theme.STY_MAKRO_ORDNER_LBL(indent_lbl))
                 self._btn_layout.addWidget(lbl)
                 self._ordner_labels[rel] = lbl
             
@@ -218,9 +208,7 @@ class MakroLeiste(QtWidgets.QWidget):
                 b = QtWidgets.QPushButton(name_anzeige)
                 b.setToolTip(pfad)
                 b.setMinimumHeight(26)
-                b.setStyleSheet(
-                    f"text-align: left; padding-left: {{indent_btn}}px; font-size: 12px;"
-                )
+                b.setStyleSheet(theme.STY_MAKRO_BTN(indent_btn))
                 b.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
                 b.clicked.connect(lambda c=False, p=pfad, n=name: self._button_klick(p, n))
                 b.customContextMenuRequested.connect(
@@ -340,6 +328,8 @@ class MakroLeiste(QtWidgets.QWidget):
         if self.chk_auto.isChecked() and os.path.isfile(pfad):
             self._watcher.addPath(pfad)
         ed.show()
+        ed.raise_()
+        ed.activateWindow()
         return ed
 
     def _dateisuche_aus_editor(self, suchtext: str, quell_editor=None):

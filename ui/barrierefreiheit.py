@@ -10,6 +10,7 @@ Bereiche:
 """
 
 from qt_compat import QtWidgets, QtCore, QtGui
+import theme
 import schrift
 
 # ── Einstellungs-Schlüssel (werden in FreeCAD-Parametern gespeichert) ─────────
@@ -35,9 +36,7 @@ except Exception:
 # ── Hilfsfunktion: Abschnitts-Label ───────────────────────────────────────────
 def _abschnitt(text: str) -> QtWidgets.QLabel:
     lbl = QtWidgets.QLabel(text)
-    lbl.setStyleSheet(
-        f"font-weight:bold; font-size:{schrift.pt(schrift.STUFE_LG)}pt;"
-        "border-bottom:1px solid; padding-bottom:2px; margin-top:6px;")
+    lbl.setStyleSheet(theme.STY_ABSCHNITT_LABEL_LG(schrift.pt(schrift.STUFE_LG)))
     return lbl
 
 
@@ -213,8 +212,7 @@ class BarrierefreiheitPanel(QtWidgets.QWidget):
             "ℹ  Einige Änderungen werden erst nach\n"
             "   einem Neustart vollständig wirksam.")
         hinweis.setStyleSheet(
-            f"color: gray; font-size:{schrift.pt(schrift.STUFE_SM)}pt; "
-            "font-style: italic;")
+            theme.STY_BF_HINWEIS(schrift.pt(schrift.STUFE_SM)))
         layout.addWidget(hinweis)
         layout.addStretch()
 

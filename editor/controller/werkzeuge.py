@@ -53,12 +53,7 @@ def _btn(text, tooltip="", small=False):
 
 def _section(text):
     lbl = QtWidgets.QLabel(text)
-    lbl.setStyleSheet(
-        f" font-size:{schrift.pt(schrift.STUFE_LG)}pt; font-weight:bold;"
-        "font-family:'Ubuntu','Noto Color Emoji';"
-        "padding-top:6px; padding-bottom:4px;"
-        "border-bottom:1px solid ;"
-    )
+    lbl.setStyleSheet(theme.STY_WERKZEUG_SEKTION(schrift.pt(schrift.STUFE_LG)))
     return lbl
 
 
@@ -142,15 +137,7 @@ class WerkzeugLeiste(QtWidgets.QWidget):
             pass
         self.setFont(_f)
         self.setObjectName("WerkzeugLeiste")
-        self.setStyleSheet(
-            "#WerkzeugLeiste QLabel, #WerkzeugLeiste QPushButton,"
-            "#WerkzeugLeiste QLineEdit, #WerkzeugLeiste QComboBox,"
-            "#WerkzeugLeiste QCheckBox, #WerkzeugLeiste QDoubleSpinBox,"
-            "#WerkzeugLeiste QSpinBox, #WerkzeugLeiste QTabBar::tab,"
-            "#WerkzeugLeiste QGroupBox, #WerkzeugLeiste QRadioButton {"
-            "  font-family: 'Ubuntu'; }"
-            "#WerkzeugLeiste QPlainTextEdit, #WerkzeugLeiste QTextEdit {"
-            "  font-family: 'Courier New', monospace; }")
+        self.setStyleSheet(theme.STY_WERKZEUG_LEISTE)
         # ──────────────────────────────────────────────────────────────────
         self._ed  = editor
         self._lzm = _LZModell()
@@ -184,7 +171,7 @@ class WerkzeugLeiste(QtWidgets.QWidget):
 
         sep = QtWidgets.QFrame()
         sep.setFrameShape(QtWidgets.QFrame.HLine)
-        sep.setStyleSheet("color:palette(mid);margin:0;")
+        sep.setStyleSheet(theme.STY_SEPARATOR_TIGHT)
         root.addWidget(sep)
 
         stack = QtWidgets.QStackedWidget()
@@ -203,9 +190,7 @@ class WerkzeugLeiste(QtWidgets.QWidget):
         # ── Statuszeile ganz unten ────────────────────────────────────────
         self._status = QtWidgets.QLabel("")
         self._status.setStyleSheet(
-            f"font-size:{schrift.pt(schrift.STUFE_LG)}pt;  padding:2px 4px;"
-            "border-top:1px solid ;"
-        )
+            theme.STY_WERKZEUG_STATUS(schrift.pt(schrift.STUFE_LG)))
         self._status.setWordWrap(True)
         root.addWidget(self._status)
 
@@ -226,9 +211,7 @@ class WerkzeugLeiste(QtWidgets.QWidget):
         self._zeile_edit.setPlaceholderText("Nr.")
         self._zeile_edit.setFixedWidth(52)
         self._zeile_edit.setStyleSheet(
-            f"QLineEdit{{ font-size:{schrift.pt(schrift.STUFE_XL)}pt;"
-            "border:1px solid ;padding:3px 5px;border-radius:2px;}"
-        )
+            theme.STY_ZEILE_EDIT(schrift.pt(schrift.STUFE_XL)))
         self._zeile_edit.setValidator(QtGui.QIntValidator(1, 99999))
         self._zeile_edit.returnPressed.connect(self._goto_zeile)
         b_goto = _btn("→ Gehe zu", "Zeile anspringen (Enter)", small=True)
@@ -243,16 +226,7 @@ class WerkzeugLeiste(QtWidgets.QWidget):
         self._nav_baum = QtWidgets.QTreeWidget()
         self._nav_baum.setHeaderHidden(True)
         self._nav_baum.setStyleSheet(
-            f"QTreeWidget{{font-size:{schrift.pt(schrift.STUFE_LG)}pt;"
-            "border:1px solid ;border-radius:2px;"
-            "font-family:'Ubuntu','Noto Color Emoji';}"
-            "QTreeWidget::item{padding:2px 2px;}"
-            "QTreeWidget::item:selected{}"
-            "QTreeWidget::item:hover{}"
-            "QTreeWidget::branch:has-children:!has-siblings:closed,"
-            "QTreeWidget::branch:closed:has-children:has-siblings{"
-            "  border-image:none; image:none;}"
-        )
+            theme.STY_CODE_BAUM(schrift.pt(schrift.STUFE_LG)))
         self._nav_baum.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding,
             QtWidgets.QSizePolicy.Expanding)
@@ -365,10 +339,7 @@ class WerkzeugLeiste(QtWidgets.QWidget):
         self._info = QtWidgets.QLabel("—")
         self._info.setWordWrap(True)
         self._info.setStyleSheet(
-            " border:1px solid ;"
-            f"padding:6px; font-size:{schrift.pt(schrift.STUFE_LG)}pt; border-radius:2px;"
-            "font-family:'Ubuntu','Noto Color Emoji';"
-        )
+            theme.STY_CODE_STATISTIKEN_LBL(schrift.pt(schrift.STUFE_LG)))
         v.addWidget(self._info)
 
         # ── Aktionen: Statistiken + Syntax nebeneinander ─────────────────
@@ -385,8 +356,7 @@ class WerkzeugLeiste(QtWidgets.QWidget):
         self._check_lbl = QtWidgets.QLabel("")
         self._check_lbl.setWordWrap(True)
         self._check_lbl.setStyleSheet(
-            f"padding:6px; border-radius:3px; font-size:{schrift.pt(schrift.STUFE_LG)}pt;"
-            "font-family:'Ubuntu','Noto Color Emoji';")
+            theme.STY_SYNTAX_CHECK_LBL(schrift.pt(schrift.STUFE_LG)))
         v.addWidget(self._check_lbl)
 
         v.addStretch()
@@ -404,15 +374,13 @@ class WerkzeugLeiste(QtWidgets.QWidget):
 
     def _ok(self, text):
         self._status.setStyleSheet(
-            f"font-size:{schrift.pt(schrift.STUFE_LG)}pt;  padding:2px 4px;"
-            "border-top:1px solid ;")
+            theme.STY_WERKZEUG_STATUS(schrift.pt(schrift.STUFE_LG)))
         self._status.setText(text)
         QtCore.QTimer.singleShot(3500, lambda: self._status.setText(""))
 
     def _err(self, text):
         self._status.setStyleSheet(
-            f"font-size:{schrift.pt(schrift.STUFE_LG)}pt;  padding:2px 4px;"
-            "border-top:1px solid ;")
+            theme.STY_WERKZEUG_STATUS(schrift.pt(schrift.STUFE_LG)))
         self._status.setText(text)
         QtCore.QTimer.singleShot(5000, lambda: self._status.setText(""))
 
@@ -790,10 +758,7 @@ class WerkzeugLeiste(QtWidgets.QWidget):
             if hasattr(self._ed, "setze_fehler_zeilen"):
                 self._ed.setze_fehler_zeilen([])
             self._check_lbl.setStyleSheet(
-                f"padding:6px;border-radius:3px;font-size:{schrift.pt(schrift.STUFE_LG)}pt;"
-                "font-family:'Ubuntu','Noto Color Emoji';"
-                ""
-                "")
+                theme.STY_SYNTAX_CHECK_LBL(schrift.pt(schrift.STUFE_LG)))
             self._check_lbl.setText("✅  Kein Syntaxfehler")
             self._ok("✅ Syntax OK")
         except py_compile.PyCompileError as e:
@@ -812,10 +777,7 @@ class WerkzeugLeiste(QtWidgets.QWidget):
             if hasattr(self._ed, "setze_fehler_zeilen") and nr:
                 self._ed.setze_fehler_zeilen([nr - 1])
             self._check_lbl.setStyleSheet(
-                f"padding:6px;border-radius:3px;font-size:{schrift.pt(schrift.STUFE_LG)}pt;"
-                "font-family:'Ubuntu','Noto Color Emoji';"
-                ""
-                "")
+                theme.STY_SYNTAX_CHECK_LBL(schrift.pt(schrift.STUFE_LG)))
             self._check_lbl.setText(txt)
             if nr:
                 self._zeile_edit.setText(str(nr))

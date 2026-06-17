@@ -267,14 +267,14 @@ class FehlerPanel(QtWidgets.QWidget):
         btn_layout.addStretch()
 
         self._sb_status = QtWidgets.QLabel("")
-        self._sb_status.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_SM)}pt;")
+        self._sb_status.setStyleSheet(theme.STY_LABEL_SM_NP(schrift.pt(schrift.STUFE_SM)))
         btn_layout.addWidget(self._sb_status)
 
         layout1.addLayout(btn_layout)
 
         lbl_ausgabe = QtWidgets.QLabel("Ausgabe / Fehler:")
         lbl_ausgabe.setStyleSheet(
-            f" font-size:{schrift.pt(schrift.STUFE_SM)}pt; padding:4px 4px 0px 4px;")
+            theme.STY_LABEL_SM_PADDED(schrift.pt(schrift.STUFE_SM)))
         layout1.addWidget(lbl_ausgabe)
 
         self._sb_ausgabe = QtWidgets.QPlainTextEdit()

@@ -58,9 +58,7 @@ class BrowserController:
         self._db_pfad_feld.setPlaceholderText("Pfad …")
         self._db_pfad_feld.setMinimumWidth(0)
         self._db_pfad_feld.setStyleSheet(
-            "QLineEdit{"
-            "border:1px solid ;border-radius:3px;"
-            f"padding:2px 4px;font-size:{schrift.pt(schrift.STUFE_SM)}pt;}}")
+            theme.STY_DB_PFAD_FELD(schrift.pt(schrift.STUFE_SM)))
         self._db_pfad_feld.returnPressed.connect(self._db_gehe_zu_pfad)
         nav1.addWidget(self._db_pfad_feld, stretch=1)
 
@@ -81,9 +79,7 @@ class BrowserController:
         self._db_filter.setClearButtonEnabled(True)
         self._db_filter.setMinimumWidth(0)
         self._db_filter.setStyleSheet(
-            "QLineEdit{"
-            "border:1px solid ;border-radius:3px;"
-            f"padding:2px 4px;font-size:{schrift.pt(schrift.STUFE_BASE)}pt;}}")
+            theme.STY_DB_FILTER_FELD(schrift.pt(schrift.STUFE_BASE)))
         self._db_filter.textChanged.connect(self._db_filter_anwenden)
         filter_row.addWidget(self._db_filter, stretch=1)
 
@@ -91,8 +87,7 @@ class BrowserController:
         self._db_nur_code.setChecked(True)
         self._db_nur_code.setToolTip("Nur .py und .FCMacro anzeigen")
         self._db_nur_code.setStyleSheet(
-            f"QCheckBox{{font-size:{schrift.pt(schrift.STUFE_SM)}pt;}}"
-            "QCheckBox::indicator{width:12px;height:12px;}")
+            theme.STY_DB_CHECKBOX(schrift.pt(schrift.STUFE_SM)))
         self._db_nur_code.stateChanged.connect(self._db_filter_anwenden)
         filter_row.addWidget(self._db_nur_code)
 
@@ -102,13 +97,7 @@ class BrowserController:
         btn_neu = QtWidgets.QPushButton("＋  Neue Datei anlegen")
         btn_neu.setToolTip("Neue .py-Datei im aktuellen Ordner anlegen")
         btn_neu.setMinimumHeight(26)
-        btn_neu.setStyleSheet(
-            "QPushButton{border:1px solid ;border-radius:3px;"
-            f"font-size:{schrift.pt(schrift.STUFE_BASE)}pt;"
-            "font-weight:bold;padding:3px 6px;}"
-            "QPushButton:hover{"
-            "}"
-            "QPushButton:pressed{}")
+        btn_neu.setStyleSheet(theme.STY_DB_NEU_BTN(schrift.pt(schrift.STUFE_BASE)))
         btn_neu.clicked.connect(self._db_neue_datei)
         layout.addWidget(btn_neu)
 
@@ -120,9 +109,7 @@ class BrowserController:
 
         self._db_lz_combo = QtWidgets.QComboBox()
         self._db_lz_combo.setStyleSheet(
-            "QComboBox{"
-            "border:1px solid ;border-radius:3px;"
-            f"padding:1px 4px;font-size:{schrift.pt(schrift.STUFE_SM)}pt;}}")
+            theme.STY_DB_LZ_COMBO(schrift.pt(schrift.STUFE_SM)))
         self._db_lz_combo.setToolTip("Lesezeichen")
         self._db_lz_combo.activated.connect(self._db_lz_springen)
         lz_layout.addWidget(self._db_lz_combo, stretch=1)
@@ -130,20 +117,14 @@ class BrowserController:
         btn_lz_add = QtWidgets.QPushButton("★")
         btn_lz_add.setFixedSize(22, 22)
         btn_lz_add.setToolTip("Aktuellen Ordner als Lesezeichen speichern")
-        btn_lz_add.setStyleSheet(
-            "QPushButton{border:1px solid ;border-radius:3px;"
-            f"font-size:{schrift.pt(schrift.STUFE_LG)}pt;}}"
-            "QPushButton:hover{}")
+        btn_lz_add.setStyleSheet(theme.STY_DB_LZ_BTN(schrift.pt(schrift.STUFE_LG)))
         btn_lz_add.clicked.connect(self._db_lz_hinzufuegen)
         lz_layout.addWidget(btn_lz_add)
 
         btn_lz_del = QtWidgets.QPushButton("✕")
         btn_lz_del.setFixedSize(22, 22)
         btn_lz_del.setToolTip("Ausgewähltes Lesezeichen entfernen")
-        btn_lz_del.setStyleSheet(
-            "QPushButton{border:1px solid ;border-radius:3px;"
-            f"font-size:{schrift.pt(schrift.STUFE_BASE)}pt;}}"
-            "QPushButton:hover{}")
+        btn_lz_del.setStyleSheet(theme.STY_DB_LZ_BTN(schrift.pt(schrift.STUFE_BASE)))
         btn_lz_del.clicked.connect(self._db_lz_entfernen)
         lz_layout.addWidget(btn_lz_del)
 
@@ -171,14 +152,7 @@ class BrowserController:
         self._db_tree.hideColumn(2)   # Typ
         self._db_tree.hideColumn(3)   # Datum
         self._db_tree.setHeaderHidden(True)  # kein Header nötig bei einer Spalte
-        self._db_tree.setStyleSheet(
-            "QTreeView{"
-            f"border:1px solid ;border-radius:3px;font-size:{schrift.pt(schrift.STUFE_BASE)}pt;}}"
-            "QTreeView::item:selected{}"
-            "QTreeView::item:hover{}"
-            "QTreeView::branch:has-children:!has-siblings:closed,"
-            "QTreeView::branch:closed:has-children:has-siblings{"
-            "border-image:none; image:none;}")
+        self._db_tree.setStyleSheet(theme.STY_DB_TREE(schrift.pt(schrift.STUFE_BASE)))
         self._db_tree.doubleClicked.connect(self._db_doppelklick)
         self._db_tree.clicked.connect(self._db_einzelklick)
         self._db_tree.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -188,8 +162,7 @@ class BrowserController:
 
         # ── Status & Aktions-Zeile ───────────────────────────────────
         self._db_status = QtWidgets.QLabel("")
-        self._db_status.setStyleSheet(
-            f"font-size:{schrift.pt(schrift.STUFE_SM)}pt;padding:1px 3px;")
+        self._db_status.setStyleSheet(theme.STY_DB_STATUS(schrift.pt(schrift.STUFE_SM)))
         layout.addWidget(self._db_status)
 
         btn_row = QtWidgets.QHBoxLayout()

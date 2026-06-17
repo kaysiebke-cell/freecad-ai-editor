@@ -58,15 +58,7 @@ class SnipCommandEdit(QtWidgets.QPlainTextEdit):
             QtCore.Qt.Tool | QtCore.Qt.FramelessWindowHint)
         self._popup.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
         self._popup.setStyleSheet(
-            "QListWidget{"
-            "   "
-            "  border:1px solid ; border-bottom-left-radius:4px;"
-            "  border-bottom-right-radius:4px;"
-            f"  font-size:{schrift.pt(schrift.STUFE_BASE)}pt; padding:2px;}}"
-            "QListWidget::item{ padding:4px 8px; }"
-            "QListWidget::item:selected{}"
-            "QListWidget::item:hover{}"
-            "QListWidget::item[disabled='true']{  font-style:italic; }")
+            theme.STY_SNIP_POPUP(schrift.pt(schrift.STUFE_BASE)))
         self._popup.setFocusPolicy(QtCore.Qt.NoFocus)
         self._popup.itemClicked.connect(self._eintrag_gewaehlt)
         self._popup.hide()
@@ -77,9 +69,7 @@ class SnipCommandEdit(QtWidgets.QPlainTextEdit):
             QtCore.Qt.Tool | QtCore.Qt.FramelessWindowHint)
         self._popup_header.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
         self._popup_header.setStyleSheet(
-            f"QLabel{{   font-size:{schrift.pt(schrift.STUFE_SM)}pt;"
-            " font-weight:bold; padding:2px 8px;"
-            " border-top-left-radius:4px; border-top-right-radius:4px; }")
+            theme.STY_SNIP_POPUP_HEADER(schrift.pt(schrift.STUFE_SM)))
         self._popup_header.hide()
 
         self.textChanged.connect(self._check_slash_command)
@@ -299,11 +289,7 @@ class SnippetController:
         btn.setCheckable(True)
         btn.setMinimumHeight(28)
         btn.setObjectName("_bannerBtn")
-        btn.setStyleSheet(
-            "#_bannerBtn{text-align:left; padding:4px 8px; border:none;"
-            f" font-size:{schrift.pt(schrift.STUFE_LG)}pt; font-weight:bold;"
-            " background:transparent; color:palette(highlighted-text);}"
-            "#_bannerBtn:hover{background:transparent;}")
+        btn.setStyleSheet(theme.STY_BANNER_BTN(schrift.pt(schrift.STUFE_LG)))
         vbox.addWidget(btn)
 
         body = QtWidgets.QTextBrowser()
@@ -313,10 +299,7 @@ class SnippetController:
         body.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         body.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         body.setObjectName("_bannerBody")
-        body.setStyleSheet(
-            "#_bannerBody{ font-size:9pt; padding:4px 8px 8px 8px;"
-            " border:none; background:transparent;"
-            " color:palette(highlighted-text); }")
+        body.setStyleSheet(theme.STY_BANNER_BODY)
         body.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         body.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding,
@@ -391,7 +374,7 @@ class SnippetController:
         kat_row = QtWidgets.QHBoxLayout(self._kat_widget)
         kat_row.setContentsMargins(0, 0, 0, 0)
         kat_lbl = QtWidgets.QLabel("Kat:")
-        kat_lbl.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_LG)}pt;")
+        kat_lbl.setStyleSheet(theme.STY_ABSCHNITT_LABEL(schrift.pt(schrift.STUFE_LG)))
         self._snippet_kat = QtWidgets.QComboBox()
         self._snippet_kat.addItems(list(SNIPPETS.keys()) + ["⭐ Eigene"])
         self._snippet_kat.currentIndexChanged.connect(self._lade_snippets_neu)
@@ -411,26 +394,20 @@ class SnippetController:
         self._snippet_liste = QtWidgets.QListWidget()
         self._snippet_liste.setAlternatingRowColors(True)
         self._snippet_liste.setStyleSheet(
-            "QListWidget{border:1px solid ;"
-            f" font-size:{schrift.pt(schrift.STUFE_LG)}pt;}}"
-            "QListWidget::item{padding:4px 5px;}"
-            "QListWidget::item:selected{}"
-            "QListWidget::item:alternate{}")
+            theme.STY_SNIPPET_LISTE(schrift.pt(schrift.STUFE_LG)))
         self._snippet_liste.currentItemChanged.connect(self._snippet_vorschau_aktualisieren)
         self._snippet_liste.itemDoubleClicked.connect(lambda _: self._snippet_in_editor())
         layout.addWidget(self._snippet_liste, stretch=1)
 
         # Vorschau
         vw_lbl = QtWidgets.QLabel("Vorschau:")
-        vw_lbl.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_LG)}pt; font-weight:bold;")
+        vw_lbl.setStyleSheet(theme.STY_ABSCHNITT_LABEL(schrift.pt(schrift.STUFE_LG)))
         layout.addWidget(vw_lbl)
         self._snippet_vorschau = QtWidgets.QTextEdit()
         self._snippet_vorschau.setReadOnly(True)
         self._snippet_vorschau.setMaximumHeight(90)
         self._snippet_vorschau.setFont(QtGui.QFont("Courier New", 9))
-        self._snippet_vorschau.setStyleSheet(
-            "QTextEdit{"
-            "border:1px solid ; font-family:'Courier New',monospace;}")
+        self._snippet_vorschau.setStyleSheet(theme.STY_SNIPPET_VORSCHAU)
         layout.addWidget(self._snippet_vorschau)
 
         # Aktions-Buttons
@@ -699,31 +676,19 @@ class SnippetController:
         self._hint_liste = QtWidgets.QListWidget()
         self._hint_liste.setAlternatingRowColors(True)
         self._hint_liste.setFont(QtGui.QFont("Courier New", 9))
-        self._hint_liste.setStyleSheet(
-            "QListWidget{"
-            "font-family:'Courier New',monospace;"
-            "border:1px solid ;}"
-            "QListWidget::item{padding:2px 5px; text-align:left;}"
-            "QListWidget::item:selected{}"
-            "QListWidget::item:alternate{}")
+        self._hint_liste.setStyleSheet(theme.STY_HINTS_LISTE)
         self._hint_liste.currentItemChanged.connect(self._hint_desc_aktualisieren)
         layout.addWidget(self._hint_liste, stretch=1)
 
         self._hint_desc = QtWidgets.QLabel("")
         self._hint_desc.setWordWrap(True)
         self._hint_desc.setStyleSheet(
-            "QLabel{"
-            "border:1px solid ;padding:5px;"
-            f"border-radius:3px;font-size:{schrift.pt(schrift.STUFE_BASE)}pt;min-height:32px;}}")
+            theme.STY_HINTS_DESC(schrift.pt(schrift.STUFE_BASE)))
         layout.addWidget(self._hint_desc)
 
         btn = QtWidgets.QPushButton("📋  Signatur kopieren")
         btn.setMinimumHeight(28)
-        btn.setStyleSheet(
-            "QPushButton{border:1px solid ;border-radius:3px;"
-            "}"
-            "QPushButton:hover{}"
-            "QPushButton:pressed{}")
+        btn.setStyleSheet(theme.STY_BTN_BORDER(schrift.pt(schrift.STUFE_BASE)))
         btn.clicked.connect(self._hint_kopieren)
         layout.addWidget(btn)
 
@@ -800,7 +765,7 @@ class SnippetController:
         ))
 
         lbl_ein = QtWidgets.QLabel("Fehlermeldung (Englisch):")
-        lbl_ein.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_BASE)}pt; font-weight:bold;")
+        lbl_ein.setStyleSheet(theme.STY_ABSCHNITT_LABEL(schrift.pt(schrift.STUFE_BASE)))
         layout.addWidget(lbl_ein)
 
         self._ftab_eingabe = QtWidgets.QPlainTextEdit()
@@ -810,10 +775,7 @@ class SnippetController:
             "name 'doc' is not defined\n"
             "No active document")
         self._ftab_eingabe.setMaximumHeight(120)
-        self._ftab_eingabe.setStyleSheet(
-            "QPlainTextEdit{"
-            "font-family:'Courier New',monospace;"
-            "border:1px solid ;border-radius:3px;}")
+        self._ftab_eingabe.setStyleSheet(theme.STY_FEHLER_TAB_FELD)
         _opt = self._ftab_eingabe.document().defaultTextOption()
         _opt.setAlignment(QtCore.Qt.AlignLeft)
         self._ftab_eingabe.document().setDefaultTextOption(_opt)
@@ -821,25 +783,18 @@ class SnippetController:
 
         btn = QtWidgets.QPushButton("🔍  Übersetzen  (Strg+Return)")
         btn.setMinimumHeight(32)
-        btn.setStyleSheet(
-            "QPushButton{border:1px solid ;"
-            f"border-radius:4px;font-size:{schrift.pt(schrift.STUFE_LG)}pt;font-weight:bold;}}"
-            "QPushButton:hover{}"
-            "QPushButton:pressed{}")
+        btn.setStyleSheet(theme.STY_BTN_BORDER_BOLD(schrift.pt(schrift.STUFE_LG)))
         layout.addWidget(btn)
 
         lbl_aus = QtWidgets.QLabel("Erklärung (Deutsch):")
-        lbl_aus.setStyleSheet(f" font-size:{schrift.pt(schrift.STUFE_BASE)}pt; font-weight:bold;")
+        lbl_aus.setStyleSheet(theme.STY_ABSCHNITT_LABEL(schrift.pt(schrift.STUFE_BASE)))
         layout.addWidget(lbl_aus)
 
         self._ftab_ausgabe = QtWidgets.QPlainTextEdit()
         self._ftab_ausgabe.setReadOnly(True)
         self._ftab_ausgabe.setFont(QtGui.QFont("Courier New", 9))
         self._ftab_ausgabe.setPlaceholderText("Deutsche Erklärung erscheint hier …")
-        self._ftab_ausgabe.setStyleSheet(
-            "QPlainTextEdit{"
-            "font-family:'Courier New',monospace;"
-            "border:1px solid ;border-radius:3px;}")
+        self._ftab_ausgabe.setStyleSheet(theme.STY_FEHLER_TAB_FELD)
         _opt = self._ftab_ausgabe.document().defaultTextOption()
         _opt.setAlignment(QtCore.Qt.AlignLeft)
         self._ftab_ausgabe.document().setDefaultTextOption(_opt)

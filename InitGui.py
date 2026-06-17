@@ -45,6 +45,7 @@ class KiAssistentCommand:
         sys.modules.pop("panel", None)
 
         import main
+        import theme
 
         try:
             from qt_compat import QtWidgets, QtCore, QtGui
@@ -66,7 +67,7 @@ class KiAssistentCommand:
         except Exception:
             pass
         dock.setFont(_f)
-        dock.setStyleSheet("* { font-family: 'Ubuntu', 'Noto Color Emoji'; }")
+        dock.setStyleSheet(theme.STY_DOCK_FONT_RESET)
 
         from panel import FreeCAD_MultiAI_Panel
         panel = FreeCAD_MultiAI_Panel()
@@ -80,8 +81,8 @@ Gui.addCommand('Cmd_KiAssistent', KiAssistentCommand())
 
 # ── DIE HAUPT-WORKBENCH ────────────────────────────────────────────────────────
 class MeineMakroWorkbench(Gui.Workbench):
-    MenuText = "FreeCAD AI Editor"
-    ToolTip  = "KI-gestützter Makro-Editor und Seitenleiste"
+    MenuText = "FreeCAD MultiAI Panel"
+    ToolTip  = "FreeCAD MultiAI Panel – KI-gestützter Makro-Editor mit 19 KI-Anbietern"
 
     def __init__(self):
         super().__init__()

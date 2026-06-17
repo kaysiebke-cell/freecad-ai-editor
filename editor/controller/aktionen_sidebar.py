@@ -86,10 +86,7 @@ class _Section(QtWidgets.QWidget):
         self._hd.setChecked(open_)
         self._hd.setCursor(QtCore.Qt.PointingHandCursor)
         self._hd.setStyleSheet(
-            "QPushButton{text-align:left;padding:4px 6px;"
-            f"font-size:{schrift.pt(schrift.STUFE_LG)}pt;font-weight:500;border:none;border-radius:4px;"
-            "background:transparent;color:palette(text);}"
-            "QPushButton:hover{background:palette(alternateBase);}")
+            theme.STY_SECTION_HEAD_BTN(schrift.pt(schrift.STUFE_LG)))
         self._hd.clicked.connect(self._toggle)
         root.addWidget(self._hd)
 
@@ -101,7 +98,7 @@ class _Section(QtWidgets.QWidget):
 
         sep = QtWidgets.QFrame()
         sep.setFrameShape(QtWidgets.QFrame.HLine)
-        sep.setStyleSheet("color:palette(mid);margin:2px 0;")
+        sep.setStyleSheet(theme.STY_SEPARATOR)
         root.addWidget(sep)
         self._set_title(title)
         self._body.setVisible(open_)
@@ -122,12 +119,7 @@ class _Section(QtWidgets.QWidget):
         b.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         b.setMinimumHeight(24)
         b.setEnabled(enabled)
-        b.setStyleSheet(
-            f"QPushButton{{text-align:left;padding:3px 8px;font-size:{schrift.pt(schrift.STUFE_LG)}pt;"
-            "border:none;border-radius:4px;background:transparent;color:palette(text);}"
-            "QPushButton:hover{background:palette(alternateBase);}"
-            "QPushButton:pressed{background:palette(mid);}"
-            "QPushButton:disabled{color:palette(mid);}")
+        b.setStyleSheet(theme.STY_SECTION_BTN(schrift.pt(schrift.STUFE_LG)))
         if slot: b.clicked.connect(slot)
         self._bl.addWidget(b)
         return b
@@ -155,12 +147,7 @@ class _Section(QtWidgets.QWidget):
             b.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
             b.setMinimumHeight(26)
             b.setMaximumHeight(26)
-            b.setStyleSheet(
-                f"QPushButton{{text-align:center;padding:2px 4px;font-size:{schrift.pt(schrift.STUFE_LG)}pt;"
-                "border:1px solid palette(mid);border-radius:4px;background:palette(button);color:palette(text);}"
-                "QPushButton:hover{background:palette(alternateBase);}"
-                "QPushButton:pressed{background:palette(mid);}"
-                "QPushButton:disabled{color:palette(mid);}")
+            b.setStyleSheet(theme.STY_GRID_BTN(schrift.pt(schrift.STUFE_LG)))
             if slot:
                 b.clicked.connect(slot)
             if i % 2 == 0:
@@ -243,19 +230,14 @@ class _Rail(QtWidgets.QWidget):
         if sep:
             line = QtWidgets.QFrame()
             line.setFrameShape(QtWidgets.QFrame.HLine)
-            line.setStyleSheet("color:palette(mid);margin:2px 0;")
+            line.setStyleSheet(theme.STY_SEPARATOR)
             self._root.addWidget(line)
         b = QtWidgets.QPushButton(label)
         b.setToolTip(tooltip)
         b.setFixedSize(_ICON_SZ, _ICON_SZ)
         b.setCheckable(True)
         b.setCursor(QtCore.Qt.PointingHandCursor)
-        b.setStyleSheet(
-            f"QPushButton{{border:none;border-radius:5px;background:transparent;"
-            f"font-size:{schrift.pt(schrift.STUFE_LG)}pt;font-weight:bold;color:palette(buttonText);}}}}"
-            f"QPushButton:hover{{background:palette(midlight);}}"
-            f"QPushButton:checked{{background:palette(midlight);"
-            f"border:1px solid palette(highlight);}}")
+        b.setStyleSheet(theme.STY_RAIL_BTN(schrift.pt(schrift.STUFE_LG)))
         b.clicked.connect(lambda _checked, k=key: self.toggled.emit(k))
         self._root.addWidget(b)
         self._btns[key] = b
@@ -308,8 +290,7 @@ class RechteSidebar(QtWidgets.QWidget):
         self._status_lbl = QtWidgets.QLabel("")
         self._status_lbl.setWordWrap(True)
         self._status_lbl.setStyleSheet(
-            f"font-size:{schrift.pt(schrift.STUFE_LG)}pt;padding:2px 4px;"
-            "border-top:1px solid palette(mid);")
+            theme.STY_SIDEBAR_STATUS(schrift.pt(schrift.STUFE_LG)))
         self._status_lbl.hide()
 
         # Leere Widgets vorhalten damit aktualisiere_code_baum nicht crasht
@@ -479,8 +460,7 @@ class RechteSidebar(QtWidgets.QWidget):
         self._nav_baum.setHeaderHidden(True)
         self._nav_baum.setMinimumHeight(140)
         self._nav_baum.setStyleSheet(
-            f"QTreeWidget{{font-size:{schrift.pt(schrift.STUFE_LG)}pt;border:1px solid palette(mid);border-radius:3px;}}"
-            "QTreeWidget::item{padding:2px;}")
+            theme.STY_NAV_BAUM_SIDEBAR(schrift.pt(schrift.STUFE_LG)))
         self._nav_baum.itemDoubleClicked.connect(self._nav_sprung_baum)
         s2.add(self._nav_baum)
         v.addWidget(s2)
@@ -552,8 +532,7 @@ class RechteSidebar(QtWidgets.QWidget):
         self._info_lbl = QtWidgets.QLabel("—")
         self._info_lbl.setWordWrap(True)
         self._info_lbl.setStyleSheet(
-            "border:1px solid palette(mid);padding:5px;"
-            f"font-size:{schrift.pt(schrift.STUFE_LG)}pt;border-radius:3px;")
+            theme.STY_STATISTIKEN_LBL_SIDEBAR(schrift.pt(schrift.STUFE_LG)))
         s2.add(self._info_lbl)
         s2.grid2([
             ("↺ Statistiken",  "Code analysieren",     self._code_info),
@@ -561,7 +540,7 @@ class RechteSidebar(QtWidgets.QWidget):
         ])
         self._check_lbl = QtWidgets.QLabel("")
         self._check_lbl.setWordWrap(True)
-        self._check_lbl.setStyleSheet(f"padding:5px;font-size:{schrift.pt(schrift.STUFE_LG)}pt;border-radius:3px;")
+        self._check_lbl.setStyleSheet(theme.STY_CHECK_LBL_SIDEBAR(schrift.pt(schrift.STUFE_LG)))
         s2.add(self._check_lbl)
         v.addWidget(s2)
 

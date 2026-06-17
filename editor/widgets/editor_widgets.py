@@ -321,13 +321,7 @@ class JediEditor(CodeEditor):
         self.completer.setMaxVisibleItems(12)
         self.completer.activated.connect(self._insert_completion)
         self.completer.popup().setStyleSheet(
-            "QListView {"
-            "   "
-            "  border:1px solid ;"
-            "  "
-            f"  font-family:'Courier New', monospace; font-size:{schrift.pt(schrift.STUFE_BASE)}pt;"
-            "}"
-        )
+            theme.STY_JEDI_POPUP(schrift.pt(schrift.STUFE_BASE)))
         self._jedi_timer = QtCore.QTimer(self)
         self._jedi_timer.setSingleShot(True)
         self._jedi_timer.setInterval(300)
