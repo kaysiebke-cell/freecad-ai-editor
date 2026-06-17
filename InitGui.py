@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 # FreeCAD führt diese Datei per exec(code, globals, locals) aus.
-# Namen die hier auf Modulebene definiert werden, landen in "locals" und
-# sind in Methoden/Klassenrümpfen NICHT sichtbar.
-# Daher: alle Pfade direkt in den Methoden per FreeCAD.getUserAppDataDir() berechnen.
+# __file__ landet in exec-locals und ist in Klassen-Methoden unsichtbar,
+# weil Methoden nur exec-globals sehen. Lösung: _MODDIR über globals() in
+# den globals-Dict schreiben, damit alle Methoden darauf zugreifen können.
 
 import FreeCADGui as Gui
 import FreeCAD
 import os
 import sys
+
+# Pfad einmalig berechnen und in exec-globals ablegen (für Methoden sichtbar).
+globals()['_MODDIR'] = os.path.dirname(os.path.abspath(__file__))
 
 
 # ── DESIGN DES NEUEN BUTTONS (KI-ASSISTENT) ───────────────────────────────────
@@ -16,7 +19,7 @@ class KiAssistentCommand:
     def GetResources(self):
         ki_path = os.path.join(os.path.expanduser("~"), "Schreibtisch",
                                "Macros", "KI Muli source Assistent")
-        assets  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
+        assets  = os.path.join(_MODDIR, "assets")
         icon = ""
         for kandidat in (os.path.join(ki_path, "ki_icon.svg"),
                          os.path.join(assets, "Icon.svg")):
@@ -85,10 +88,10 @@ class MeineMakroWorkbench(Gui.Workbench):
 
     def __init__(self):
         super().__init__()
-        self.Icon = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Icon.svg")
+        self.Icon = os.path.join(_MODDIR, "Icon.svg")
 
     def Initialize(self):
-        base = os.path.dirname(os.path.abspath(__file__))
+        base = _MODDIR
         for sub in ("", "core", "editor/fehler", "editor/ki",
                     "editor/controller", "editor/widgets", "editor", "ui", "data"):
             p = os.path.join(base, sub) if sub else base
