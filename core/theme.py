@@ -668,7 +668,7 @@ def STY_SNIP_POPUP_HEADER(fs: int) -> str:
     return (
         f"QLabel{{font-size:{fs}pt;"
         "font-weight:bold; padding:2px 8px;"
-        "border-top-left-radius:4px; border-top-right-radius:4px;}}"
+        "border-top-left-radius:4px; border-top-right-radius:4px;}"
     )
 
 
@@ -771,7 +771,7 @@ def STY_SECTION_HEAD_BTN(fs: int) -> str:
     return (
         f"QPushButton{{text-align:left;padding:4px 6px;"
         f"font-size:{fs}pt;font-weight:500;border:none;border-radius:4px;"
-        "background:transparent;color:palette(text);}}"
+        "background:transparent;color:palette(text);}"
         "QPushButton:hover{background:palette(alternateBase);}"
     )
 
@@ -779,7 +779,7 @@ def STY_SECTION_HEAD_BTN(fs: int) -> str:
 def STY_SECTION_BTN(fs: int) -> str:
     return (
         f"QPushButton{{text-align:left;padding:3px 8px;font-size:{fs}pt;"
-        "border:none;border-radius:4px;background:transparent;color:palette(text);}}"
+        "border:none;border-radius:4px;background:transparent;color:palette(text);}"
         "QPushButton:hover{background:palette(alternateBase);}"
         "QPushButton:pressed{background:palette(mid);}"
         "QPushButton:disabled{color:palette(mid);}"
@@ -790,7 +790,7 @@ def STY_GRID_BTN(fs: int) -> str:
     return (
         f"QPushButton{{text-align:center;padding:2px 4px;font-size:{fs}pt;"
         "border:1px solid palette(mid);border-radius:4px;"
-        "background:palette(button);color:palette(text);}}"
+        "background:palette(button);color:palette(text);}"
         "QPushButton:hover{background:palette(alternateBase);}"
         "QPushButton:pressed{background:palette(mid);}"
         "QPushButton:disabled{color:palette(mid);}"
