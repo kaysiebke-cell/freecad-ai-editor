@@ -16,7 +16,7 @@
 └──────────────┴───────────────────────────────────────────────────────────────────────┘
 ```
 
-**Toolbar-Buttons** schalten die 13 Panels ein und aus. Die Buttons zeigen standardmäßig nur das Emoji (32 px). Im `♿ Zugang`-Panel kann die Beschriftung mit „Icons mit Text" eingeblendet werden, z. B. `⚙ Einst.`.
+**Toolbar-Buttons** schalten die 13 Panels ein und aus. Die Buttons zeigen standardmäßig nur das Emoji (32 px). Im `♿ Hilfe+Zugang`-Dock → `♿ Zugang`-Tab kann die Beschriftung mit „Icons mit Text" eingeblendet werden, z. B. `⚙ Einst.`.
 
 Alle Panels können:
 - **Frei verschoben** werden (Titelleiste ziehen)

@@ -1,4 +1,4 @@
-# FreeCAD MultiAI Panel für FreeCAD
+# FreeCAD MultiAI Panel
 
 Ein moderner, KI-gestützter Python-Editor als FreeCAD-Plugin mit frei anordenbaren Panels,
 Syntax-Highlighting, 19 unterstützten KI-Anbietern und umfangreichen Werkzeugen zur

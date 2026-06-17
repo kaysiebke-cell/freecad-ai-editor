@@ -9,6 +9,7 @@
 - **Preset** wählen (40+ vordefinierte Aufgabenstellungen)
 - **Temperatur** 0.0–2.0 (empfohlen: 0.0–0.3 für Code, 0.5–0.8 für Dokumentation)
 - **Modus:** 🟢 Anfänger (ausführlich auf Deutsch) / 🔵 Experte (knapp & technisch)
+- **Farbschema:** 🌙 Dunkel / ☀ Hell – umschaltet alle Farben sofort (Syntax-Highlighting, Eingabefelder, Editor), Auswahl wird dauerhaft gespeichert
 - **API-Schlüssel** pro Anbieter eingeben & automatisch speichern
 
 ## 🤖 KI-Panel

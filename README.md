@@ -69,7 +69,7 @@ FreeCAD-Automatisierung.
 
 ### Benutzeroberfläche
 - 13 frei anordnbare Dock-Panels (verschieben, abdocken, zu Tabs zusammenfassen)
-- Hell- und Dunkel-Modus vollständig unterstützt – keine hartkodieren Farben
+- **Hell- und Dunkel-Modus** umschaltbar per 🌙/☀-Button in den Einstellungen, Auswahl wird gespeichert
 - Alle Panels einzeln per Toolbar ein-/ausschaltbar
 - Begrüßungs-Dialog bei Erststart (KI-Anbieter direkt einrichten)
 - **🤝 Interaktiver Assistent** – Fragen stellen, KI antwortet mit Schritt-für-Schritt-Anleitung und lässt Buttons aufleuchten
@@ -232,7 +232,8 @@ FreeCAD MultiAI Panel/
 ├── README.md
 │
 ├── core/
-│   ├── theme.py         # Farben & Stylesheets (hell/dunkel-adaptiv, keine Hartkodierung)
+│   ├── theme.py         # Stylesheets & Design-Funktionen (hell/dunkel-adaptiv)
+│   ├── farben.py        # Explizite Farbdefinitionen für Hell- und Dunkel-Modus
 │   ├── highlighter.py   # Python-Syntax-Highlighter
 │   ├── schrift.py       # Schriftgrößen-Konstanten
 │   ├── params.py        # Einstellungs-Persistenz (FreeCAD-Parameter)
