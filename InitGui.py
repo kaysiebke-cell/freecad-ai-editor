@@ -9,8 +9,14 @@ import FreeCAD
 import os
 import sys
 
-# Pfad einmalig berechnen und in exec-globals ablegen (für Methoden sichtbar).
-globals()['_MODDIR'] = os.path.dirname(os.path.abspath(__file__))
+# __file__ ist im FlatPak-FreeCAD nicht gesetzt → Fallback auf getUserAppDataDir.
+# globals() schreibt _MODDIR in exec-globals, damit Klassen-Methoden es sehen.
+try:
+    globals()['_MODDIR'] = os.path.dirname(os.path.abspath(__file__))
+except NameError:
+    globals()['_MODDIR'] = os.path.join(
+        FreeCAD.getUserAppDataDir(), "Mod", "FreeCAD_MultiAI_Panel"
+    )
 
 
 # ── DESIGN DES NEUEN BUTTONS (KI-ASSISTENT) ───────────────────────────────────
