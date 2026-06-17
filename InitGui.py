@@ -16,8 +16,7 @@ class KiAssistentCommand:
     def GetResources(self):
         ki_path = os.path.join(os.path.expanduser("~"), "Schreibtisch",
                                "Macros", "KI Muli source Assistent")
-        assets  = os.path.join(FreeCAD.getUserAppDataDir(), "Mod",
-                               "freecad-ai-editor", "assets")
+        assets  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
         icon = ""
         for kandidat in (os.path.join(ki_path, "ki_icon.svg"),
                          os.path.join(assets, "Icon.svg")):
@@ -86,11 +85,10 @@ class MeineMakroWorkbench(Gui.Workbench):
 
     def __init__(self):
         super().__init__()
-        self.Icon = os.path.join(FreeCAD.getUserAppDataDir(),
-                                 "Mod", "freecad-ai-editor", "Icon.svg")
+        self.Icon = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Icon.svg")
 
     def Initialize(self):
-        base = os.path.join(FreeCAD.getUserAppDataDir(), "Mod", "freecad-ai-editor")
+        base = os.path.dirname(os.path.abspath(__file__))
         for sub in ("", "core", "editor/fehler", "editor/ki",
                     "editor/controller", "editor/widgets", "editor", "ui", "data"):
             p = os.path.join(base, sub) if sub else base

@@ -17,7 +17,7 @@ FreeCAD-Automatisierung.
 ## Quick Start
 
 1. **Pflicht-Paket installieren:** `pip install requests`
-2. **Repo klonen/herunterladen** und in den FreeCAD-`Mod`-Ordner legen (Ordnername: `freecad-ai-editor`, ohne Leerzeichen)
+2. **Repo klonen/herunterladen** und in den FreeCAD-`Mod`-Ordner legen (Ordnername: `FreeCAD_MultiAI_Panel`, ohne Leerzeichen)
 3. **FreeCAD neu starten** und die Workbench **„FreeCAD MultiAI Panel"** auswählen
 4. **KI-Anbieter einrichten** im Begrüßungs-Dialog (z. B. lokal mit Ollama oder mit eigenem API-Key) – fertig!
 
@@ -113,20 +113,20 @@ pip install requests jedi autopep8 pyspellchecker
 ### Plugin installieren
 
 1. Dieses Repository klonen oder als ZIP herunterladen und entpacken
-2. Den Ordner umbenennen in `freecad-ai-editor` (ohne Leerzeichen – wichtig!)
+2. Den Ordner umbenennen in `FreeCAD_MultiAI_Panel` (ohne Leerzeichen – wichtig!)
 
 #### Linux – AppImage
 
 ```bash
 mkdir -p ~/.local/share/FreeCAD/v1-1/Mod
-ln -s /pfad/zum/freecad-ai-editor ~/.local/share/FreeCAD/v1-1/Mod/freecad-ai-editor
+ln -s /pfad/zum/FreeCAD_MultiAI_Panel ~/.local/share/FreeCAD/v1-1/Mod/FreeCAD_MultiAI_Panel
 ```
 
 #### Linux – Flatpak
 
 ```bash
 mkdir -p ~/.var/app/org.freecad.FreeCAD/data/FreeCAD/v1-1/Mod
-ln -s /pfad/zum/freecad-ai-editor ~/.var/app/org.freecad.FreeCAD/data/FreeCAD/v1-1/Mod/freecad-ai-editor
+ln -s /pfad/zum/FreeCAD_MultiAI_Panel ~/.var/app/org.freecad.FreeCAD/data/FreeCAD/v1-1/Mod/FreeCAD_MultiAI_Panel
 ```
 
 > **Tipp:** Mit einem Symlink (`ln -s`) bleibt der Ordner am ursprünglichen Speicherort – Änderungen am Code werden sofort wirksam ohne erneutes Kopieren.
@@ -139,13 +139,13 @@ ln -s /pfad/zum/freecad-ai-editor ~/.var/app/org.freecad.FreeCAD/data/FreeCAD/v1
 #### Windows
 
 ```
-%APPDATA%\FreeCAD\Mod\freecad-ai-editor\
+%APPDATA%\FreeCAD\Mod\FreeCAD_MultiAI_Panel\
 ```
 
 #### macOS
 
 ```
-~/Library/Preferences/FreeCAD/Mod/freecad-ai-editor/
+~/Library/Preferences/FreeCAD/Mod/FreeCAD_MultiAI_Panel/
 ```
 
 > **Wichtig für Linux:** FreeCAD 1.x speichert Benutzerdaten unter `v1-1/` – ältere Anleitungen ohne diesen Unterordner funktionieren nicht.
