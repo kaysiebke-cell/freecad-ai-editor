@@ -87,7 +87,7 @@ class KiAssistentCommand:
 Gui.addCommand('Cmd_KiAssistent', KiAssistentCommand())
 
 
-# ── Pfade einrichten (hier definiert, wird von Initialize + Timer genutzt) ────
+# ── Pfade einrichten ───────────────────────────────────────────────────────────
 def _pfade_einrichten():
     for sub in ("", "core",
                 "editor", "editor/intern",
@@ -100,6 +100,15 @@ def _pfade_einrichten():
             sys.path.insert(0, p)
 
 
+def _panel_starten():
+    try:
+        _pfade_einrichten()
+        import main as makro_main
+        makro_main.erstelle_leiste()
+    except Exception as e:
+        FreeCAD.Console.PrintError(f"[MultiAI] Panel-Start fehlgeschlagen: {e}\n")
+
+
 # ── DIE HAUPT-WORKBENCH ────────────────────────────────────────────────────────
 class MeineMakroWorkbench(Gui.Workbench):
     MenuText = "FreeCAD MultiAI Panel"
@@ -110,7 +119,8 @@ class MeineMakroWorkbench(Gui.Workbench):
         self.Icon = os.path.join(_MODDIR, "Icon.svg")
 
     def Initialize(self):
-        _pfade_einrichten()
+        # Immer aufgerufen wenn Workbench zum ersten Mal aktiviert wird
+        _panel_starten()
         self.appendToolbar("Eigene Werkzeuge", ["Cmd_KiAssistent"])
 
     def Activated(self):
@@ -126,18 +136,11 @@ class MeineMakroWorkbench(Gui.Workbench):
 Gui.addWorkbench(MeineMakroWorkbench())
 
 
-# ── Panel beim FreeCAD-Start laden (unabhängig von aktiver Workbench) ─────────
-def _panel_starten():
-    try:
-        _pfade_einrichten()
-        import main as makro_main
-        makro_main.erstelle_leiste()
-    except Exception as e:
-        FreeCAD.Console.PrintError(f"[MultiAI] Panel-Start fehlgeschlagen: {e}\n")
-
-
+# ── Fallback: Panel auch laden wenn FreeCAD auf anderer Workbench startet ─────
+# Initialize() läuft nur bei erster Workbench-Aktivierung. Startet FreeCAD
+# z.B. auf Part Design, muss der Timer das Panel trotzdem erstellen.
 try:
     from PySide6.QtCore import QTimer
-    QTimer.singleShot(1000, _panel_starten)
+    QTimer.singleShot(1500, _panel_starten)
 except Exception:
     pass
