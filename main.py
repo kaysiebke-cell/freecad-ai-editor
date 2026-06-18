@@ -58,7 +58,7 @@ _EIGENE_MODULE = [
     # editor (Haupt)
     "editor", "editor_widgets", "freecad_helfer_panel",
     # editor/ki
-    "ki_controller", "ki_werkzeuge", "skills", "dokument_kontext", "agents_md",
+    "ki_controller", "ki_werkzeuge", "dokument_kontext",
     # editor/controller
     "browser_controller", "snippet_controller", "vorschau_controller",
     "werkzeuge", "bibliothek_tab", "ki_tools_tab",
