@@ -87,6 +87,19 @@ class KiAssistentCommand:
 Gui.addCommand('Cmd_KiAssistent', KiAssistentCommand())
 
 
+# ── Pfade einrichten (hier definiert, wird von Initialize + Timer genutzt) ────
+def _pfade_einrichten():
+    for sub in ("", "core",
+                "editor", "editor/intern",
+                "editor/fehler",
+                "editor/ki", "editor/ki/intern",
+                "editor/controller", "editor/widgets",
+                "ui", "data"):
+        p = os.path.join(_MODDIR, sub) if sub else _MODDIR
+        if os.path.isdir(p) and p not in sys.path:
+            sys.path.insert(0, p)
+
+
 # ── DIE HAUPT-WORKBENCH ────────────────────────────────────────────────────────
 class MeineMakroWorkbench(Gui.Workbench):
     MenuText = "FreeCAD MultiAI Panel"
@@ -97,20 +110,7 @@ class MeineMakroWorkbench(Gui.Workbench):
         self.Icon = os.path.join(_MODDIR, "Icon.svg")
 
     def Initialize(self):
-        base = _MODDIR
-        for sub in ("", "core",
-                    "editor", "editor/intern",
-                    "editor/fehler",
-                    "editor/ki", "editor/ki/intern",
-                    "editor/controller", "editor/widgets",
-                    "ui", "data"):
-            p = os.path.join(base, sub) if sub else base
-            if os.path.isdir(p) and p not in sys.path:
-                sys.path.insert(0, p)
-
-        import main as makro_main
-        makro_main.erstelle_leiste()
-
+        _pfade_einrichten()
         self.appendToolbar("Eigene Werkzeuge", ["Cmd_KiAssistent"])
 
     def Activated(self):
@@ -124,3 +124,20 @@ class MeineMakroWorkbench(Gui.Workbench):
 
 
 Gui.addWorkbench(MeineMakroWorkbench())
+
+
+# ── Panel beim FreeCAD-Start laden (unabhängig von aktiver Workbench) ─────────
+def _panel_starten():
+    try:
+        _pfade_einrichten()
+        import main as makro_main
+        makro_main.erstelle_leiste()
+    except Exception as e:
+        FreeCAD.Console.PrintError(f"[MultiAI] Panel-Start fehlgeschlagen: {e}\n")
+
+
+try:
+    from PySide6.QtCore import QTimer
+    QTimer.singleShot(500, _panel_starten)
+except Exception:
+    pass
