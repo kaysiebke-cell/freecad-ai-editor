@@ -13,20 +13,20 @@ HILFE_ABSCHNITTE: list[tuple[str, str]] = [
 5. 🤖 Fragen  →  🔍 Markieren  →  ✅ Ersetzen."""),
 
     ("🏗️ Layout – Übersicht", """\
-Der Editor besteht aus frei anordenbaren Panels (Docks).
+Der Editor besteht aus 11 frei anordenbaren Panels (Docks).
 
 TOOLBAR OBEN  –  alle Panels ein-/ausschalten:
   ⚙  Einst.      KI-Quelle, Modell, Preset, Temperatur, API-Schlüssel
   🤖 KI           Eingabefeld, KI-Antwort, Projekt-Kontext, Suche/Ersetzen
   🎛 Akt.         Alle Aktions-Buttons (Laden, Fragen, Ersetzen, Datei …)
-  📦 Snip         Code-Snippets nach Kategorie
+  📦 Snip         Code-Snippets nach Kategorie (lokal + Online-GitHub)
   💡 API          FreeCAD API-Kurzreferenz
   📂 Dat.         Datei-Browser (frei skalierbar)
-  🛠 Tools        FreeCAD-Dokumentkontext, Werkzeuge, Protokoll
+  🛠 Tools        FreeCAD-Dokumentkontext, Direkt-Werkzeuge, Protokoll
   📚 Bib.         Makro-Bibliothek
   🔧 Werkz.       Code-Baum, Navigation, Edit-Funktionen
   ⚠  Fehler       Fehler-Übersetzer + KI-Selbstkorrektur
-  ♿ Hilfe+Zugang  Interaktiver Assistent + Barrierefreiheits-Einstellungen
+  ♿ Hilfe+Zugang  Interaktiver Assistent (🤝) + Barrierefreiheits-Einstellungen
 
 MITTE  –  Editor (immer sichtbar)
   Mehrere Dateien gleichzeitig als Tabs.

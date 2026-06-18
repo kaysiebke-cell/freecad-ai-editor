@@ -68,7 +68,7 @@ FreeCAD-Automatisierung.
 - KI-Tool-Calling für strukturierte FreeCAD-Operationen
 
 ### Benutzeroberfläche
-- 13 frei anordnbare Dock-Panels (verschieben, abdocken, zu Tabs zusammenfassen)
+- 11 frei anordnbare Dock-Panels (verschieben, abdocken, zu Tabs zusammenfassen)
 - **Hell- und Dunkel-Modus** umschaltbar per 🌙/☀-Button in den Einstellungen, Auswahl wird gespeichert
 - Alle Panels einzeln per Toolbar ein-/ausschaltbar
 - Begrüßungs-Dialog bei Erststart (KI-Anbieter direkt einrichten)
