@@ -414,7 +414,6 @@ class FreecadHelferPanel(QtWidgets.QWidget):
         self._chat_layout.setSpacing(6)
         self._chat_layout.addStretch()
         self._scroll.setWidget(self._chat_widget)
-        root.addWidget(self._scroll, 1)
 
         self._füge_bubble_ein(
             "Hallo! Schreib mir einfach, was du in FreeCAD bauen möchtest. "
@@ -423,19 +422,29 @@ class FreecadHelferPanel(QtWidgets.QWidget):
             "dann sehe ich Text und Bild zusammen.", "ki"
         ).finalize()
 
-        # Eingabefeld (mit Drag-Drop)
+        # ── Splitter: Chat oben / Eingabe unten (frei skalierbar) ────────────
+        splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        splitter.setChildrenCollapsible(False)
+        splitter.addWidget(self._scroll)
+
+        _unten = QtWidgets.QWidget()
+        _unten_lay = QtWidgets.QVBoxLayout(_unten)
+        _unten_lay.setContentsMargins(0, 4, 0, 0)
+        _unten_lay.setSpacing(4)
+
+        # Eingabefeld
         self._eingabe = QtWidgets.QPlainTextEdit()
         self._eingabe.setPlaceholderText(
             "z.B.  ich brauch einen kasten mit loch zum anschrauben an die wand …\n"
             "(Shift+Enter = neue Zeile  |  Enter = Senden)\n"
             "Bild hierher ziehen oder Strg+V zum Einfügen")
-        self._eingabe.setMinimumHeight(60)
+        self._eingabe.setMinimumHeight(30)
         self._eingabe.setAcceptDrops(True)
         self._eingabe.installEventFilter(self)
         self._highlighter = _RechtschreibHighlighter(self._eingabe.document())
         self._eingabe.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self._eingabe.customContextMenuRequested.connect(self._kontext_menu)
-        root.addWidget(self._eingabe)
+        _unten_lay.addWidget(self._eingabe, 1)
 
         # Bild-Buttons
         bild_reihe = QtWidgets.QHBoxLayout()
@@ -460,28 +469,33 @@ class FreecadHelferPanel(QtWidgets.QWidget):
         bild_reihe.addWidget(self._clip_btn)
 
         bild_reihe.addStretch()
-        root.addLayout(bild_reihe)
+        _unten_lay.addLayout(bild_reihe)
 
-        # Vision-Warnung (nur sichtbar wenn Bild angehängt + falsches Modell)
+        # Vision-Warnung
         self._vision_warnung = QtWidgets.QLabel("")
         self._vision_warnung.setWordWrap(True)
         self._vision_warnung.setStyleSheet(theme.STY_HELFER_VISION_WARN_BASE())
         self._vision_warnung.setVisible(False)
-        root.addWidget(self._vision_warnung)
+        _unten_lay.addWidget(self._vision_warnung)
 
         # Bild-Vorschau-Container
         self._vorschau_container = QtWidgets.QWidget()
         self._vorschau_container.setLayout(QtWidgets.QVBoxLayout())
         self._vorschau_container.layout().setContentsMargins(0, 0, 0, 0)
         self._vorschau_container.setVisible(False)
-        root.addWidget(self._vorschau_container)
+        _unten_lay.addWidget(self._vorschau_container)
 
         # Senden-Button
         self._senden_btn = QtWidgets.QPushButton("➤  Senden")
         self._senden_btn.setFixedHeight(32)
         self._senden_btn.setToolTip("Senden (Enter)")
         self._senden_btn.clicked.connect(self._senden)
-        root.addWidget(self._senden_btn)
+        _unten_lay.addWidget(self._senden_btn)
+
+        splitter.addWidget(_unten)
+        splitter.setStretchFactor(0, 3)
+        splitter.setStretchFactor(1, 1)
+        root.addWidget(splitter, 1)
 
     # ── Modelle laden ─────────────────────────────────────────────────────────
 
