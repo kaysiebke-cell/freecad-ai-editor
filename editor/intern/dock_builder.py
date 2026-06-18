@@ -171,13 +171,13 @@ def init_docks(editor) -> None:
     editor._btn_angedockt.setChecked(not _ist_schwebend)
 
     def _haupt_dock():
-        try:
-            import FreeCADGui as _Gui
-            from qt_compat import QtWidgets as _Qw
-            from params import DOCK_NAME as _DN
-            return _Gui.getMainWindow().findChild(_Qw.QDockWidget, _DN)
-        except Exception:
-            return None
+        # Dock-Referenz wurde in main.py auf dem MakroLeiste-Widget gespeichert
+        w = editor
+        while w:
+            if hasattr(w, "_haupt_dock"):
+                return w._haupt_dock
+            w = w.parent()
+        return None
 
     def _auf_angedockt():
         d = _haupt_dock()

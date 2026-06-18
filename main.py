@@ -103,13 +103,14 @@ def erstelle_leiste():
     dock.setAllowedAreas(
         QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
     _leiste = MakroLeiste()
+    # Dock-Referenz direkt auf dem Widget speichern – Buttons greifen darüber zu
+    _leiste._haupt_dock = dock
     dock.setWidget(_leiste)
 
     # Buttons im Einstellungs-Tab synchron halten wenn Modus extern wechselt
     def _sync_modus_buttons(floating: bool):
         try:
-            editor = _leiste.findChild(QtWidgets.QWidget, "MakroEditor") or \
-                     next((w for w in _leiste.findChildren(QtWidgets.QWidget)
+            editor = next((w for w in _leiste.findChildren(QtWidgets.QWidget)
                            if hasattr(w, "_btn_angedockt")), None)
             if editor:
                 editor._btn_schwebend.setChecked(floating)
