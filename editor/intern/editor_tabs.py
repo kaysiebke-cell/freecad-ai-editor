@@ -92,21 +92,22 @@ class TabLogik:
             if hasattr(e, "_ki_verlauf_reset"):
                 e._ki_verlauf_reset()
             if hasattr(e, "_werkzeug_leiste"):
-                wl = e._werkzeug_leiste
-                # alter_editor ist die alte QPlainTextEdit (vor dem Tab-Wechsel)
-                if alter_editor is not e._editor:
+                wl     = e._werkzeug_leiste
+                old_ed = wl._ed
+                if old_ed is not e._editor:
                     try:
-                        alter_editor.cursorPositionChanged.disconnect(wl._cursor_sync)
-                        alter_editor.cursorPositionChanged.disconnect(wl._lz_highlight)
-                        alter_editor.cursorPositionChanged.disconnect(wl._selektion_sichern)
+                        old_ed.cursorPositionChanged.disconnect(wl._cursor_sync)
+                        old_ed.cursorPositionChanged.disconnect(wl._lz_highlight)
+                        old_ed.cursorPositionChanged.disconnect(wl._selektion_sichern)
                     except RuntimeError:
                         pass
                     if hasattr(e, "_baum_timer"):
                         try:
-                            alter_editor.textChanged.disconnect(e._baum_timer.start)
+                            old_ed.textChanged.disconnect(e._baum_timer.start)
                         except RuntimeError:
                             pass
                         e._editor.textChanged.connect(e._baum_timer.start)
+                    wl._ed = e._editor
                     e._editor.cursorPositionChanged.connect(wl._cursor_sync)
                     e._editor.cursorPositionChanged.connect(wl._lz_highlight)
                     e._editor.cursorPositionChanged.connect(wl._selektion_sichern)
