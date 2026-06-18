@@ -27,7 +27,7 @@ import schrift
 from fehler import uebersetze_fehler
 import params
 from params import lade_api_key, speichere_api_key
-from werkzeuge import WerkzeugLeiste
+from aktionen_sidebar import RechteSidebar
 
 from ki_controller import KiController as KIMixin
 from browser_controller import BrowserController as BrowserMixin
@@ -167,7 +167,8 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin,
         init_central_widget(self)
         init_docks(self)
         self._tab_oeffnen(pfad)
-        self._werkzeug_leiste = WerkzeugLeiste(self._editor)
+        self._werkzeug_leiste = RechteSidebar()
+        self._werkzeug_leiste.bind(self)
         init_toolbar(self)
 
         import json as _json

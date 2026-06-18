@@ -2,7 +2,7 @@
 """
 test_editor_live.py
 ═══════════════════
-Startet den echten CodeEditor + WerkzeugLeiste und testet sie live.
+Startet den echten CodeEditor + RechteSidebar und testet sie live.
 Kein FreeCAD nötig — läuft direkt mit PySide6.
 
 Ausführen:
@@ -43,7 +43,7 @@ try:
 except ImportError:
     from PySide2 import QtTest
 from editor_widgets import CodeEditor, FehlerMinimap, JediEditor
-from werkzeuge import WerkzeugLeiste
+from aktionen_sidebar import RechteSidebar
 
 # ── QApplication (einmalig) ───────────────────────────────────────────────────
 _app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
@@ -144,12 +144,19 @@ class TestFehlerMinimap(unittest.TestCase):
         self.assertEqual(self.editor._fehler_minimap.width(), _MINIMAP_BREITE)
 
 
+class _MockEditor:
+    """Minimaler Adapter damit RechteSidebar.bind() funktioniert."""
+    def __init__(self, qplaintextedit):
+        self._editor = qplaintextedit
+
+
 class TestWerkzeugsSyntaxCheck(unittest.TestCase):
-    """Testet den Syntax-Checker der WerkzeugLeiste mit echtem Editor."""
+    """Testet den Syntax-Checker der RechteSidebar mit echtem Editor."""
 
     def setUp(self):
         self.editor = JediEditor()
-        self.wl     = WerkzeugLeiste(self.editor)
+        self.wl     = RechteSidebar()
+        self.wl.bind(_MockEditor(self.editor))
         self.editor.show()
         self.wl.show()
         _app.processEvents()

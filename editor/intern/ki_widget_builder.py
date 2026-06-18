@@ -90,16 +90,20 @@ def init_ki_widgets(editor, icons_dir: str) -> None:
             editor._src_box.addItem(src_name)
     editor._src_box.setSizePolicy(
         QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
-    editor._src_box.currentIndexChanged.connect(editor._refresh_models)
-    editor._src_box.currentTextChanged.connect(speichere_quelle)
     _gespeicherte_quelle = lade_quelle()
     if _gespeicherte_quelle in [
             editor._src_box.itemText(i) for i in range(editor._src_box.count())]:
+        editor._src_box.blockSignals(True)
         editor._src_box.setCurrentText(_gespeicherte_quelle)
+        editor._src_box.blockSignals(False)
 
     editor._model_box = QtWidgets.QComboBox()
     editor._model_box.setSizePolicy(
         QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+
+    # Signal erst verbinden nachdem _model_box existiert
+    editor._src_box.currentIndexChanged.connect(editor._refresh_models)
+    editor._src_box.currentTextChanged.connect(speichere_quelle)
 
     editor._preset_btn = QtWidgets.QToolButton()
     editor._preset_btn.setText("── Preset wählen ──")
