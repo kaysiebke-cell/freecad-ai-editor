@@ -234,7 +234,7 @@ FreeCAD_MultiAI_Panel/
 │
 ├── core/
 │   ├── params.py        # Einstellungs-Persistenz (FreeCAD-Parameter + API-Keys)
-│   ├── qt_compat.py     # PySide6-Kompatibilitäts-Layer
+│   ├── qt_compat.py     # PySide6/PySide2-Kompatibilitäts-Layer + requests-Export
 │   ├── theme.py         # Stylesheets & Design-Funktionen (hell/dunkel-adaptiv)
 │   ├── farben.py        # Farbdefinitionen für Hell- und Dunkel-Modus
 │   ├── highlighter.py   # Python-Syntax-Highlighter
@@ -260,24 +260,21 @@ FreeCAD_MultiAI_Panel/
 │   │   └── editor_widgets.py   # CodeEditor, LinksTextEdit, LineNumberArea
 │   │
 │   ├── controller/
-│   │   ├── aktionen_sidebar.py   # Aktionen-Panel
 │   │   ├── assistent.py          # Interaktiver Assistent (Button-Highlighting)
 │   │   ├── bibliothek_tab.py     # Makro-Bibliothek-Tab
 │   │   ├── browser_controller.py # Datei-Browser
 │   │   ├── ki_tools_tab.py       # KI-Tools-Tab (Direktoperationen)
-│   │   ├── snippet_controller.py # Snippets (lokal + online)
+│   │   ├── snippet_controller.py # Snippets-Tab-Controller (lokal + online)
+│   │   ├── snippet_widgets.py    # Hilfs-Widgets: SnipCommandEdit, Worker, Banner
 │   │   ├── vorschau_controller.py
-│   │   └── werkzeuge.py          # Werkzeuge-Panel (Code-Baum)
+│   │   └── werkzeuge.py          # Werkzeuge-Panel (Code-Baum, Navigation, Edit)
 │   │
 │   ├── fehler/
-│   │   ├── fehler.py             # Fehler-Übersetzer (DE/EN)
 │   │   └── fehler_panel.py       # Fehler-Panel + KI-Selbstkorrektur + Sandbox
 │   │
 │   └── ki/
-│       ├── ki_controller.py      # KI-Koordinator (Thin Wrappers)
+│       ├── ki_controller.py      # KI-Koordinator (delegiert an Kompositions-Objekte)
 │       ├── ki_werkzeuge.py       # KI-Tool-Calling
-│       ├── skills.py             # Skill-Definitionen
-│       ├── agents_md.py          # Agenten-Prompts
 │       ├── assistent_prompt.py   # Assistent-System-Prompt
 │       ├── dokument_kontext.py   # Dokument-Kontext-Aufbereitung
 │       │
@@ -296,7 +293,7 @@ FreeCAD_MultiAI_Panel/
 │   ├── manager.py       # FreeCAD Makro-Manager (Seitenleiste)
 │   ├── begruessung.py   # Willkommens-Dialog (Erststart)
 │   ├── barrierefreiheit.py  # Barrierefreiheits-Panel
-│   └── fehler.py        # Fehler-Anzeige
+│   └── fehler.py        # Fehler-Übersetzer (EN→DE) + Fehler-Anzeige
 │
 ├── data/
 │   ├── freecad_data.py       # Snippets (6 Kategorien) + API-Hints

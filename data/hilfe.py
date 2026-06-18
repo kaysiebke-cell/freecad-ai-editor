@@ -85,7 +85,7 @@ class HilfeTab(QtWidgets.QWidget):
         scroll.setWidget(container)
         layout.addWidget(scroll, stretch=1)
 
-        ver = QtWidgets.QLabel("FreeCAD MultiAI Panel  •  v1.1")
+        ver = QtWidgets.QLabel("FreeCAD MultiAI Panel  •  v1.0.0")
         ver.setFont(self._ui_font)
         ver.setAlignment(QtCore.Qt.AlignCenter)
         ver.setStyleSheet(theme.STY_VORSCHAU_STATUS(schrift.pt(schrift.STUFE_SM)))
