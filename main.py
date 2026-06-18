@@ -6,7 +6,7 @@ Führe diese Datei als FreeCAD-Makro aus oder lade sie über InitGui.py.
 Dateistruktur:
   main.py          ← diese Datei (Einstiegspunkt)
   core/            ← params, qt_compat, theme, highlighter
-  editor/          ← MakroEditor + Controller (kein Mixin mehr)
+  editor/          ← MakroEditor + Kompositions-Controller
   ui/              ← manager, begruessung, fehler
   data/            ← freecad_data, hilfe, hilfe_texte
 """
@@ -76,7 +76,6 @@ for _modul in _EIGENE_MODULE:
 # ── Imports (nach Cache-Leerung!) ─────────────────────────────────────────────
 from qt_compat import QtWidgets, QtCore, QtGui
 import theme
-import schrift
 
 import FreeCADGui as Gui
 

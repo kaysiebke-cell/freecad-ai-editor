@@ -15,7 +15,6 @@ for _p in [
         sys.path.insert(0, _p)
 
 from qt_compat import QtWidgets, QtCore, QtGui
-import schrift
 import theme
 
 
@@ -64,9 +63,15 @@ class KlappSektion(QtWidgets.QWidget):
         self._inhalt_layout.addLayout(lay)
 
 
-# ── Haupt-Mixin ───────────────────────────────────────────────────────────────
+class KiToolsTab:
+    """KI-Tools-Tab-Controller.
 
-class KiToolsTabMixin:
+    Greift nur an zwei Stellen auf den Host zurück:
+      self._e._editor_tab_widget, self._e._tabs   – aktiver Editor-Tab
+    """
+
+    def __init__(self, editor):
+        self._e = editor
 
     def _baue_ki_tools_tab(self) -> QtWidgets.QWidget:
         w = QtWidgets.QWidget()
@@ -76,7 +81,7 @@ class KiToolsTabMixin:
 
         # Info-Banner
         _verstecke = []
-        from snippet_controller import SnippetController as _TM
+        from snippet_controller import Snippets as _TM
         aussen.addWidget(_TM._baue_info_banner(
             "🛠 Was kann der Tools-Tab?",
             "Dokumentkontext: KI sieht dein FreeCAD-Dokument.<br>"
@@ -185,7 +190,7 @@ class KiToolsTabMixin:
     # ── Werkzeug-Dialog ───────────────────────────────────────────────────
 
     def _werkzeug_dialog(self, name: str, defn):
-        dlg = QtWidgets.QDialog(self)
+        dlg = QtWidgets.QDialog(self._e)
         dlg.setWindowTitle(f"🛠 {name}")
         dlg.setMinimumWidth(420)
         dlg.setMinimumHeight(300)
@@ -297,9 +302,9 @@ class KiToolsTabMixin:
         def _get_aktiver_editor():
             """Gibt das aktive QPlainTextEdit zurück."""
             try:
-                idx = self._editor_tab_widget.currentIndex()
-                if 0 <= idx < len(self._tabs):
-                    return self._tabs[idx]["editor"]
+                idx = self._e._editor_tab_widget.currentIndex()
+                if 0 <= idx < len(self._e._tabs):
+                    return self._e._tabs[idx]["editor"]
             except Exception:
                 pass
             return None

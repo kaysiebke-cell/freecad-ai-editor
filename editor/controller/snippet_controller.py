@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-editor_tabs_mixin.py
-────────────────────
-TabsMixin – Mixin-Klasse für MakroEditor mit den linken Tab-Inhalten:
+snippet_controller.py
+─────────────────────
+Snippets – linke Tab-Inhalte:
   - _baue_snippet_tab()   – Snippet-Browser (Lokal + Online GitHub)
   - _baue_hints_tab()     – FreeCAD API-Kurzreferenz
   - _baue_fehler_tab()    – Fehler-Übersetzer-Tab (linke Leiste)
@@ -251,7 +251,7 @@ class OnlinePreviewWorker(QtCore.QThread):
             self.code_geladen.emit(f"# Download fehlgeschlagen:\n# {e}")
 
 
-# ══ TabsMixin ═════════════════════════════════════════════════════════════════
+# ══ Snippets ══════════════════════════════════════════════════════════════════
 
 class _BlauBanner(QtWidgets.QFrame):
     """Banner mit blauem Hintergrund – Farbe kommt aus der Palette (Highlight), keine Hartkodierung."""
@@ -266,8 +266,17 @@ class _BlauBanner(QtWidgets.QFrame):
         painter.end()
 
 
-class SnippetController:
-    """Mixin mit den Tab-Builder-Methoden für Snippets, API-Hints und Fehler-Panel."""
+class Snippets:
+    """Snippet/Hints/Fehler-Tab-Controller.
+
+    Greift über self._e auf den Host zurück für:
+      _editor        (aktueller CodeEditor)
+      _set_status()
+      _ki_fehler_erklaeren(), _on_self_correction_needed()  (vom KI-Controller)
+    """
+
+    def __init__(self, editor):
+        self._e = editor
 
     # ── Wiederverwendbarer Info-Banner ────────────────────────────────────
     @staticmethod
@@ -483,7 +492,7 @@ class SnippetController:
             return True
         except Exception as e:
             QtWidgets.QMessageBox.warning(
-                self, "Speicherfehler", f"Fehler beim Sichern:\n{e}")
+                self._e, "Speicherfehler", f"Fehler beim Sichern:\n{e}")
             return False
 
     # ── Modus-Steuerung ───────────────────────────────────────────────────
@@ -566,16 +575,16 @@ class SnippetController:
         # Code direkt aus der Vorschau lesen – kein Doppel-Download
         code = self._snippet_vorschau.toPlainText()
         if not code or code.startswith("# Lade Code"):
-            self._set_status("⚠  Vorschau noch nicht geladen")
+            self._e._set_status("⚠  Vorschau noch nicht geladen")
             return
-        c = self._editor.textCursor()
+        c = self._e._editor.textCursor()
         if c.columnNumber() > 0 and not c.hasSelection():
             c.movePosition(QtGui.QTextCursor.EndOfBlock)
             c.insertText("\n")
         c.insertText(code)
-        self._editor.setTextCursor(c)
-        self._editor.setFocus()
-        self._set_status(
+        self._e._editor.setTextCursor(c)
+        self._e._editor.setFocus()
+        self._e._set_status(
             f"📦 '{item.text()}' eingefügt ({len(code.splitlines())} Zeilen)")
 
     def _snippet_kopieren(self):
@@ -584,19 +593,19 @@ class SnippetController:
             QtWidgets.QApplication.clipboard().setText(code)
             item = self._snippet_liste.currentItem()
             name = item.text() if item else "Snippet"
-            self._set_status(f"📋 '{name}' kopiert")
+            self._e._set_status(f"📋 '{name}' kopiert")
 
     def _markierung_als_snippet_speichern(self):
-        if not self._editor:
+        if not self._e._editor:
             return
         # Qt codiert Zeilenumbrüche in selectedText() als U+2029
-        text = self._editor.textCursor().selectedText().replace("\u2029", "\n")
+        text = self._e._editor.textCursor().selectedText().replace("\u2029", "\n")
         if not text.strip():
             QtWidgets.QMessageBox.information(
-                self, "Achtung", "Bitte markiere zuerst Code im Editor.")
+                self._e, "Achtung", "Bitte markiere zuerst Code im Editor.")
             return
         name, ok = QtWidgets.QInputDialog.getText(
-            self, "Snippet benennen", "Name für das neue Snippet:",
+            self._e, "Snippet benennen", "Name für das neue Snippet:",
             QtWidgets.QLineEdit.Normal, "⭐ Mein: ")
         if ok and name.strip():
             name = name.strip()
@@ -608,7 +617,7 @@ class SnippetController:
                 treffer = self._snippet_liste.findItems(name, QtCore.Qt.MatchExactly)
                 if treffer:
                     self._snippet_liste.setCurrentItem(treffer[0])
-                self._set_status(f"💾 Snippet '{name}' gespeichert")
+                self._e._set_status(f"💾 Snippet '{name}' gespeichert")
 
     # ── Online-Makros ─────────────────────────────────────────────────────
 
@@ -627,7 +636,7 @@ class SnippetController:
         self._snippet_liste.clear()
         if makros:
             self._snippet_liste.addItems(sorted(makros.keys()))
-            self._set_status(f"🌐 {len(makros)} Makros von GitHub geladen")
+            self._e._set_status(f"🌐 {len(makros)} Makros von GitHub geladen")
         else:
             self._snippet_liste.addItem("Keine Makros gefunden.")
 
@@ -636,7 +645,7 @@ class SnippetController:
         self._snippet_liste.clear()
         self._snippet_liste.addItem(f"❌ {fehler}")
         self._snippet_liste.addItem("Bitte Internetverbindung prüfen.")
-        self._set_status("⚠  GitHub-Abruf fehlgeschlagen")
+        self._e._set_status("⚠  GitHub-Abruf fehlgeschlagen")
 
     # ══ API-Hints-Tab ══════════════════════════════════════════════════════
     def _baue_hints_tab(self) -> QtWidgets.QWidget:
@@ -730,7 +739,7 @@ class SnippetController:
         item = self._hint_liste.currentItem()
         if item:
             QtWidgets.QApplication.clipboard().setText(item.text())
-            self._set_status(f"📋 Kopiert: {item.text()[:50]}")
+            self._e._set_status(f"📋 Kopiert: {item.text()[:50]}")
 
     # ══ Fehler-Tab (linke Leiste) ══════════════════════════════════════════
     def _baue_fehler_tab(self) -> QtWidgets.QWidget:
@@ -811,10 +820,10 @@ class SnippetController:
             ergebnis = _ue(text)
             self._ftab_ausgabe.setPlainText(ergebnis)
             # ins untere Panel spiegeln wenn vorhanden
-            if hasattr(self, "_fehler_eingabe"):
-                self._fehler_eingabe.setPlainText(text)
-            if hasattr(self, "_fehler_ausgabe"):
-                self._fehler_ausgabe.setPlainText(ergebnis)
+            if hasattr(self._e, "_fehler_eingabe"):
+                self._e._fehler_eingabe.setPlainText(text)
+            if hasattr(self._e, "_fehler_ausgabe"):
+                self._e._fehler_ausgabe.setPlainText(ergebnis)
 
         btn.clicked.connect(_uebersetzen)
         _QShortcut = getattr(QtGui, "QShortcut", None) or getattr(QtWidgets, "QShortcut", None)
@@ -834,17 +843,19 @@ class SnippetController:
 
         panel = FehlerPanel(
             uebersetze_fn = _ue,
-            ki_callback   = self._ki_fehler_erklaeren,
+            ki_callback   = self._e._ki_fehler_erklaeren,
             max_hoehe     = 150,
         )
 
-        # Rückwärts-Kompatibilität: Attribute die ki_mixin direkt liest
-        self._fehler_eingabe = panel._ein
-        self._fehler_ausgabe = panel._aus
+        # Rückwärts-Kompatibilität: Attribute die ki_fehler.py direkt auf dem
+        # echten Editor liest (self._e statt self, da diese Klasse jetzt
+        # komponiert statt gemixt ist).
+        self._e._fehler_eingabe = panel._ein
+        self._e._fehler_ausgabe = panel._aus
 
         # KI-Korrektur-Callback verdrahten
-        panel.setze_ki_korrektur_cb(self._on_self_correction_needed)
-        self._fehler_panel = panel
+        panel.setze_ki_korrektur_cb(self._e._on_self_correction_needed)
+        self._e._fehler_panel = panel
 
         return panel
 

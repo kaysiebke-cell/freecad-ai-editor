@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-editor_vorschau_mixin.py
-────────────────────────
-VorschauMixin – Interaktiver FreeCAD-3D-Viewport direkt im Editor-Tab.
+vorschau_controller.py
+──────────────────────
+Vorschau – Interaktiver FreeCAD-3D-Viewport direkt im Editor-Tab.
 
 Strategie: Widget-Embedding via setParent()
   FreeCAD läuft im selben Prozess. Der aktive View3DInventor (QWidget) wird
@@ -32,15 +32,19 @@ import theme
 import schrift
 
 
-class VorschauController:
+class Vorschau:
     """
-    Mixin: Interaktiver FreeCAD-3D-Viewport eingebettet in den Editor-Tab.
+    Interaktiver FreeCAD-3D-Viewport eingebettet in den Editor-Tab.
 
-    Erwartet auf self:
-      _editor_tab_widget   QTabWidget (Datei-Tab-Leiste)
-      _editor              aktueller JediEditor
+    Greift über self._e auf den Host zurück für:
+      _editor_tab_widget, _editor   (aktiver Editor-Tab)
       _set_status()
+      fehler_anzeigen()             (vom KI-Controller bereitgestellt)
+      findChildren()                (Qt-Methode des Hauptfensters)
     """
+
+    def __init__(self, editor):
+        self._e = editor
 
     # ── Init ──────────────────────────────────────────────────────────────
     def _vorschau_init(self):
@@ -55,26 +59,26 @@ class VorschauController:
         self._vorschau_shot_timer:   QtCore.QTimer     | None = None
         self._vorschau_code_override: str | None = None
 
-        self._editor_tab_widget.tabCloseRequested.connect(
+        self._e._editor_tab_widget.tabCloseRequested.connect(
             self._vorschau_tab_close_requested)
 
     # ── Öffentlich ────────────────────────────────────────────────────────
     def vorschau_starten(self, code: str = None):
         """Öffnet den Vorschau-Tab. Wenn code angegeben, wird er sofort ausgeführt."""
         if self._vorschau_tab_index >= 0:
-            self._editor_tab_widget.setCurrentIndex(self._vorschau_tab_index)
+            self._e._editor_tab_widget.setCurrentIndex(self._vorschau_tab_index)
         else:
             self._vorschau_widget = self._baue_vorschau_tab()
-            idx = self._editor_tab_widget.addTab(self._vorschau_widget, "👁 Vorschau")
+            idx = self._e._editor_tab_widget.addTab(self._vorschau_widget, "👁 Vorschau")
             self._vorschau_tab_index = idx
-            self._editor_tab_widget.setCurrentIndex(idx)
+            self._e._editor_tab_widget.setCurrentIndex(idx)
 
         if code:
             self._vorschau_code_override = code
-            self._set_status("👁 Vorschau-Tab — führe KI-Code aus …")
+            self._e._set_status("👁 Vorschau-Tab — führe KI-Code aus …")
             self._vorschau_ausfuehren()
         else:
-            self._set_status("👁 Vorschau-Tab geöffnet — ▶ Ausführen drücken")
+            self._e._set_status("👁 Vorschau-Tab geöffnet — ▶ Ausführen drücken")
 
     def vorschau_schliessen(self):
         self._view_zurueckgeben()
@@ -82,13 +86,13 @@ class VorschauController:
             self._vorschau_shot_timer.stop()
             self._vorschau_shot_timer = None
         if self._vorschau_tab_index >= 0:
-            self._editor_tab_widget.removeTab(self._vorschau_tab_index)
+            self._e._editor_tab_widget.removeTab(self._vorschau_tab_index)
             self._vorschau_tab_index = -1
         self._vorschau_widget   = None
         self._vorschau_container = None
         self._vorschau_status_lbl = None
         self._vorschau_log_box    = None
-        self._set_status("👁 Vorschau geschlossen")
+        self._e._set_status("👁 Vorschau geschlossen")
 
     # ── Tab-UI ────────────────────────────────────────────────────────────
     def _baue_vorschau_tab(self) -> QtWidgets.QWidget:
@@ -182,7 +186,7 @@ class VorschauController:
     # ── Ausführen ────────────────────────────────────────────────────────
     def _vorschau_ausfuehren(self):
         # Priorität: override (KI-Code) → Editor
-        code = getattr(self, "_vorschau_code_override", None) or self._editor.toPlainText().strip()
+        code = getattr(self, "_vorschau_code_override", None) or self._e._editor.toPlainText().strip()
         self._vorschau_code_override = None  # einmalig verwenden
         if not code:
             self._vorschau_log("⚠  Editor ist leer.")
@@ -193,12 +197,12 @@ class VorschauController:
         except SyntaxError as e:
             self._vorschau_log(f"❌  SyntaxError Zeile {e.lineno}: {e.msg}")
             self._vorschau_status(f"❌ SyntaxError Zeile {e.lineno}")
-            if hasattr(self._editor, "setze_fehler_zeilen") and e.lineno:
-                self._editor.setze_fehler_zeilen([e.lineno - 1])
+            if hasattr(self._e._editor, "setze_fehler_zeilen") and e.lineno:
+                self._e._editor.setze_fehler_zeilen([e.lineno - 1])
             return
 
-        if hasattr(self._editor, "setze_fehler_zeilen"):
-            self._editor.setze_fehler_zeilen([])
+        if hasattr(self._e._editor, "setze_fehler_zeilen"):
+            self._e._editor.setze_fehler_zeilen([])
         self._vorschau_log_box.clear()
         self._vorschau_log("▶ Führe Code aus …")
         self._vorschau_status("⏳ Code wird ausgeführt …")
@@ -218,14 +222,14 @@ class VorschauController:
         fehler = self._vorschau_exec(code)
         if fehler:
             self._vorschau_status(f"❌ {fehler}")
-            if hasattr(self, "fehler_anzeigen"):
-                self.fehler_anzeigen(fehler)
+            if hasattr(self._e, "fehler_anzeigen"):
+                self._e.fehler_anzeigen(fehler)
             return
 
         self._vorschau_log("✅ Ausgeführt — bette Viewport ein …")
 
         # View einbetten nach kurzem Delay (FreeCAD braucht einen Frame)
-        self._vorschau_shot_timer = QtCore.QTimer(self)
+        self._vorschau_shot_timer = QtCore.QTimer(self._e)
         self._vorschau_shot_timer.setSingleShot(True)
         self._vorschau_shot_timer.timeout.connect(self._view_einbetten)
         self._vorschau_shot_timer.start(200)
@@ -344,7 +348,7 @@ class VorschauController:
         # Dock-Zustände sichern — setParent() löst Qt-Relayout aus der Docks versteckt
         self._vorschau_dock_zustaende = [
             (d, d.isVisible())
-            for d in self.findChildren(QtWidgets.QDockWidget)
+            for d in self._e.findChildren(QtWidgets.QDockWidget)
         ]
 
         # Platzhalter ausblenden

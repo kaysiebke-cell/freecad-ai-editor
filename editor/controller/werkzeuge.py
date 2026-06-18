@@ -534,7 +534,7 @@ class WerkzeugLeiste(QtWidgets.QWidget):
         Liest die aktuelle Baumstruktur aus dem QTreeWidget und gibt sie
         als kompakten String zurück.
 
-        Verwendung in editor_ki_mixin.py:
+        Verwendung in editor.py:
             kontext = self._werkzeug_leiste.sammle_kontext_aus_baum()
         """
         struktur = []

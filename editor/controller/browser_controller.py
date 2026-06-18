@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-editor_browser_mixin.py
-───────────────────────
-BrowserMixin – Mixin-Klasse für MakroEditor mit dem Datei-Browser-Tab:
+browser_controller.py
+─────────────────────
+Browser – Datei-Browser-Tab:
   - _baue_dateibrowser_tab()  – kompletter Datei-Browser aufbauen
   - Navigation, Filter, Lesezeichen
   - Datei öffnen / Pfad kopieren / Makro-Pfad setzen
@@ -11,15 +11,22 @@ BrowserMixin – Mixin-Klasse für MakroEditor mit dem Datei-Browser-Tab:
 import os
 import json
 
-from qt_compat import QtWidgets, QtCore, QtGui
+from qt_compat import QtWidgets, QtCore
 import theme
 import schrift
 
 from editor_widgets import _DateiFilterProxy
 
 
-class BrowserController:
-    """Mixin mit dem gesamten Datei-Browser für MakroEditor."""
+class Browser:
+    """Datei-Browser-Controller.
+
+    Greift über self._e nur auf eine Stelle des Hosts zurück:
+      _tab_oeffnen(pfad)   – Datei als Editor-Tab öffnen
+    """
+
+    def __init__(self, editor):
+        self._e = editor
 
     # ══ Tab-Builder ════════════════════════════════════════════════════════
     def _baue_dateibrowser_tab(self) -> QtWidgets.QWidget:
@@ -134,7 +141,7 @@ class BrowserController:
         self._db_modell = QtWidgets.QFileSystemModel()
         self._db_modell.setRootPath("")
 
-        self._db_proxy = _DateiFilterProxy(self)
+        self._db_proxy = _DateiFilterProxy(self._e)
         self._db_proxy.setSourceModel(self._db_modell)
 
         self._db_tree = QtWidgets.QTreeView()
@@ -266,7 +273,7 @@ class BrowserController:
         """Öffnet eine Datei als Tab im Editor (oder wechselt zu bestehendem Tab)."""
         ext = os.path.splitext(pfad)[1].lower()
         if ext in (".py", ".fcmacro", ".txt", ".md", ".cfg", ".ini", ".json"):
-            self._tab_oeffnen(pfad)
+            self._e._tab_oeffnen(pfad)
         else:
             QtWidgets.QApplication.clipboard().setText(pfad)
             self._db_status.setText(f"📋 Pfad kopiert: {os.path.basename(pfad)}")
@@ -301,7 +308,7 @@ class BrowserController:
         pfad = self._db_aktueller_pfad()
         if not pfad:
             return
-        menu = QtWidgets.QMenu(self)
+        menu = QtWidgets.QMenu(self._e)
         if os.path.isfile(pfad):
             menu.addAction("📂  Im Editor öffnen").triggered.connect(
                 lambda: self._db_datei_oeffnen(pfad))
@@ -360,7 +367,7 @@ class BrowserController:
         if not ordner:
             ordner = self._db_wurzel
         name, ok = QtWidgets.QInputDialog.getText(
-            self, "Lesezeichen", "Name:",
+            self._e, "Lesezeichen", "Name:",
             text=os.path.basename(ordner) or ordner)
         if ok and name.strip():
             self._db_lesezeichen.append((name.strip(), ordner))
@@ -389,7 +396,7 @@ class BrowserController:
             self._db_status.setText("⚠ Kein gültiger Ordner")
             return
         name, ok = QtWidgets.QInputDialog.getText(
-            self, "Neue Datei anlegen", "Dateiname (ohne Endung):")
+            self._e, "Neue Datei anlegen", "Dateiname (ohne Endung):")
         if not (ok and name.strip()):
             return
         name = name.strip()
@@ -398,12 +405,12 @@ class BrowserController:
         pfad = os.path.join(ordner, name)
         if os.path.exists(pfad):
             QtWidgets.QMessageBox.warning(
-                self, "Neue Datei", f"'{name}' existiert bereits.")
+                self._e, "Neue Datei", f"'{name}' existiert bereits.")
             return
         try:
             with open(pfad, "w", encoding="utf-8") as f:
                 f.write(f"# -*- coding: utf-8 -*-\n# {name}\n\n")
             self._db_status.setText(f"✔  '{name}' angelegt")
-            self._tab_oeffnen(pfad)
+            self._e._tab_oeffnen(pfad)
         except Exception as e:
             self._db_status.setText(f"⚠ {e}")

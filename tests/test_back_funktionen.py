@@ -22,7 +22,6 @@ import base64
 import tempfile
 import unittest
 from datetime import datetime
-from unittest.mock import MagicMock, patch, PropertyMock
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -42,7 +41,6 @@ def name_fehler_demo():
     # Kommentar entfernen um Fehler zu aktivieren:
     # ergebnis = nicht_definierte_variable + 1
     # return ergebnis
-    pass
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -52,7 +50,6 @@ def type_fehler_demo():
     """Provoziert TypeError: int + str."""
     # Kommentar entfernen:
     # return 42 + "hallo"
-    pass
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -70,7 +67,6 @@ def attribut_fehler_demo():
     # Kommentar entfernen:
     # wert = None
     # return wert.upper()
-    pass
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -112,7 +108,7 @@ def neu_laden(pfad: str) -> str:
 
 
 def db_hoch(aktueller_pfad: str) -> str:
-    """Nachbau von BrowserMixin._db_hoch() – ein Verzeichnis nach oben."""
+    """Nachbau von Browser._db_hoch() – ein Verzeichnis nach oben."""
     normiert = aktueller_pfad.rstrip(os.sep) or os.sep
     eltern   = os.path.dirname(normiert)
     return eltern if eltern else os.sep
@@ -293,7 +289,7 @@ class TestNeuLaden(unittest.TestCase):
 
 
 class TestDbHoch(unittest.TestCase):
-    """Tests für BrowserMixin._db_hoch() / db_hoch()"""
+    """Tests für Browser._db_hoch()"""
 
     def test_normaler_pfad_geht_hoch(self):
         self.assertEqual(db_hoch("/home/user/projekte/makros"), "/home/user/projekte")

@@ -37,8 +37,16 @@ import schrift
 import theme
 
 
-class BibliothekTabMixin:
-    """Mixin: fügt dem MakroEditor den '📚 Bibliothek'-Tab hinzu."""
+class Bibliothek:
+    """Bibliotheks-Tab-Controller.
+
+    Greift nur an drei Stellen auf den Host zurück:
+      self._e._editor_tab_widget, self._e._tabs   – aktiver Editor-Tab
+      self._e._neue_datei()                       – neuen Tab anlegen
+    """
+
+    def __init__(self, editor):
+        self._e = editor
 
     def _baue_bibliothek_tab(self) -> QtWidgets.QWidget:
         w = QtWidgets.QWidget()
@@ -48,7 +56,7 @@ class BibliothekTabMixin:
 
         # ── Info-Banner ───────────────────────────────────────────────────
         _bib_verstecke = []
-        from snippet_controller import SnippetController as _TM
+        from snippet_controller import Snippets as _TM
         layout.addWidget(_TM._baue_info_banner(
             "📚 Was ist die Bibliothek?",
             "Getestete FreeCAD-Makros speichern & direkt ausführen.<br>"
@@ -275,7 +283,7 @@ class BibliothekTabMixin:
                     f"📥 '{e['name']}' in Editor geladen")
             else:
                 # Neuen Tab öffnen
-                self._neue_datei()
+                self._e._neue_datei()
                 editor = self._aktiver_editor()
                 if editor:
                     editor.setPlainText(code)
@@ -289,7 +297,7 @@ class BibliothekTabMixin:
         if e is None:
             return
         antwort = QtWidgets.QMessageBox.question(
-            self,
+            self._e,
             "Eintrag löschen",
             f"'{e['name']}' aus der Bibliothek löschen?",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
@@ -315,7 +323,7 @@ class BibliothekTabMixin:
 
     def _bib_speichern_dialog(self, code: str = "", ki_generiert: bool = False):
         """Zeigt den Speichern-Dialog und legt den Eintrag an."""
-        dlg = QtWidgets.QDialog(self)
+        dlg = QtWidgets.QDialog(self._e)
         dlg.setWindowTitle("💾 In Bibliothek speichern")
         dlg.setMinimumWidth(440)
 
@@ -412,9 +420,9 @@ class BibliothekTabMixin:
     def _aktiver_editor(self):
         """Gibt das aktive QPlainTextEdit zurück."""
         try:
-            idx = self._editor_tab_widget.currentIndex()
-            if 0 <= idx < len(self._tabs):
-                return self._tabs[idx]["editor"]
+            idx = self._e._editor_tab_widget.currentIndex()
+            if 0 <= idx < len(self._e._tabs):
+                return self._e._tabs[idx]["editor"]
         except Exception:
             pass
         return None
