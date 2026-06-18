@@ -350,10 +350,9 @@ class MakroLeiste(QtWidgets.QWidget):
             )
             if not ist_wb_leiste:
                 tb.setVisible(not verstecken)
-        # Alle Dock-Panels außer dem Editor selbst
+        # Alle Dock-Panels außer dem Editor selbst ausblenden
         for dock in mw.findChildren(QtWidgets.QDockWidget):
-            name = dock.objectName()
-            if not name.startswith("EditorDock_") and name != "EigeneMakroLeiste":
+            if not dock.objectName().startswith("EditorDock_"):
                 dock.setVisible(not verstecken)
 
     def _zeige_als_fenster(self, ed: MakroEditor):
