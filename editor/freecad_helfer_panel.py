@@ -429,7 +429,7 @@ class FreecadHelferPanel(QtWidgets.QWidget):
             "z.B.  ich brauch einen kasten mit loch zum anschrauben an die wand …\n"
             "(Shift+Enter = neue Zeile  |  Enter = Senden)\n"
             "Bild hierher ziehen oder Strg+V zum Einfügen")
-        self._eingabe.setMinimumHeight(120)
+        self._eingabe.setMinimumHeight(60)
         self._eingabe.setAcceptDrops(True)
         self._eingabe.installEventFilter(self)
         self._highlighter = _RechtschreibHighlighter(self._eingabe.document())
