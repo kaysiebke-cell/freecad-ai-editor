@@ -23,6 +23,14 @@ import theme
 import schrift
 
 try:
+    import site as _site, sys as _sys
+    _up = _site.getusersitepackages()
+    if _up and _up not in _sys.path:
+        _sys.path.insert(0, _up)
+except Exception:
+    pass
+
+try:
     import jedi
     _HAS_JEDI = True
 except ImportError:
