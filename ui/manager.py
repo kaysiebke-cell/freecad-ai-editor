@@ -9,7 +9,7 @@ import theme
 import FreeCADGui as Gui
 
 from editor import MakroEditor
-from params import lade_pfad, speichere_pfad, fenster_schwebend, set_fenster_schwebend
+from params import lade_pfad, speichere_pfad
 
 
 class SuchFeld(QtWidgets.QLineEdit):
@@ -326,68 +326,10 @@ class MakroLeiste(QtWidgets.QWidget):
         self._offene_editoren[pfad] = ed
         if self.chk_auto.isChecked() and os.path.isfile(pfad):
             self._watcher.addPath(pfad)
-        if fenster_schwebend():
-            self._zeige_als_fenster(ed)
-        else:
-            self._zeige_als_dock(ed, pfad)
-        return ed
-
-    def _zeige_als_fenster(self, ed: MakroEditor):
-        """Eigenständiges Fenster – kein Andocken möglich."""
-        if hasattr(ed, "_freecad_dock") and ed._freecad_dock:
-            ed._freecad_dock.setWidget(None)
-            ed._freecad_dock.deleteLater()
-            ed._freecad_dock = None
-        ed.setParent(None)
-        ed.setWindowFlags(QtCore.Qt.Window)
         ed.show()
         ed.raise_()
         ed.activateWindow()
-
-    def _zeige_als_dock(self, ed: MakroEditor, pfad: str):
-        """QDockWidget schwebend – kann per Ziehen in FreeCAD angedockt werden."""
-        mw = Gui.getMainWindow()
-        titel = os.path.basename(pfad)
-        ed.setWindowFlags(QtCore.Qt.Widget)
-        dock = QtWidgets.QDockWidget(titel, mw)
-        dock.setObjectName(f"EditorDock_{pfad}")
-        dock.setAllowedAreas(
-            QtCore.Qt.LeftDockWidgetArea  |
-            QtCore.Qt.RightDockWidgetArea |
-            QtCore.Qt.TopDockWidgetArea   |
-            QtCore.Qt.BottomDockWidgetArea)
-        dock.setWidget(ed)
-        mw.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
-        dock.setFloating(True)   # Schwebend starten – Nutzer kann andocken
-        ed._freecad_dock = dock
-        ed.show()
-        dock.show()
-        dock.raise_()
-
-    @staticmethod
-    def _freecad_inhalte(verstecken: bool):
-        """Blendet FreeCAD-Inhalte aus/ein. EigeneMakroLeiste bleibt immer sichtbar."""
-        mw = Gui.getMainWindow()
-        cw = mw.centralWidget()
-        if cw:
-            cw.setVisible(not verstecken)
-        for tb in mw.findChildren(QtWidgets.QToolBar):
-            # Workbench-Leiste (enthält ComboBox) immer sichtbar lassen
-            if not tb.findChildren(QtWidgets.QComboBox) and tb.objectName() != "Workbench":
-                tb.setVisible(not verstecken)
-        for dock in mw.findChildren(QtWidgets.QDockWidget):
-            # EigeneMakroLeiste nie verstecken
-            if dock.objectName() != "EigeneMakroLeiste":
-                dock.setVisible(not verstecken)
-
-    def wechsle_editor_modus(self, ed: MakroEditor, andockbar: bool):
-        """Geöffneten Editor live zwischen den Modi umschalten."""
-        set_fenster_schwebend(not andockbar)
-        pfad = getattr(ed, "_pfad", "") or ""
-        if andockbar:
-            self._zeige_als_dock(ed, pfad)
-        else:
-            self._zeige_als_fenster(ed)
+        return ed
 
     def _dateisuche_aus_editor(self, suchtext: str, quell_editor=None):
         """Fallback-Suche vom Editor: durchsucht alle Dateien im Makro-Pfad direkt."""

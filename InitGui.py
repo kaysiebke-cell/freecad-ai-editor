@@ -114,24 +114,10 @@ class MeineMakroWorkbench(Gui.Workbench):
         self.appendToolbar("Eigene Werkzeuge", ["Cmd_KiAssistent"])
 
     def Activated(self):
-        """Workbench aktiviert: wenn EigeneMakroLeiste angedockt ist, FreeCAD ausblenden."""
-        try:
-            from qt_compat import QtWidgets
-            from manager import MakroLeiste
-            mw = Gui.getMainWindow()
-            dock = mw.findChild(QtWidgets.QDockWidget, "EigeneMakroLeiste")
-            if dock and not dock.isFloating():
-                MakroLeiste._freecad_inhalte(verstecken=True)
-        except Exception:
-            pass
+        pass
 
     def Deactivated(self):
-        """Workbench verlassen: FreeCAD-Zustand vollständig wiederherstellen."""
-        try:
-            from manager import MakroLeiste
-            MakroLeiste._freecad_inhalte(verstecken=False)
-        except Exception:
-            pass
+        pass
 
     def GetClassName(self):
         return "Gui::PythonWorkbench"

@@ -154,55 +154,6 @@ def init_docks(editor) -> None:
     _r_farbe.addWidget(editor._btn_farbe_hell)
     _r_farbe.addStretch()
     _cfg_l.addLayout(_r_farbe)
-    _cfg_l.addWidget(_cfg_lbl("FENSTER-MODUS"))
-    _r_fenster = QtWidgets.QHBoxLayout()
-    _r_fenster.setSpacing(6)
-    editor._btn_andockbar   = QtWidgets.QPushButton("⊞  Andockbar")
-    editor._btn_frei        = QtWidgets.QPushButton("⧉  Frei schwebend")
-    editor._btn_andockbar.setCheckable(True)
-    editor._btn_frei.setCheckable(True)
-    editor._btn_andockbar.setToolTip(
-        "Fenster kann in FreeCAD angedockt werden\n"
-        "(Titelleiste an den Rand ziehen zum Andocken)")
-    editor._btn_frei.setToolTip("Eigenständiges Fenster – kein Andocken möglich")
-    _fenster_gruppe = QtWidgets.QButtonGroup(editor)
-    _fenster_gruppe.addButton(editor._btn_andockbar)
-    _fenster_gruppe.addButton(editor._btn_frei)
-
-    import params as _params
-    _ist_andockbar = not _params.fenster_schwebend()
-    editor._btn_andockbar.setChecked(_ist_andockbar)
-    editor._btn_frei.setChecked(not _ist_andockbar)
-
-    def _manager():
-        w = editor
-        while w:
-            if hasattr(w, "wechsle_editor_modus"):
-                return w
-            w = w.parent()
-        return None
-
-    def _auf_andockbar():
-        import params as _p
-        _p.set_fenster_schwebend(False)
-        m = _manager()
-        if m:
-            m.wechsle_editor_modus(editor, andockbar=True)
-
-    def _auf_frei():
-        import params as _p
-        _p.set_fenster_schwebend(True)
-        m = _manager()
-        if m:
-            m.wechsle_editor_modus(editor, andockbar=False)
-
-    editor._btn_andockbar.clicked.connect(_auf_andockbar)
-    editor._btn_frei.clicked.connect(_auf_frei)
-    _r_fenster.addWidget(editor._btn_andockbar)
-    _r_fenster.addWidget(editor._btn_frei)
-    _r_fenster.addStretch()
-    _cfg_l.addLayout(_r_fenster)
-
     _cfg_l.addWidget(_cfg_lbl("API-SCHLÜSSEL"))
     _cfg_l.addWidget(editor._key_anbieter)
     _cfg_l.addWidget(editor._key_feld)
