@@ -170,24 +170,28 @@ def init_docks(editor) -> None:
     editor._btn_schwebend.setChecked(_ist_schwebend)
     editor._btn_angedockt.setChecked(not _ist_schwebend)
 
-    def _haupt_dock():
-        # Dock-Referenz wurde in main.py auf dem MakroLeiste-Widget gespeichert
+    def _manager():
+        """Findet das MakroLeiste-Objekt durch die Widget-Elternkette."""
         w = editor
         while w:
-            if hasattr(w, "_haupt_dock"):
-                return w._haupt_dock
+            if hasattr(w, "wechsle_editor_modus"):
+                return w
             w = w.parent()
         return None
 
     def _auf_angedockt():
-        d = _haupt_dock()
-        if d:
-            d.setFloating(False)
+        import params as _p
+        _p.set_fenster_schwebend(False)
+        m = _manager()
+        if m:
+            m.wechsle_editor_modus(editor, schwebend=False)
 
     def _auf_schwebend():
-        d = _haupt_dock()
-        if d:
-            d.setFloating(True)
+        import params as _p
+        _p.set_fenster_schwebend(True)
+        m = _manager()
+        if m:
+            m.wechsle_editor_modus(editor, schwebend=True)
 
     editor._btn_angedockt.clicked.connect(_auf_angedockt)
     editor._btn_schwebend.clicked.connect(_auf_schwebend)
