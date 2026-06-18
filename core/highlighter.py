@@ -11,10 +11,10 @@ import theme
 def _lade_spell_backend():
     """Lädt enchant oder pyspellchecker; gibt (pruefen_fn, bool) zurück."""
     try:
-        import site as _site
-        _up = _site.getusersitepackages()
-        if _up and _up not in _sys.path:
-            _sys.path.insert(0, _up)
+        import glob as _glob, os as _os
+        for _sp in _glob.glob(_os.path.expanduser("~/.local/lib/python*/site-packages")):
+            if _sp not in _sys.path:
+                _sys.path.insert(0, _sp)
     except Exception:
         pass
 

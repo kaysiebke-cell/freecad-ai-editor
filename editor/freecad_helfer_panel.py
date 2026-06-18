@@ -69,12 +69,14 @@ class _SpellcheckerBackend(_SpellBackend):
         return sorted(c)[:8] if c else []
 
 def _lade_backend() -> tuple[_SpellBackend, str]:
-    # ~/.local/lib/pythonX.Y/site-packages/ für FreeCAD-AppImage sichtbar machen
+    # Alle ~/.local/lib/pythonX.Y/site-packages einbinden –
+    # AppImage nutzt ggf. andere Python-Version als das System.
     try:
-        import site as _site
-        _up = _site.getusersitepackages()
-        if _up and _up not in sys.path:
-            sys.path.insert(0, _up)
+        import glob as _glob
+        for _sp in _glob.glob(
+                __import__("os").path.expanduser("~/.local/lib/python*/site-packages")):
+            if _sp not in sys.path:
+                sys.path.insert(0, _sp)
     except Exception:
         pass
 
