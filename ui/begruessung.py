@@ -45,8 +45,8 @@ def _mkbtn(text, primary=False, parent=None):
 # ── Alle 19 KI-Anbieter ───────────────────────────────────────────────────────
 # (id, emoji-fallback, svg-dateiname, Anzeigename, Untertitel, Key-Platzhalter)
 _ALLE_ANBIETER = [
-    ("ollama",      "🖥️", None,              "Ollama",         "Lokal · kein API-Key",    ""),
-    ("anthropic",   "🤖", None,              "Anthropic",      "Claude Sonnet / Haiku",   "sk-ant-api03-…"),
+    ("ollama",      "🖥️", "ollama.svg",      "Ollama",         "Lokal · kein API-Key",    ""),
+    ("anthropic",   "🤖", "anthropic.svg",   "Anthropic",      "Claude Sonnet / Haiku",   "sk-ant-api03-…"),
     ("openai",      "✨", "openai.svg",      "OpenAI",         "GPT-4o / GPT-4o-mini",    "sk-…"),
     ("github",      "🐙", "github.svg",      "GitHub Copilot", "gpt-4o / o1-mini",        "ghp_…"),
     ("deepseek",    "🔍", "deepseek.svg",    "DeepSeek",       "deepseek-chat",            "sk-…"),
@@ -57,7 +57,7 @@ _ALLE_ANBIETER = [
     ("huggingface", "🤗", "huggingface.svg", "Hugging Face",   "Inference API",            "hf_…"),
     ("xai",         "𝕏",  "xai.svg",         "xAI (Grok)",     "grok-2",                   "xai-…"),
     ("fireworks",   "🎆", "fireworks.svg",   "Fireworks AI",   "fast inference",           "fw-…"),
-    ("openrouter",  "🔀", None,              "OpenRouter",     "100+ Modelle",             "sk-or-…"),
+    ("openrouter",  "🔀", "openrouter.svg",  "OpenRouter",     "100+ Modelle",             "sk-or-…"),
     ("moonshot",    "🌙", "moonshot.svg",    "Moonshot",       "moonshot-v1-8k",           "sk-…"),
     ("qwen",        "🌐", "qwen.svg",        "Qwen (Alibaba)", "qwen-max",                 "sk-…"),
     ("cohere",      "🧩", "cohere.svg",      "Cohere",         "command-r-plus",           "…"),
