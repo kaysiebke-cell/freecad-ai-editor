@@ -41,57 +41,31 @@ def _mkbtn(text, primary=False, parent=None):
     return b
 
 
-# ── Anbieter-Karten ────────────────────────────────────────────────────────────
-_ANBIETER = [
-    {"id": "ollama",    "icon": "🖥️", "name": "Ollama  (Lokal)",       "sub": "Kein API-Key · läuft auf deinem PC",    "color": "", "border": ""},
-    {"id": "anthropic", "icon": "🤖", "name": "Anthropic  (Claude)",    "sub": "sk-ant-…  ·  claude-sonnet / haiku",    "color": "", "border": ""},
-    {"id": "openai",    "icon": "✨", "name": "OpenAI  (ChatGPT)",      "sub": "sk-…  ·  gpt-4o / gpt-4o-mini",        "color": "", "border": ""},
-    {"id": "github",    "icon": "🐙", "name": "GitHub Copilot",         "sub": "ghp_…  ·  gpt-4o / o1-mini",           "color": "", "border": ""},
-    {"id": "later",     "icon": "⏭",  "name": "Später einrichten",      "sub": "Ohne KI starten – jederzeit nachholbar","color": "", "border": ""},
+# ── Alle 19 KI-Anbieter ───────────────────────────────────────────────────────
+# (id, Anzeigename, API-Key-Platzhalter)
+_ALLE_ANBIETER = [
+    ("ollama",      "🖥️  Ollama (Lokal)",          ""),
+    ("anthropic",   "🤖  Anthropic (Claude)",       "sk-ant-api03-…"),
+    ("openai",      "✨  OpenAI (ChatGPT)",          "sk-…"),
+    ("github",      "🐙  GitHub Copilot",            "ghp_…"),
+    ("deepseek",    "🔍  DeepSeek",                  "sk-…"),
+    ("gemini",      "💎  Google Gemini",             "AIza…"),
+    ("groq",        "⚡  Groq",                      "gsk_…"),
+    ("mistral",     "🌪️  Mistral AI",               "…"),
+    ("together",    "🤝  Together AI",               "…"),
+    ("huggingface", "🤗  Hugging Face",              "hf_…"),
+    ("xai",         "𝕏   xAI (Grok)",               "xai-…"),
+    ("fireworks",   "🎆  Fireworks AI",              "fw-…"),
+    ("openrouter",  "🔀  OpenRouter",                "sk-or-…"),
+    ("moonshot",    "🌙  Moonshot",                  "sk-…"),
+    ("qwen",        "🌐  Qwen (Alibaba)",             "sk-…"),
+    ("cohere",      "🧩  Cohere",                    "…"),
+    ("sambanova",   "⚡  SambaNova",                 "…"),
+    ("minimax",     "🔢  MiniMax",                   "…"),
+    ("llama",       "🦙  Meta Llama",                "…"),
+    ("later",       "⏭   Später einrichten",         ""),
 ]
-
-
-class AnbieterKarte(QtWidgets.QFrame):
-    """Klickbare Anbieter-Auswahl-Karte."""
-    geklickt = QtCore.Signal(str)
-
-    def __init__(self, daten: dict, parent=None):
-        super().__init__(parent)
-        self._id     = daten["id"]
-        self._color  = daten["color"]
-        self._border = daten["border"]
-        self.setCursor(QtCore.Qt.PointingHandCursor)
-        self._apply_style(False)
-
-        layout = QtWidgets.QHBoxLayout(self)
-        layout.setContentsMargins(14, 10, 14, 10)
-        layout.setSpacing(14)
-
-        icon = QtWidgets.QLabel(daten["icon"])
-        icon.setStyleSheet(theme.STY_ICON_BTN_BORDERLESS(schrift.pt(schrift.STUFE_ICON)))
-        icon.setFixedWidth(32)
-        layout.addWidget(icon)
-
-        texte = QtWidgets.QVBoxLayout()
-        texte.setSpacing(2)
-        name = QtWidgets.QLabel(daten["name"])
-        name.setStyleSheet(theme.STY_ABSCHNITT_LABEL_LG(schrift.pt(schrift.STUFE_XL)))
-        sub = QtWidgets.QLabel(daten["sub"])
-        sub.setStyleSheet(theme.STY_STATUS_LABEL(schrift.pt(schrift.STUFE_LG)))
-        texte.addWidget(name)
-        texte.addWidget(sub)
-        layout.addLayout(texte)
-        layout.addStretch()
-
-    def _apply_style(self, aktiv: bool):
-        rand = "" if aktiv else self._border
-        bg   = "" if aktiv else self._color
-    def setAktiv(self, ja: bool):
-        self._apply_style(ja)
-
-    def mousePressEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
-            self.geklickt.emit(self._id)
+_KEIN_KEY = {"ollama", "later"}
 
 
 # ── Haupt-Dialog ───────────────────────────────────────────────────────────────
@@ -115,7 +89,6 @@ class BegrüssungsDialog(QtWidgets.QDialog):
         self.setStyleSheet(theme.STY_BEGRUESSUNG_DIALOG(schrift.pt(schrift.STUFE_LG)))
 
         self._anbieter_id = None
-        self._karten: dict[str, AnbieterKarte] = {}
         self._movie = None
 
         self._stack = QtWidgets.QStackedWidget()
@@ -243,15 +216,56 @@ class BegrüssungsDialog(QtWidgets.QDialog):
         v.addWidget(hint)
         v.addSpacing(18)
 
-        for daten in _ANBIETER:
-            karte = AnbieterKarte(daten)
-            karte.geklickt.connect(self._anbieter_gewaehlt)
-            self._karten[daten["id"]] = karte
-            v.addWidget(karte)
-            v.addSpacing(6)
+        # Kompakte Dropdown-Auswahl aller 19 Anbieter
+        self._combo = QtWidgets.QComboBox()
+        self._combo.setMinimumHeight(38)
+        for aid, aname, _ in _ALLE_ANBIETER:
+            self._combo.addItem(aname, aid)
+        v.addWidget(self._combo)
+        v.addSpacing(16)
+
+        # Hinweis-Label (ändert sich je nach Auswahl)
+        self._anbieter_hint = QtWidgets.QLabel("Kein API-Key benötigt · läuft auf deinem PC")
+        self._anbieter_hint.setStyleSheet(theme.STY_STATUS_LABEL(schrift.pt(schrift.STUFE_LG)))
+        self._anbieter_hint.setWordWrap(True)
+        v.addWidget(self._anbieter_hint)
+        self._combo.currentIndexChanged.connect(self._combo_geaendert)
 
         v.addStretch(1)
+
+        btn_row = QtWidgets.QHBoxLayout()
+        btn_weiter = _mkbtn("Weiter →", primary=True)
+        btn_weiter.clicked.connect(self._anbieter_bestaetigt)
+        btn_row.addStretch()
+        btn_row.addWidget(btn_weiter)
+        v.addLayout(btn_row)
         return w
+
+    def _combo_geaendert(self, idx: int):
+        aid = self._combo.itemData(idx)
+        hints = {
+            "ollama":      "Kein API-Key benötigt · läuft auf deinem PC",
+            "later":       "Ohne KI starten – jederzeit nachholbar",
+            "anthropic":   "API-Key unter platform.anthropic.com erstellen",
+            "openai":      "API-Key unter platform.openai.com erstellen",
+            "github":      "Token unter github.com/settings/tokens erstellen",
+            "deepseek":    "API-Key unter platform.deepseek.com erstellen",
+            "gemini":       "API-Key unter aistudio.google.com erstellen",
+            "groq":         "API-Key unter console.groq.com erstellen",
+            "mistral":      "API-Key unter console.mistral.ai erstellen",
+            "together":     "API-Key unter api.together.xyz erstellen",
+            "huggingface":  "API-Key unter huggingface.co/settings/tokens erstellen",
+            "xai":          "API-Key unter console.x.ai erstellen",
+            "fireworks":    "API-Key unter fireworks.ai erstellen",
+            "openrouter":   "API-Key unter openrouter.ai erstellen",
+            "moonshot":     "API-Key unter platform.moonshot.cn erstellen",
+            "qwen":         "API-Key unter dashscope.aliyuncs.com erstellen",
+            "cohere":       "API-Key unter dashboard.cohere.com erstellen",
+            "sambanova":    "API-Key unter cloud.sambanova.ai erstellen",
+            "minimax":      "API-Key unter api.minimax.chat erstellen",
+            "llama":        "API-Key unter llama.developer.meta.com erstellen",
+        }
+        self._anbieter_hint.setText(hints.get(aid, ""))
 
     # ── Seite 2: API-Key ──────────────────────────────────────────────────────
     def _seite_apikey(self) -> QtWidgets.QWidget:
@@ -362,22 +376,18 @@ class BegrüssungsDialog(QtWidgets.QDialog):
         return w
 
     # ── Logik ─────────────────────────────────────────────────────────────────
-    def _anbieter_gewaehlt(self, anbieter_id: str):
-        for k in self._karten.values():
-            k.setAktiv(False)
-        self._karten[anbieter_id].setAktiv(True)
-        self._anbieter_id = anbieter_id
+    def _anbieter_bestaetigt(self):
+        idx = self._combo.currentIndex()
+        aid = self._combo.itemData(idx)
+        aname = self._combo.itemText(idx)
+        self._anbieter_id = aid
 
-        if anbieter_id in ("ollama", "later"):
-            self._zeige_fertig(anbieter_id)
+        if aid in _KEIN_KEY:
+            self._zeige_fertig(aid)
         else:
-            texte = {
-                "anthropic": ("Anthropic API-Key (sk-ant-…)", "sk-ant-api03-…"),
-                "openai":    ("OpenAI API-Key (sk-…)",         "sk-…"),
-                "github":    ("GitHub Copilot Token (ghp_…)",  "ghp_…"),
-            }
-            label, placeholder = texte.get(anbieter_id, ("API-Key", ""))
-            self._key_label.setText(label)
+            # Platzhalter aus _ALLE_ANBIETER holen
+            placeholder = next((ph for a, _, ph in _ALLE_ANBIETER if a == aid), "…")
+            self._key_label.setText(f"{aname.strip()} API-Key")
             self._key_feld.setPlaceholderText(placeholder)
             self._key_feld.clear()
             self._stack.setCurrentIndex(self._S_APIKEY)
@@ -389,14 +399,14 @@ class BegrüssungsDialog(QtWidgets.QDialog):
         self._zeige_fertig(self._anbieter_id)
 
     def _zeige_fertig(self, anbieter_id: str):
-        texte = {
-            "ollama":    "Ollama auf localhost:11434 wird verwendet.\nKein API-Key benötigt.",
-            "anthropic": "Dein Anthropic-Schlüssel wurde gespeichert.\nClaude ist jetzt einsatzbereit.",
-            "openai":    "Dein OpenAI-Schlüssel wurde gespeichert.\nGPT-4o ist jetzt einsatzbereit.",
-            "github":    "Dein GitHub-Token wurde gespeichert.\nCopilot ist jetzt einsatzbereit.",
-            "later":     "Du kannst die KI jederzeit über\ndie Toolbar oben links einrichten.",
-        }
-        self._fertig_text.setText(texte.get(anbieter_id or "later", ""))
+        if anbieter_id == "ollama":
+            txt = "Ollama auf localhost:11434 wird verwendet.\nKein API-Key benötigt."
+        elif anbieter_id == "later":
+            txt = "Du kannst die KI jederzeit über\ndie Toolbar oben links einrichten."
+        else:
+            name = next((n.strip() for a, n, _ in _ALLE_ANBIETER if a == anbieter_id), anbieter_id)
+            txt = f"Dein {name}-Schlüssel wurde gespeichert.\nJetzt einsatzbereit."
+        self._fertig_text.setText(txt)
         self._stack.setCurrentIndex(self._S_FERTIG)
 
     def _abschluss(self):
