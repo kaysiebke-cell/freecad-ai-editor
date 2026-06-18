@@ -176,8 +176,8 @@ ln -s /pfad/zum/FreeCAD_MultiAI_Panel ~/.var/app/org.freecad.FreeCAD/data/FreeCA
 | **Qwen (Alibaba)** | qwen-coder-plus, qwen-plus, qwen-max, qwen2.5-coder-32b | API-Key |
 | **Cohere** | command-a-03-2025, command-r-plus, command-r | API-Key |
 | **SambaNova** | DeepSeek-R1, Meta-Llama-3.3-70B, Qwen2.5-Coder | API-Key |
-| **MiniMax** | — | API-Key |
-| **Llama API** | — | API-Key |
+| **MiniMax** | MiniMax-Text-01, abab6.5s-chat | API-Key |
+| **Llama API** | Llama-4-Scout-17B, Llama-4-Maverick-17B, Llama-3.3-70B | API-Key |
 | **OpenRouter** | (alle unterstützten Modelle) | `sk-or-…` |
 
 ### Ollama (lokal, kostenlos)
@@ -224,61 +224,106 @@ export OPENROUTER_API_KEY=sk-or-...
 ## Projektstruktur
 
 ```
-FreeCAD MultiAI Panel/
+FreeCAD_MultiAI_Panel/
 │
 ├── main.py              # Einstiegspunkt (FreeCAD-Makro / Seitenleiste)
 ├── InitGui.py           # FreeCAD-GUI-Integration (Toolbar-Button)
 ├── Icon.svg             # Plugin-Icon
+├── package.xml          # FreeCAD-Addon-Metadaten
 ├── README.md
 │
 ├── core/
+│   ├── params.py        # Einstellungs-Persistenz (FreeCAD-Parameter + API-Keys)
+│   ├── qt_compat.py     # PySide6-Kompatibilitäts-Layer
 │   ├── theme.py         # Stylesheets & Design-Funktionen (hell/dunkel-adaptiv)
-│   ├── farben.py        # Explizite Farbdefinitionen für Hell- und Dunkel-Modus
+│   ├── farben.py        # Farbdefinitionen für Hell- und Dunkel-Modus
 │   ├── highlighter.py   # Python-Syntax-Highlighter
-│   ├── schrift.py       # Schriftgrößen-Konstanten
-│   ├── params.py        # Einstellungs-Persistenz (FreeCAD-Parameter)
-│   └── qt_compat.py     # PySide6-Kompatibilitäts-Layer
+│   └── schrift.py       # Schriftgrößen-Konstanten
 │
 ├── editor/
-│   ├── editor.py        # Hauptfenster (QMainWindow + 13 Dock-Panels + Toolbar)
+│   ├── editor.py        # Koordinator (QMainWindow, delegiert an intern/)
+│   ├── freecad_helfer_panel.py
+│   │
+│   ├── intern/          # Aufbau- und Logik-Module des Editors
+│   │   ├── central_widget_builder.py  # Zentrales Widget + Statusleiste
+│   │   ├── dock_builder.py            # Alle 13 Dock-Panels
+│   │   ├── toolbar_builder.py         # Werkzeug-Leiste
+│   │   ├── ki_widget_builder.py       # KI-Panel (Anbieter, Modell, Presets, Temp.)
+│   │   ├── editor_datei.py            # Datei-Logik (Speichern, Backup, Neu laden)
+│   │   ├── editor_suche.py            # Suche & Ersetzen
+│   │   ├── editor_code.py             # Formatierung, Einrückung, Selektion
+│   │   ├── editor_plan.py             # Plan-Modus, Einfügen nach Fundstelle
+│   │   ├── editor_tabs.py             # Tab-Verwaltung
+│   │   └── editor_barrierefreiheit.py # Farbschema, Schrift, Tastaturmodus
+│   │
 │   ├── widgets/
-│   │   ├── editor_widgets.py   # CodeEditor, LinksTextEdit, LineNumberArea
-│   │   └── …
+│   │   └── editor_widgets.py   # CodeEditor, LinksTextEdit, LineNumberArea
+│   │
 │   ├── controller/
-│   │   ├── aktionen_sidebar.py   # Aktionen-Panel (Rechte Werkzeug-Leiste)
-│   │   ├── bibliothek_tab.py     # Makro-Bibliothek
+│   │   ├── aktionen_sidebar.py   # Aktionen-Panel
+│   │   ├── assistent.py          # Interaktiver Assistent (Button-Highlighting)
+│   │   ├── bibliothek_tab.py     # Makro-Bibliothek-Tab
 │   │   ├── browser_controller.py # Datei-Browser
-│   │   ├── hints_controller.py   # API-Hints
-│   │   ├── ki_tools_tab.py       # Tools-Panel (Direktoperationen + Protokoll)
-│   │   ├── snippet_controller.py # Snippets (lokal + online + Info-Banner)
-│   │   ├── suche_controller.py   # Suche & Ersetzen
+│   │   ├── ki_tools_tab.py       # KI-Tools-Tab (Direktoperationen)
+│   │   ├── snippet_controller.py # Snippets (lokal + online)
 │   │   ├── vorschau_controller.py
-│   │   └── werkzeuge.py          # Werkzeuge-Panel (Code-Baum, Edit, Check)
+│   │   └── werkzeuge.py          # Werkzeuge-Panel (Code-Baum)
+│   │
 │   ├── fehler/
-│   │   └── fehler_panel.py       # Fehler-Übersetzer + KI-Korrektur
+│   │   ├── fehler.py             # Fehler-Übersetzer (DE/EN)
+│   │   └── fehler_panel.py       # Fehler-Panel + KI-Selbstkorrektur + Sandbox
+│   │
 │   └── ki/
-│       ├── ki_mixin.py           # KI-Workflow (Laden, Fragen, Ersetzen …)
-│       ├── ki_backends.py        # Stream-Backends (19 Anbieter)
-│       └── …
+│       ├── ki_controller.py      # KI-Koordinator (Thin Wrappers)
+│       ├── ki_werkzeuge.py       # KI-Tool-Calling
+│       ├── skills.py             # Skill-Definitionen
+│       ├── agents_md.py          # Agenten-Prompts
+│       ├── assistent_prompt.py   # Assistent-System-Prompt
+│       ├── dokument_kontext.py   # Dokument-Kontext-Aufbereitung
+│       │
+│       └── intern/               # KI-Implementierungs-Module
+│           ├── provider_daten.py      # Anbieter-URLs + Modell-Listen (19 Anbieter)
+│           ├── ki_streaming.py        # HTTP-Streaming aller Anbieter + Worker-Threads
+│           ├── ki_anfrage.py          # Prompt-Aufbau + KI-Anfragen
+│           ├── ki_verlauf.py          # Chat-Verlauf + Context Compacting
+│           ├── ki_chunk.py            # Chunk-Puffer + Stream-Done-Verarbeitung
+│           ├── ki_sitzung.py          # Sitzung speichern/laden (JSON)
+│           ├── ki_fehler.py           # Fehler-Panel-Integration + Selbstkorrektur
+│           ├── kod_analyse.py         # AST-Analyse (reine Funktionen)
+│           └── kod_korrektor.py       # FreeCAD-Code-Korrektur + NL-Filter
 │
 ├── ui/
-│   ├── begruessung.py   # Willkommens-Dialog (Erststart, Anbieter einrichten)
-│   ├── manager.py       # FreeCAD Makro-Manager
+│   ├── manager.py       # FreeCAD Makro-Manager (Seitenleiste)
+│   ├── begruessung.py   # Willkommens-Dialog (Erststart)
+│   ├── barrierefreiheit.py  # Barrierefreiheits-Panel
 │   └── fehler.py        # Fehler-Anzeige
 │
 ├── data/
-│   ├── freecad_data.py  # Snippets (6 Kategorien) + API-Hints
-│   ├── nl_generator.py  # System-Prompts für FC11/FC12/FC13 (NL → FreeCAD-Code)
-│   ├── hilfe_texte.py   # Eingebaute Hilfetexte (17 Abschnitte)
-│   └── hilfe.py         # Hilfe-Panel
+│   ├── freecad_data.py       # Snippets (6 Kategorien) + API-Hints
+│   ├── nl_generator.py       # System-Prompts für FC11/FC12/FC13
+│   ├── ki_modi.py            # KI-Modi (Anfänger / Experte)
+│   ├── bibliothek.py         # Makro-Bibliothek-Daten
+│   ├── anbieter_formate.py   # Anbieter-Formate
+│   ├── hilfe_texte.py        # Eingebaute Hilfetexte
+│   └── hilfe.py              # Hilfe-Panel
 │
 ├── assets/
-│   └── …                # Icons, Demo-GIF
+│   └── icons/           # SVG-Icons für KI-Anbieter, Demo-GIF
 │
-├── docs/
-│   └── …                # Ausführliche Dokumentation, siehe unten
+├── docs/                # Ausführliche Dokumentation
+│   ├── erststart.md
+│   ├── oberflaeche.md
+│   ├── panels.md
+│   ├── ki-workflow.md
+│   ├── makro-generator.md
+│   ├── snippets-und-werkzeuge.md
+│   ├── makro-bibliothek.md
+│   ├── fehler-und-backup.md
+│   └── OLLAMA_ERFAHRUNGEN.md
 │
-└── tests/               # Unit-Tests
+└── tests/
+    ├── test_back_funktionen.py
+    └── test_editor_live.py
 ```
 
 ---

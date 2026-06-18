@@ -16,17 +16,17 @@ HILFE_ABSCHNITTE: list[tuple[str, str]] = [
 Der Editor besteht aus frei anordenbaren Panels (Docks).
 
 TOOLBAR OBEN  –  alle Panels ein-/ausschalten:
-  ⚙ Einst.   KI-Quelle, Modell, Preset, Temperatur, API-Schlüssel
-  🤖 KI       Eingabefeld, KI-Antwort, Projekt-Kontext, Suche/Ersetzen
-  🎛 Aktionen Alle Aktions-Buttons (Laden, Fragen, Ersetzen, Datei …)
-  📦 Snippets Code-Snippets nach Kategorie
-  💡 API      FreeCAD API-Kurzreferenz
-  📂 Dateien  Datei-Browser (frei skalierbar)
-  🛠 Tools    FreeCAD-Dokumentkontext, Werkzeuge, Protokoll
-  📚 Bibliothek Makro-Bibliothek
-  🔧 Werkzeuge Code-Baum, Navigation, Edit-Funktionen
-  ⚠ Fehler   Fehler-Übersetzer
-  ❓ Hilfe    Diese Hilfe (immer sichtbar, ganz rechts)
+  ⚙  Einst.      KI-Quelle, Modell, Preset, Temperatur, API-Schlüssel
+  🤖 KI           Eingabefeld, KI-Antwort, Projekt-Kontext, Suche/Ersetzen
+  🎛 Akt.         Alle Aktions-Buttons (Laden, Fragen, Ersetzen, Datei …)
+  📦 Snip         Code-Snippets nach Kategorie
+  💡 API          FreeCAD API-Kurzreferenz
+  📂 Dat.         Datei-Browser (frei skalierbar)
+  🛠 Tools        FreeCAD-Dokumentkontext, Werkzeuge, Protokoll
+  📚 Bib.         Makro-Bibliothek
+  🔧 Werkz.       Code-Baum, Navigation, Edit-Funktionen
+  ⚠  Fehler       Fehler-Übersetzer + KI-Selbstkorrektur
+  ♿ Hilfe+Zugang  Interaktiver Assistent + Barrierefreiheits-Einstellungen
 
 MITTE  –  Editor (immer sichtbar)
   Mehrere Dateien gleichzeitig als Tabs.
@@ -92,11 +92,11 @@ API-SCHLÜSSEL
   Anbieter wählen → Schlüssel einfügen → Tab drücken
   Wird automatisch gespeichert (FreeCAD-Einstellungen)"""),
 
-    ("🗣️ FC11 & FC12 – Makro aus Beschreibung", """\
+    ("🗣️ FC11, FC12 & FC13 – Makro aus Beschreibung", """\
 Natürlichsprache direkt in FreeCAD-Code umwandeln.
 
 ── FC11 · Makro aus Beschreibung (Part-WB) ──────────
-  1. Preset „FC11" wählen
+  1. Preset „FC11 · Makro aus Beschreibung" wählen
   2. Ins KI-Eingabefeld tippen:
      „Eine Halterung für ein 20mm Rohr"
   3. 🤖 Fragen
@@ -108,6 +108,13 @@ Natürlichsprache direkt in FreeCAD-Code umwandeln.
     Body → Sketch → Constraints → Pad/Pocket
   ⚠ Empfohlen: Claude (Anthropic) oder GPT-4o
   ⚠ Ollama gesperrt (zu komplex für lokale Modelle)
+
+── FC13 · Schrittweise aufbauen ─────────────────────
+  Baut ein Makro Schritt für Schritt auf:
+  Jede Anfrage hängt einen neuen Block an den
+  vorhandenen Editor-Code an.
+  → Ideal für komplexere Modelle in mehreren Runden
+  ⚠ Nur mit starken Modellen (kein Ollama)
 
 Tipp: Im Anfänger-Modus erklärt die KI jeden Schritt."""),
 

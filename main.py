@@ -41,7 +41,7 @@ if not os.path.isdir(os.path.join(_DIR, "core")):
         if os.path.isdir(os.path.join(_candidate, "core")):
             _DIR = _candidate
             break
-for _sub in ("", "core", "editor/fehler", "editor/ki", "editor/controller", "editor/widgets", "editor", "ui", "data"):
+for _sub in ("", "core", "editor/fehler", "editor/ki", "editor/ki/intern", "editor/controller", "editor/widgets", "editor/intern", "editor", "ui", "data"):
     _p = os.path.join(_DIR, _sub) if _sub else _DIR
     if _p not in sys.path:
         sys.path.insert(0, _p)
