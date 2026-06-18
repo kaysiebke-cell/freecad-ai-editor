@@ -226,7 +226,7 @@ def set_farbschema_dunkel(dunkel: bool) -> None:
 
 def fenster_schwebend() -> bool:
     """True = schwebend (floating), False = angedockt."""
-    return App.ParamGet(PREF_KEY).GetBool("FensterSchwebend", False)
+    return App.ParamGet(PREF_KEY).GetBool("FensterSchwebend", True)
 
 def set_fenster_schwebend(schwebend: bool) -> None:
     App.ParamGet(PREF_KEY).SetBool("FensterSchwebend", schwebend)

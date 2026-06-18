@@ -85,7 +85,7 @@ def emoji_font(f: QtGui.QFont) -> QtGui.QFont:
     return f
 
 
-from params import DOCK_NAME, ist_erststart, fenster_schwebend, set_fenster_schwebend
+from params import DOCK_NAME, ist_erststart, fenster_schwebend
 from manager import MakroLeiste
 from begruessung import zeige_begruessung
 
@@ -172,20 +172,12 @@ def erstelle_leiste():
             # Wieder angedockt → eigene Titelleiste zurück
             dock.setTitleBarWidget(tb)
 
-    def _on_floating_changed_save(floating: bool):
-        set_fenster_schwebend(floating)
-
     dock.topLevelChanged.connect(_on_floating_changed)
-    dock.topLevelChanged.connect(_on_floating_changed_save)
     mw.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
 
     model_dock = mw.findChild(QtWidgets.QDockWidget, "Model")
     if model_dock:
         mw.tabifyDockWidget(model_dock, dock)
-
-    # Gespeicherten Fenstermodus anwenden
-    if fenster_schwebend():
-        dock.setFloating(True)
 
     dock.show()
     dock.raise_()
