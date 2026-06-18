@@ -332,8 +332,24 @@ class MakroLeiste(QtWidgets.QWidget):
             self._zeige_als_dock(ed, pfad)
         return ed
 
+    @staticmethod
+    def _freecad_inhalte(verstecken: bool):
+        """Blendet FreeCAD-Zentralbereich + alle Dock-Panels aus/ein."""
+        mw = Gui.getMainWindow()
+        # Zentrales MDI-Widget (3D-Ansicht)
+        cw = mw.centralWidget()
+        if cw:
+            cw.setVisible(not verstecken)
+        # Alle vorhandenen Dock-Panels außer dem Editor selbst
+        for dock in mw.findChildren(QtWidgets.QDockWidget):
+            name = dock.objectName()
+            if not name.startswith("EditorDock_") and name != "EigeneMakroLeiste":
+                dock.setVisible(not verstecken)
+
     def _zeige_als_fenster(self, ed: MakroEditor):
         """Eigenständiges Fenster – kein Andocken möglich."""
+        # FreeCAD-Inhalte wieder einblenden
+        self._freecad_inhalte(verstecken=False)
         if hasattr(ed, "_freecad_dock") and ed._freecad_dock:
             ed._freecad_dock.setWidget(None)
             ed._freecad_dock.deleteLater()
@@ -345,7 +361,7 @@ class MakroLeiste(QtWidgets.QWidget):
         ed.activateWindow()
 
     def _zeige_als_dock(self, ed: MakroEditor, pfad: str):
-        """QDockWidget schwebend – kann per Ziehen in FreeCAD angedockt werden."""
+        """Editor als Dock in FreeCAD – FreeCAD-Inhalte werden ausgeblendet."""
         mw = Gui.getMainWindow()
         titel = os.path.basename(pfad)
         ed.setWindowFlags(QtCore.Qt.Widget)
@@ -358,11 +374,16 @@ class MakroLeiste(QtWidgets.QWidget):
             QtCore.Qt.BottomDockWidgetArea)
         dock.setWidget(ed)
         mw.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
-        dock.setFloating(True)   # Schwebend starten – Nutzer kann andocken
         ed._freecad_dock = dock
+        # FreeCAD-Inhalte ausblenden → Editor bekommt den vollen Platz
+        self._freecad_inhalte(verstecken=True)
         ed.show()
         dock.show()
         dock.raise_()
+
+        # Beim Schließen des Docks FreeCAD-Inhalte wiederherstellen
+        dock.visibilityChanged.connect(
+            lambda vis: self._freecad_inhalte(verstecken=False) if not vis else None)
 
     def wechsle_editor_modus(self, ed: MakroEditor, andockbar: bool):
         """Geöffneten Editor live zwischen den Modi umschalten."""
