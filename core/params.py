@@ -218,8 +218,8 @@ def erststart_erledigt():
     App.ParamGet(PREF_KEY).SetBool("ErstStartErledigt", True)
 
 def fenster_schwebend() -> bool:
-    """True = Panel zuletzt schwebend, False = angedockt (Standard)."""
-    return App.ParamGet(PREF_KEY).GetBool("PanelSchwebend", False)
+    """True = Panel schwebend (Standard), False = angedockt."""
+    return App.ParamGet(PREF_KEY).GetBool("PanelSchwebend", True)
 
 def set_fenster_schwebend(schwebend: bool) -> None:
     App.ParamGet(PREF_KEY).SetBool("PanelSchwebend", schwebend)

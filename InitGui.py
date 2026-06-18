@@ -138,6 +138,6 @@ def _panel_starten():
 
 try:
     from PySide6.QtCore import QTimer
-    QTimer.singleShot(500, _panel_starten)
+    QTimer.singleShot(1000, _panel_starten)
 except Exception:
     pass
