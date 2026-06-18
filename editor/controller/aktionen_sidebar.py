@@ -299,6 +299,12 @@ class RechteSidebar(QtWidgets.QWidget):
         self._info_lbl   = QtWidgets.QLabel("—")
         self._check_lbl  = QtWidgets.QLabel("")
 
+        # Nav-Panel sofort öffnen (kein Animate – Widget noch nicht sichtbar)
+        self._cur = "nav"
+        self._rail.set_active("nav")
+        self._flyout.set_content(self._build("nav"))
+        self._flyout.setMaximumWidth(_PANEL_W)
+
     # ── öffentlich ───────────────────────────────────────────────────────────
 
     def bind(self, editor):
