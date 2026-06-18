@@ -217,6 +217,13 @@ def ist_erststart() -> bool:
 def erststart_erledigt():
     App.ParamGet(PREF_KEY).SetBool("ErstStartErledigt", True)
 
+def fenster_schwebend() -> bool:
+    """True = Panel zuletzt schwebend, False = angedockt (Standard)."""
+    return App.ParamGet(PREF_KEY).GetBool("PanelSchwebend", False)
+
+def set_fenster_schwebend(schwebend: bool) -> None:
+    App.ParamGet(PREF_KEY).SetBool("PanelSchwebend", schwebend)
+
 def farbschema_dunkel() -> bool:
     """True = Dunkelmod, False = Hellmod."""
     return App.ParamGet(PREF_KEY).GetBool("FarbschemaDunkel", True)
