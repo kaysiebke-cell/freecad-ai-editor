@@ -198,8 +198,8 @@ def init_docks(editor) -> None:
 
     editor._btn_andockbar.clicked.connect(_auf_andockbar)
     editor._btn_frei.clicked.connect(_auf_frei)
-    _r_fenster.addWidget(editor._btn_angedockt)
-    _r_fenster.addWidget(editor._btn_schwebend)
+    _r_fenster.addWidget(editor._btn_andockbar)
+    _r_fenster.addWidget(editor._btn_frei)
     _r_fenster.addStretch()
     _cfg_l.addLayout(_r_fenster)
 

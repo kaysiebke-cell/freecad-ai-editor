@@ -111,10 +111,10 @@ def erstelle_leiste():
     def _sync_modus_buttons(floating: bool):
         try:
             editor = next((w for w in _leiste.findChildren(QtWidgets.QWidget)
-                           if hasattr(w, "_btn_angedockt")), None)
+                           if hasattr(w, "_btn_andockbar")), None)
             if editor:
-                editor._btn_schwebend.setChecked(floating)
-                editor._btn_angedockt.setChecked(not floating)
+                editor._btn_frei.setChecked(floating)
+                editor._btn_andockbar.setChecked(not floating)
         except Exception:
             pass
     dock.topLevelChanged.connect(_sync_modus_buttons)
