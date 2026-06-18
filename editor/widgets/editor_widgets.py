@@ -530,6 +530,13 @@ class JediEditor(CodeEditor):
         if event.text() and event.text().isalpha():
             self._korrigiere_block_fort()
 
+        # Autovervollständigung nach jedem Buchstaben / Punkt / Unterstrich starten
+        if _HAS_JEDI and event.text() and event.text() in (
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ._"):
+            self._jedi_timer.start()
+        elif event.key() == QtCore.Qt.Key_Backspace:
+            self._jedi_timer.start()
+
     def insertFromMimeData(self, source):
         """
         Beim Einfügen (Strg+V) wird der eingefügte Block automatisch
