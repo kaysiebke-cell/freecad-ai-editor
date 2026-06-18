@@ -1,6 +1,42 @@
 # -*- coding: utf-8 -*-
+import re as _re
+import sys as _sys
+
 from qt_compat import QtGui, QtCore
 import theme
+
+
+# ── Rechtschreibprüfung ───────────────────────────────────────────────────────
+
+def _lade_spell_backend():
+    """Lädt enchant oder pyspellchecker; gibt (pruefen_fn, bool) zurück."""
+    try:
+        import site as _site
+        _up = _site.getusersitepackages()
+        if _up and _up not in _sys.path:
+            _sys.path.insert(0, _up)
+    except Exception:
+        pass
+
+    try:
+        import enchant as _e
+        _d = _e.Dict("de_DE")
+        return _d.check, True
+    except Exception:
+        pass
+
+    try:
+        from spellchecker import SpellChecker as _SC
+        _s = _SC(language="de")
+        return lambda w: not _s.unknown([w]), True
+    except Exception:
+        pass
+
+    return lambda w: True, False
+
+
+_SPELL_CHECK, _HAT_SPELL = _lade_spell_backend()
+_WORT_RE = _re.compile(r"\b[A-Za-zÄäÖöÜüß]{3,}\b")
 
 
 class PythonHighlighter(QtGui.QSyntaxHighlighter):
@@ -106,6 +142,12 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
         self._kommentar_re  = QtCore.QRegularExpression(r"#[^\n]*")
         self._kommentar_fmt = F(_FARBEN["kommentar"], kursiv=True)
 
+        # Rechtschreib-Unterstriche (Kommentare + Strings)
+        self._spell_fmt = QtGui.QTextCharFormat()
+        self._spell_fmt.setUnderlineStyle(
+            QtGui.QTextCharFormat.SpellCheckUnderline)
+        self._spell_fmt.setUnderlineColor(QtGui.QColor("red"))
+
         # Triple-String-Formate für Multiline
         self._triple_fmt = F(_FARBEN["triple"])
         self._triple_re_start = [
@@ -145,6 +187,28 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
         # 4) Triple-Strings (Multiline – State 1 = """, State 2 = ''')
         self._handle_triple(text, '"""', 1)
         self._handle_triple(text, "'''", 2)
+
+        # 5) Rechtschreibprüfung in Kommentaren und Triple-String-Blöcken
+        if _HAT_SPELL:
+            self._spell_check_zeile(text)
+
+    def _spell_check_zeile(self, text: str):
+        """Unterstreicht falsch geschriebene Wörter in Kommentaren / Triple-Strings."""
+        in_triple = self.previousBlockState() in (1, 2)
+        stripped  = text.lstrip()
+
+        # Nur Kommentare und Triple-String-Zeilen prüfen
+        is_kommentar = stripped.startswith("#")
+        if not (is_kommentar or in_triple or self.currentBlockState() in (1, 2)):
+            return
+
+        offset = text.index("#") if is_kommentar else 0
+
+        for m in _WORT_RE.finditer(text, offset):
+            wort = m.group()
+            if not _SPELL_CHECK(wort):
+                fmt = QtGui.QTextCharFormat(self._spell_fmt)
+                self.setFormat(m.start(), len(wort), fmt)
 
     def _handle_triple(self, text: str, delim: str, state_id: int):
         re_delim = QtCore.QRegularExpression(QtCore.QRegularExpression.escape(delim))
