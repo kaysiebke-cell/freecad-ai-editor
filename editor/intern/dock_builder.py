@@ -154,6 +154,48 @@ def init_docks(editor) -> None:
     _r_farbe.addWidget(editor._btn_farbe_hell)
     _r_farbe.addStretch()
     _cfg_l.addLayout(_r_farbe)
+    _cfg_l.addWidget(_cfg_lbl("FENSTER-MODUS"))
+    _r_fenster = QtWidgets.QHBoxLayout()
+    _r_fenster.setSpacing(6)
+    editor._btn_angedockt  = QtWidgets.QPushButton("⊞  Angedockt")
+    editor._btn_schwebend  = QtWidgets.QPushButton("⧉  Schwebend")
+    editor._btn_angedockt.setCheckable(True)
+    editor._btn_schwebend.setCheckable(True)
+    _fenster_gruppe = QtWidgets.QButtonGroup(editor)
+    _fenster_gruppe.addButton(editor._btn_angedockt)
+    _fenster_gruppe.addButton(editor._btn_schwebend)
+
+    import params as _params
+    _ist_schwebend = _params.fenster_schwebend()
+    editor._btn_schwebend.setChecked(_ist_schwebend)
+    editor._btn_angedockt.setChecked(not _ist_schwebend)
+
+    def _haupt_dock():
+        try:
+            import FreeCADGui as _Gui
+            from qt_compat import QtWidgets as _Qw
+            from params import DOCK_NAME as _DN
+            return _Gui.getMainWindow().findChild(_Qw.QDockWidget, _DN)
+        except Exception:
+            return None
+
+    def _auf_angedockt():
+        d = _haupt_dock()
+        if d:
+            d.setFloating(False)
+
+    def _auf_schwebend():
+        d = _haupt_dock()
+        if d:
+            d.setFloating(True)
+
+    editor._btn_angedockt.clicked.connect(_auf_angedockt)
+    editor._btn_schwebend.clicked.connect(_auf_schwebend)
+    _r_fenster.addWidget(editor._btn_angedockt)
+    _r_fenster.addWidget(editor._btn_schwebend)
+    _r_fenster.addStretch()
+    _cfg_l.addLayout(_r_fenster)
+
     _cfg_l.addWidget(_cfg_lbl("API-SCHLÜSSEL"))
     _cfg_l.addWidget(editor._key_anbieter)
     _cfg_l.addWidget(editor._key_feld)
