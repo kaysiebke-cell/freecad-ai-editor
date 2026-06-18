@@ -98,8 +98,12 @@ class MeineMakroWorkbench(Gui.Workbench):
 
     def Initialize(self):
         base = _MODDIR
-        for sub in ("", "core", "editor/fehler", "editor/ki",
-                    "editor/controller", "editor/widgets", "editor", "ui", "data"):
+        for sub in ("", "core",
+                    "editor", "editor/intern",
+                    "editor/fehler",
+                    "editor/ki", "editor/ki/intern",
+                    "editor/controller", "editor/widgets",
+                    "ui", "data"):
             p = os.path.join(base, sub) if sub else base
             if os.path.isdir(p) and p not in sys.path:
                 sys.path.insert(0, p)
