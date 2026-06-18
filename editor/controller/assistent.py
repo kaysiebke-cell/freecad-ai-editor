@@ -191,25 +191,42 @@ class AssistentPanel(QtWidgets.QWidget):
         # Chat-Anzeige
         self._anzeige = QtWidgets.QTextEdit()
         self._anzeige.setReadOnly(True)
-        lay.addWidget(self._anzeige, 1)
 
-        # Eingabe + Button
+        # ── Splitter: Chat oben / Eingabe unten (frei skalierbar) ────────
+        splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        splitter.setChildrenCollapsible(False)
+        splitter.addWidget(self._anzeige)
+
+        _unten = QtWidgets.QWidget()
+        _unten_lay = QtWidgets.QVBoxLayout(_unten)
+        _unten_lay.setContentsMargins(0, 4, 0, 0)
+        _unten_lay.setSpacing(4)
+
+        # Eingabe (mehrzeilig) + Button
         reihe = QtWidgets.QHBoxLayout()
-        self._eingabe = QtWidgets.QLineEdit()
+        self._eingabe = QtWidgets.QPlainTextEdit()
         self._eingabe.setPlaceholderText(
-            'z.B. "wie übersetze ich einen Fehler?" oder "wie richte ich Ollama ein?"')
-        self._eingabe.returnPressed.connect(self._fragen)
+            'z.B. "wie übersetze ich einen Fehler?" oder "wie richte ich Ollama ein?"\n'
+            '(Enter = Senden  |  Shift+Enter = neue Zeile)')
+        self._eingabe.setMinimumHeight(30)
+        self._eingabe.installEventFilter(self)
         reihe.addWidget(self._eingabe)
 
         self._btn_fragen = QtWidgets.QPushButton("❓ Fragen")
+        self._btn_fragen.setFixedWidth(80)
         self._btn_fragen.clicked.connect(self._fragen)
-        reihe.addWidget(self._btn_fragen)
-        lay.addLayout(reihe)
+        reihe.addWidget(self._btn_fragen, 0, QtCore.Qt.AlignBottom)
+        _unten_lay.addLayout(reihe)
 
         # Verlauf löschen
         btn_clear = QtWidgets.QPushButton("🗑  Verlauf löschen")
         btn_clear.clicked.connect(self._verlauf_loeschen)
-        lay.addWidget(btn_clear)
+        _unten_lay.addWidget(btn_clear)
+
+        splitter.addWidget(_unten)
+        splitter.setStretchFactor(0, 3)
+        splitter.setStretchFactor(1, 1)
+        lay.addWidget(splitter, 1)
 
     # ── Fragen ────────────────────────────────────────────────────────────
     def _fragen(self):
@@ -218,13 +235,13 @@ class AssistentPanel(QtWidgets.QWidget):
                 f"<b style='color:{self.palette().color(QtGui.QPalette.ColorRole.BrightText).name()};'>"
                 f"⚠ requests-Modul nicht installiert.</b><br>")
             return
-        frage = self._eingabe.text().strip()
+        frage = self._eingabe.toPlainText().strip()
         if not frage:
             return
         if self._thread and self._thread.isRunning():
             self._thread.stop()
 
-        self._eingabe.clear()
+        self._eingabe.setPlainText("")
         self._btn_fragen.setEnabled(False)
         self._anzeige.append(f"<b>Du:</b> {frage}<br>")
         self._anzeige.append("<b>Assistent:</b> ")
@@ -296,3 +313,14 @@ class AssistentPanel(QtWidgets.QWidget):
 
     def _verlauf_loeschen(self):
         self._anzeige.clear()
+
+    # ── Event-Filter: Enter = Senden, Shift+Enter = neue Zeile ───────────
+    def eventFilter(self, obj, event):
+        if obj is self._eingabe and event.type() == QtCore.QEvent.KeyPress:
+            key  = event.key()
+            mods = event.modifiers()
+            if (key in (QtCore.Qt.Key_Return, QtCore.Qt.Key_Enter)
+                    and not (mods & QtCore.Qt.ShiftModifier)):
+                self._fragen()
+                return True
+        return super().eventFilter(obj, event)
