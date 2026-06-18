@@ -366,8 +366,9 @@ class FreecadHelferPanel(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._stream_bubble  = None
-        self._anhang_pixmap  = None          # QPixmap oder None
+        self._anhang_pixmap  = None
         self._letzter_eingabe_text = ""
+        self._aktuelles_modell = ""
 
         self._chunk_signal.connect(self._on_chunk)
         self._done_signal.connect(self._on_done)
@@ -388,14 +389,6 @@ class FreecadHelferPanel(QtWidgets.QWidget):
         titel.setStyleSheet(theme.STY_HELFER_TITEL())
         kopf.addWidget(titel)
         kopf.addStretch()
-
-        self._modell_box = QtWidgets.QComboBox()
-        self._modell_box.setMinimumWidth(150)
-        self._modell_box.setToolTip("Ollama-Modell auswählen")
-        self._modell_box.currentTextChanged.connect(
-            lambda _: self._pruefe_vision_modell())
-        kopf.addWidget(QtWidgets.QLabel("Modell:"))
-        kopf.addWidget(self._modell_box)
 
         self._status_lbl = QtWidgets.QLabel("")
         self._status_lbl.setStyleSheet(theme.STY_HELFER_LABEL_SM())
@@ -495,9 +488,10 @@ class FreecadHelferPanel(QtWidgets.QWidget):
     def _lade_modelle(self):
         modelle = _ollama_modelle()
         if modelle:
-            self._modell_box.addItems(modelle)
-            self._status_lbl.setText("✅ verbunden")
+            self._aktuelles_modell = modelle[0]
+            self._status_lbl.setText(f"✅ {self._aktuelles_modell}")
         else:
+            self._aktuelles_modell = ""
             self._status_lbl.setText("⚠ Ollama nicht gefunden")
 
     # ── Bild-Handling ─────────────────────────────────────────────────────────
@@ -561,7 +555,7 @@ class FreecadHelferPanel(QtWidgets.QWidget):
         if self._anhang_pixmap is None:
             self._vision_warnung.setVisible(False)
             return
-        modell = self._modell_box.currentText()
+        modell = self._aktuelles_modell
         if modell and not _ist_vision_modell(modell):
             pal    = self.palette()
             dunkel = pal.color(QtGui.QPalette.Base).lightness() < 128
@@ -608,7 +602,7 @@ class FreecadHelferPanel(QtWidgets.QWidget):
         self._füge_bubble_ein(anzeige_text, "nutzer")
 
         self._stream_bubble = self._füge_bubble_ein("", "ki")
-        modell = self._modell_box.currentText() or "llama3"
+        modell = self._aktuelles_modell or "llama3"
 
         # Bild als Base64 vorbereiten (nur wenn Vision-Modell)
         bild_b64 = None
