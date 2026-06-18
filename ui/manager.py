@@ -329,50 +329,49 @@ class MakroLeiste(QtWidgets.QWidget):
         if fenster_schwebend():
             self._zeige_als_fenster(ed)
         else:
-            self._docke_editor_ein(ed, pfad)
+            self._zeige_als_dock(ed, pfad)
         return ed
 
     def _zeige_als_fenster(self, ed: MakroEditor):
-        """Editor als eigenständiges schwebende Fenster öffnen."""
+        """Eigenständiges Fenster – kein Andocken möglich."""
+        if hasattr(ed, "_freecad_dock") and ed._freecad_dock:
+            ed._freecad_dock.setWidget(None)
+            ed._freecad_dock.deleteLater()
+            ed._freecad_dock = None
+        ed.setParent(None)
         ed.setWindowFlags(QtCore.Qt.Window)
         ed.show()
         ed.raise_()
         ed.activateWindow()
 
-    def _docke_editor_ein(self, ed: MakroEditor, pfad: str):
-        """Editor als Dock-Panel in FreeCAD einbetten."""
+    def _zeige_als_dock(self, ed: MakroEditor, pfad: str):
+        """QDockWidget schwebend – kann per Ziehen in FreeCAD angedockt werden."""
         mw = Gui.getMainWindow()
         titel = os.path.basename(pfad)
-        # QMainWindow als normales Widget einbetten
         ed.setWindowFlags(QtCore.Qt.Widget)
         dock = QtWidgets.QDockWidget(titel, mw)
         dock.setObjectName(f"EditorDock_{pfad}")
         dock.setAllowedAreas(
-            QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
+            QtCore.Qt.LeftDockWidgetArea  |
+            QtCore.Qt.RightDockWidgetArea |
+            QtCore.Qt.TopDockWidgetArea   |
+            QtCore.Qt.BottomDockWidgetArea)
         dock.setWidget(ed)
-        dock.setAttribute(QtCore.Qt.WA_DeleteOnClose, False)
         mw.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
-        ed._freecad_dock = dock   # Referenz für spätere Umschaltung
+        dock.setFloating(True)   # Schwebend starten – Nutzer kann andocken
+        ed._freecad_dock = dock
         ed.show()
         dock.show()
         dock.raise_()
 
-    def wechsle_editor_modus(self, ed: MakroEditor, schwebend: bool):
-        """Bereits geöffneten Editor zwischen Fenster und Dock umschalten."""
-        set_fenster_schwebend(schwebend)
-        pfad = ed.property("pfad") or ""
-        if schwebend:
-            # Aus Dock herauslösen
-            if hasattr(ed, "_freecad_dock") and ed._freecad_dock:
-                ed._freecad_dock.setWidget(None)
-                ed._freecad_dock.close()
-                ed._freecad_dock.deleteLater()
-                ed._freecad_dock = None
-            self._zeige_als_fenster(ed)
+    def wechsle_editor_modus(self, ed: MakroEditor, andockbar: bool):
+        """Geöffneten Editor live zwischen den Modi umschalten."""
+        set_fenster_schwebend(not andockbar)
+        pfad = getattr(ed, "_pfad", "") or ""
+        if andockbar:
+            self._zeige_als_dock(ed, pfad)
         else:
-            # Als Dock einbetten
-            ed.hide()
-            self._docke_editor_ein(ed, pfad)
+            self._zeige_als_fenster(ed)
 
     def _dateisuche_aus_editor(self, suchtext: str, quell_editor=None):
         """Fallback-Suche vom Editor: durchsucht alle Dateien im Makro-Pfad direkt."""

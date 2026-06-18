@@ -157,21 +157,24 @@ def init_docks(editor) -> None:
     _cfg_l.addWidget(_cfg_lbl("FENSTER-MODUS"))
     _r_fenster = QtWidgets.QHBoxLayout()
     _r_fenster.setSpacing(6)
-    editor._btn_angedockt  = QtWidgets.QPushButton("⊞  Angedockt")
-    editor._btn_schwebend  = QtWidgets.QPushButton("⧉  Schwebend")
-    editor._btn_angedockt.setCheckable(True)
-    editor._btn_schwebend.setCheckable(True)
+    editor._btn_andockbar   = QtWidgets.QPushButton("⊞  Andockbar")
+    editor._btn_frei        = QtWidgets.QPushButton("⧉  Frei schwebend")
+    editor._btn_andockbar.setCheckable(True)
+    editor._btn_frei.setCheckable(True)
+    editor._btn_andockbar.setToolTip(
+        "Fenster kann in FreeCAD angedockt werden\n"
+        "(Titelleiste an den Rand ziehen zum Andocken)")
+    editor._btn_frei.setToolTip("Eigenständiges Fenster – kein Andocken möglich")
     _fenster_gruppe = QtWidgets.QButtonGroup(editor)
-    _fenster_gruppe.addButton(editor._btn_angedockt)
-    _fenster_gruppe.addButton(editor._btn_schwebend)
+    _fenster_gruppe.addButton(editor._btn_andockbar)
+    _fenster_gruppe.addButton(editor._btn_frei)
 
     import params as _params
-    _ist_schwebend = _params.fenster_schwebend()
-    editor._btn_schwebend.setChecked(_ist_schwebend)
-    editor._btn_angedockt.setChecked(not _ist_schwebend)
+    _ist_andockbar = not _params.fenster_schwebend()
+    editor._btn_andockbar.setChecked(_ist_andockbar)
+    editor._btn_frei.setChecked(not _ist_andockbar)
 
     def _manager():
-        """Findet das MakroLeiste-Objekt durch die Widget-Elternkette."""
         w = editor
         while w:
             if hasattr(w, "wechsle_editor_modus"):
@@ -179,22 +182,22 @@ def init_docks(editor) -> None:
             w = w.parent()
         return None
 
-    def _auf_angedockt():
+    def _auf_andockbar():
         import params as _p
         _p.set_fenster_schwebend(False)
         m = _manager()
         if m:
-            m.wechsle_editor_modus(editor, schwebend=False)
+            m.wechsle_editor_modus(editor, andockbar=True)
 
-    def _auf_schwebend():
+    def _auf_frei():
         import params as _p
         _p.set_fenster_schwebend(True)
         m = _manager()
         if m:
-            m.wechsle_editor_modus(editor, schwebend=True)
+            m.wechsle_editor_modus(editor, andockbar=False)
 
-    editor._btn_angedockt.clicked.connect(_auf_angedockt)
-    editor._btn_schwebend.clicked.connect(_auf_schwebend)
+    editor._btn_andockbar.clicked.connect(_auf_andockbar)
+    editor._btn_frei.clicked.connect(_auf_frei)
     _r_fenster.addWidget(editor._btn_angedockt)
     _r_fenster.addWidget(editor._btn_schwebend)
     _r_fenster.addStretch()
