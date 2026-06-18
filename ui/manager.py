@@ -332,56 +332,20 @@ class MakroLeiste(QtWidgets.QWidget):
             self._zeige_als_dock(ed, pfad)
         return ed
 
-    @staticmethod
-    def _freecad_inhalte(verstecken: bool):
-        """Blendet FreeCAD-Zentralbereich, Toolbars und Dock-Panels aus/ein."""
-        mw = Gui.getMainWindow()
-        # Zentrales MDI-Widget (3D-Ansicht)
-        cw = mw.centralWidget()
-        if cw:
-            cw.setVisible(not verstecken)
-        # Werkzeugleisten – Workbench-Leiste bleibt immer sichtbar
-        for tb in mw.findChildren(QtWidgets.QToolBar):
-            # Workbench-Leiste erkennen: enthält eine ComboBox (Workbench-Auswahl)
-            # oder heißt "Workbench"
-            ist_wb_leiste = (
-                tb.objectName() == "Workbench"
-                or bool(tb.findChildren(QtWidgets.QComboBox))
-            )
-            if not ist_wb_leiste:
-                tb.setVisible(not verstecken)
-        # Alle Dock-Panels außer dem Editor selbst ausblenden
-        for dock in mw.findChildren(QtWidgets.QDockWidget):
-            if not dock.objectName().startswith("EditorDock_"):
-                dock.setVisible(not verstecken)
-
     def _zeige_als_fenster(self, ed: MakroEditor):
         """Eigenständiges Fenster – kein Andocken möglich."""
-        mw = Gui.getMainWindow()
         if hasattr(ed, "_freecad_dock") and ed._freecad_dock:
-            # Dock schließen – visibilityChanged stellt FreeCAD-Inhalte wieder her
             ed._freecad_dock.setWidget(None)
             ed._freecad_dock.deleteLater()
             ed._freecad_dock = None
-        else:
-            # Kein Dock aktiv – FreeCAD-Inhalte direkt wiederherstellen
-            self._freecad_inhalte(verstecken=False)
-        # Elternelement auf Hauptfenster setzen, damit Qt Geometrie kennt
-        ed.setParent(mw)
+        ed.setParent(None)
         ed.setWindowFlags(QtCore.Qt.Window)
-        if not ed.isVisible() or ed.size().isEmpty():
-            mw_geo = mw.geometry()
-            ed.resize(int(mw_geo.width() * 0.7), int(mw_geo.height() * 0.85))
-            ed.move(
-                mw_geo.x() + int(mw_geo.width() * 0.15),
-                mw_geo.y() + int(mw_geo.height() * 0.075),
-            )
         ed.show()
         ed.raise_()
         ed.activateWindow()
 
     def _zeige_als_dock(self, ed: MakroEditor, pfad: str):
-        """Editor als Dock in FreeCAD – FreeCAD-Inhalte werden ausgeblendet."""
+        """QDockWidget schwebend – kann per Ziehen in FreeCAD angedockt werden."""
         mw = Gui.getMainWindow()
         titel = os.path.basename(pfad)
         ed.setWindowFlags(QtCore.Qt.Widget)
@@ -394,16 +358,27 @@ class MakroLeiste(QtWidgets.QWidget):
             QtCore.Qt.BottomDockWidgetArea)
         dock.setWidget(ed)
         mw.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
+        dock.setFloating(True)   # Schwebend starten – Nutzer kann andocken
         ed._freecad_dock = dock
-        # FreeCAD-Inhalte ausblenden → Editor bekommt den vollen Platz
-        self._freecad_inhalte(verstecken=True)
         ed.show()
         dock.show()
         dock.raise_()
 
-        # Beim Schließen des Docks FreeCAD-Inhalte wiederherstellen
-        dock.visibilityChanged.connect(
-            lambda vis: self._freecad_inhalte(verstecken=False) if not vis else None)
+    @staticmethod
+    def _freecad_inhalte(verstecken: bool):
+        """Blendet FreeCAD-Inhalte aus/ein. EigeneMakroLeiste bleibt immer sichtbar."""
+        mw = Gui.getMainWindow()
+        cw = mw.centralWidget()
+        if cw:
+            cw.setVisible(not verstecken)
+        for tb in mw.findChildren(QtWidgets.QToolBar):
+            # Workbench-Leiste (enthält ComboBox) immer sichtbar lassen
+            if not tb.findChildren(QtWidgets.QComboBox) and tb.objectName() != "Workbench":
+                tb.setVisible(not verstecken)
+        for dock in mw.findChildren(QtWidgets.QDockWidget):
+            # EigeneMakroLeiste nie verstecken
+            if dock.objectName() != "EigeneMakroLeiste":
+                dock.setVisible(not verstecken)
 
     def wechsle_editor_modus(self, ed: MakroEditor, andockbar: bool):
         """Geöffneten Editor live zwischen den Modi umschalten."""

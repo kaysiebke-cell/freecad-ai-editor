@@ -85,7 +85,7 @@ def emoji_font(f: QtGui.QFont) -> QtGui.QFont:
     return f
 
 
-from params import DOCK_NAME, ist_erststart, fenster_schwebend
+from params import DOCK_NAME, ist_erststart, fenster_schwebend, set_fenster_schwebend
 from manager import MakroLeiste
 from begruessung import zeige_begruessung
 
@@ -172,20 +172,35 @@ def erstelle_leiste():
             # Wieder angedockt → eigene Titelleiste zurück
             dock.setTitleBarWidget(tb)
 
+    def _on_floating_changed_save(floating: bool):
+        set_fenster_schwebend(floating)
+        # Wenn Makro-Panel angedockt wird und Workbench aktiv ist → ausblenden
+        # Wenn abgedockt → immer wiederherstellen
+        try:
+            from manager import MakroLeiste
+            if not floating:
+                wb = Gui.activeWorkbench()
+                if wb and wb.__class__.__name__ == "MeineMakroWorkbench":
+                    MakroLeiste._freecad_inhalte(verstecken=True)
+            else:
+                MakroLeiste._freecad_inhalte(verstecken=False)
+        except Exception:
+            pass
+
     dock.topLevelChanged.connect(_on_floating_changed)
+    dock.topLevelChanged.connect(_on_floating_changed_save)
     mw.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
 
     model_dock = mw.findChild(QtWidgets.QDockWidget, "Model")
     if model_dock:
         mw.tabifyDockWidget(model_dock, dock)
 
+    # Gespeicherten Fenstermodus anwenden
+    if fenster_schwebend():
+        dock.setFloating(True)
+
     dock.show()
     dock.raise_()
-
-    # FreeCAD-Inhalte vor dem Beenden immer wiederherstellen, damit
-    # die Layout-Datei keine versteckten Toolbars/Docks speichert
-    QtWidgets.QApplication.instance().aboutToQuit.connect(
-        lambda: MakroLeiste._freecad_inhalte(verstecken=False))
 
     if ist_erststart():
         QtCore.QTimer.singleShot(300, lambda: zeige_begruessung(mw))
