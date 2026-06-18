@@ -182,6 +182,11 @@ def erstelle_leiste():
     dock.show()
     dock.raise_()
 
+    # FreeCAD-Inhalte vor dem Beenden immer wiederherstellen, damit
+    # die Layout-Datei keine versteckten Toolbars/Docks speichert
+    QtWidgets.QApplication.instance().aboutToQuit.connect(
+        lambda: MakroLeiste._freecad_inhalte(verstecken=False))
+
     if ist_erststart():
         QtCore.QTimer.singleShot(300, lambda: zeige_begruessung(mw))
 

@@ -357,14 +357,25 @@ class MakroLeiste(QtWidgets.QWidget):
 
     def _zeige_als_fenster(self, ed: MakroEditor):
         """Eigenständiges Fenster – kein Andocken möglich."""
-        # FreeCAD-Inhalte wieder einblenden
-        self._freecad_inhalte(verstecken=False)
+        mw = Gui.getMainWindow()
         if hasattr(ed, "_freecad_dock") and ed._freecad_dock:
+            # Dock schließen – visibilityChanged stellt FreeCAD-Inhalte wieder her
             ed._freecad_dock.setWidget(None)
             ed._freecad_dock.deleteLater()
             ed._freecad_dock = None
-        ed.setParent(None)
+        else:
+            # Kein Dock aktiv – FreeCAD-Inhalte direkt wiederherstellen
+            self._freecad_inhalte(verstecken=False)
+        # Elternelement auf Hauptfenster setzen, damit Qt Geometrie kennt
+        ed.setParent(mw)
         ed.setWindowFlags(QtCore.Qt.Window)
+        if not ed.isVisible() or ed.size().isEmpty():
+            mw_geo = mw.geometry()
+            ed.resize(int(mw_geo.width() * 0.7), int(mw_geo.height() * 0.85))
+            ed.move(
+                mw_geo.x() + int(mw_geo.width() * 0.15),
+                mw_geo.y() + int(mw_geo.height() * 0.075),
+            )
         ed.show()
         ed.raise_()
         ed.activateWindow()
