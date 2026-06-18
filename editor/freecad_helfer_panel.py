@@ -486,13 +486,25 @@ class FreecadHelferPanel(QtWidgets.QWidget):
     # ── Modelle laden ─────────────────────────────────────────────────────────
 
     def _lade_modelle(self):
-        modelle = _ollama_modelle()
-        if modelle:
-            self._aktuelles_modell = modelle[0]
-            self._status_lbl.setText(f"✅ {self._aktuelles_modell}")
+        try:
+            from params import lade_quelle, lade_modell
+            quelle = lade_quelle()
+            modell = lade_modell()
+        except Exception:
+            quelle, modell = "Ollama (Lokal)", ""
+
+        if quelle.startswith("Ollama"):
+            modelle = _ollama_modelle()
+            if modelle:
+                self._aktuelles_modell = modell if modell in modelle else modelle[0]
+                self._status_lbl.setText(f"✅ {self._aktuelles_modell}")
+            else:
+                self._aktuelles_modell = modell or ""
+                self._status_lbl.setText("⚠ Ollama nicht erreichbar")
         else:
-            self._aktuelles_modell = ""
-            self._status_lbl.setText("⚠ Ollama nicht gefunden")
+            self._aktuelles_modell = modell
+            kurz = quelle.split()[0] if quelle else "?"
+            self._status_lbl.setText(f"✅ {kurz} · {modell}" if modell else f"✅ {kurz}")
 
     # ── Bild-Handling ─────────────────────────────────────────────────────────
 
@@ -604,55 +616,140 @@ class FreecadHelferPanel(QtWidgets.QWidget):
         self._stream_bubble = self._füge_bubble_ein("", "ki")
         modell = self._aktuelles_modell or "llama3"
 
-        # Bild als Base64 vorbereiten (nur wenn Vision-Modell)
+        try:
+            from params import lade_quelle, lade_api_key
+            quelle  = lade_quelle()
+            kid     = quelle.split()[0].lower()
+            api_key = lade_api_key(kid)
+        except Exception:
+            quelle, api_key = "Ollama (Lokal)", ""
+
+        # Vision: nur mit Ollama möglich
         bild_b64 = None
-        if self._anhang_pixmap is not None and _ist_vision_modell(modell):
-            bild_b64 = _pixmap_zu_base64(self._anhang_pixmap)
-        elif self._anhang_pixmap is not None:
-            self._status_lbl.setText("⚠ Bild ignoriert (kein Vision-Modell)")
+        if self._anhang_pixmap is not None:
+            if quelle.startswith("Ollama") and _ist_vision_modell(modell):
+                bild_b64 = _pixmap_zu_base64(self._anhang_pixmap)
+            elif quelle.startswith("Ollama"):
+                self._status_lbl.setText("⚠ Bild ignoriert (kein Vision-Modell)")
+            else:
+                self._status_lbl.setText("⚠ Vision nur mit Ollama möglich")
 
         threading.Thread(
             target=self._worker,
-            args=(modell, text, bild_b64),
+            args=(quelle, modell, api_key, text, bild_b64),
             daemon=True
         ).start()
 
-    def _worker(self, modell: str, text: str, bild_b64: str | None = None):
-        nutzer_msg: dict = {"role": "user", "content": text}
-        if bild_b64:
-            nutzer_msg["images"] = [bild_b64]
+    # ── Anbieter-Routing ──────────────────────────────────────────────────────
 
-        payload = json.dumps({
-            "model":    modell,
-            "stream":   True,
-            "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                nutzer_msg,
-            ]
-        }).encode("utf-8")
+    _BASES = {
+        "OpenAI":     "https://api.openai.com/v1",
+        "GitHub":     "https://models.inference.ai.azure.com",
+        "DeepSeek":   "https://api.deepseek.com/v1",
+        "Gemini":     "https://generativelanguage.googleapis.com/v1beta/openai",
+        "Groq":       "https://api.groq.com/openai/v1",
+        "Mistral":    "https://api.mistral.ai/v1",
+        "Together":   "https://api.together.xyz/v1",
+        "OpenRouter": "https://openrouter.ai/api/v1",
+        "xAI":        "https://api.x.ai/v1",
+        "Fireworks":  "https://api.fireworks.ai/inference/v1",
+        "Moonshot":   "https://api.moonshot.cn/v1",
+        "Qwen":       "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "Cohere":     "https://api.cohere.com/compatibility/v1",
+        "SambaNova":  "https://api.sambanova.ai/v1",
+        "MiniMax":    "https://api.minimaxi.chat/v1",
+        "Llama":      "https://api.llama-api.com",
+        "HuggingFace":"https://api-inference.huggingface.co/v1",
+    }
 
+    def _worker(self, quelle: str, modell: str, api_key: str,
+                text: str, bild_b64: str | None = None):
         try:
-            import urllib.request as _ul
-            req = _ul.Request(
-                OLLAMA_URL, data=payload,
-                headers={"Content-Type": "application/json"}, method="POST")
-            with _ul.urlopen(req, timeout=600) as resp:
-                for raw in resp:
-                    line = raw.decode("utf-8").strip()
-                    if not line:
-                        continue
-                    try:
-                        obj   = json.loads(line)
-                        chunk = obj.get("message", {}).get("content", "")
-                        if chunk:
-                            self._chunk_signal.emit(chunk)
-                        if obj.get("done", False):
-                            break
-                    except json.JSONDecodeError:
-                        continue
+            if quelle.startswith("Ollama"):
+                self._stream_ollama(modell, text, bild_b64)
+            elif quelle.startswith("Anthropic"):
+                self._stream_anthropic(modell, api_key, text)
+            else:
+                base = next(
+                    (v for k, v in self._BASES.items() if quelle.startswith(k)),
+                    "https://api.openai.com/v1")
+                self._stream_openai(base, modell, api_key, text)
             self._done_signal.emit()
         except Exception as e:
             self._error_signal.emit(str(e))
+
+    def _stream_ollama(self, modell: str, text: str, bild_b64: str | None):
+        nutzer_msg: dict = {"role": "user", "content": text}
+        if bild_b64:
+            nutzer_msg["images"] = [bild_b64]
+        payload = json.dumps({
+            "model": modell, "stream": True,
+            "messages": [{"role": "system", "content": SYSTEM_PROMPT}, nutzer_msg],
+        }).encode("utf-8")
+        import urllib.request as _ul
+        req = _ul.Request(OLLAMA_URL, data=payload,
+                          headers={"Content-Type": "application/json"}, method="POST")
+        with _ul.urlopen(req, timeout=600) as resp:
+            for raw in resp:
+                line = raw.decode("utf-8").strip()
+                if not line:
+                    continue
+                try:
+                    obj   = json.loads(line)
+                    chunk = obj.get("message", {}).get("content", "")
+                    if chunk:
+                        self._chunk_signal.emit(chunk)
+                    if obj.get("done", False):
+                        break
+                except json.JSONDecodeError:
+                    continue
+
+    def _stream_anthropic(self, modell: str, api_key: str, text: str):
+        if not _HAS_REQUESTS:
+            raise RuntimeError("requests nicht installiert")
+        r = _requests.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={"x-api-key": api_key, "anthropic-version": "2023-06-01",
+                     "Content-Type": "application/json"},
+            json={"model": modell, "max_tokens": 1024, "stream": True,
+                  "system": SYSTEM_PROMPT,
+                  "messages": [{"role": "user", "content": text}]},
+            stream=True, timeout=120)
+        r.raise_for_status()
+        for line in r.iter_lines():
+            if line and line.startswith(b"data: "):
+                try:
+                    data = json.loads(line[6:])
+                    if data.get("type") == "content_block_delta":
+                        chunk = data.get("delta", {}).get("text", "")
+                        if chunk:
+                            self._chunk_signal.emit(chunk)
+                except (json.JSONDecodeError, KeyError):
+                    pass
+
+    def _stream_openai(self, base: str, modell: str, api_key: str, text: str):
+        if not _HAS_REQUESTS:
+            raise RuntimeError("requests nicht installiert")
+        r = _requests.post(
+            f"{base}/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}",
+                     "Content-Type": "application/json"},
+            json={"model": modell, "stream": True,
+                  "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                                {"role": "user",   "content": text}]},
+            stream=True, timeout=120)
+        r.raise_for_status()
+        for line in r.iter_lines():
+            if line and line.startswith(b"data: "):
+                raw = line[6:]
+                if raw == b"[DONE]":
+                    break
+                try:
+                    chunk = json.loads(raw)["choices"][0]["delta"].get("content", "")
+                    if chunk:
+                        self._chunk_signal.emit(chunk)
+                except (json.JSONDecodeError, KeyError, IndexError):
+                    pass
 
     # ── Signal-Handler ────────────────────────────────────────────────────────
 

@@ -202,6 +202,15 @@ def lade_quelle() -> str:
     """Gibt den zuletzt gewählten KI-Anbieter zurück."""
     return App.ParamGet(PREF_KEY).GetString("AktuelleKIQuelle", "Ollama (Lokal)")
 
+def speichere_modell(name: str):
+    """Speichert das aktuell gewählte KI-Modell."""
+    if name:
+        App.ParamGet(PREF_KEY).SetString("AktuellesKIModell", name)
+
+def lade_modell() -> str:
+    """Gibt das zuletzt gewählte KI-Modell zurück."""
+    return App.ParamGet(PREF_KEY).GetString("AktuellesKIModell", "")
+
 def ist_erststart() -> bool:
     return not App.ParamGet(PREF_KEY).GetBool("ErstStartErledigt", False)
 

@@ -12,7 +12,8 @@ import os
 from qt_compat import QtWidgets, QtCore, QtGui
 
 from params import (KI_PRESETS, KI_PRESET_KATEGORIEN,
-                    lade_api_key, speichere_api_key, speichere_quelle, lade_quelle)
+                    lade_api_key, speichere_api_key, speichere_quelle, lade_quelle,
+                    speichere_modell)
 
 
 # ── Interne Event-Handler (nur hier verbunden) ────────────────────────────
@@ -102,6 +103,7 @@ def init_ki_widgets(editor, icons_dir: str) -> None:
     # Signal erst verbinden nachdem _model_box existiert
     editor._src_box.currentIndexChanged.connect(editor._refresh_models)
     editor._src_box.currentTextChanged.connect(speichere_quelle)
+    editor._model_box.currentTextChanged.connect(speichere_modell)
 
     editor._preset_btn = QtWidgets.QToolButton()
     editor._preset_btn.setText("── Preset wählen ──")
