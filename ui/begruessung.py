@@ -18,8 +18,9 @@ import theme
 import schrift
 from params import speichere_api_key, erststart_erledigt
 
-# ── GIF-Pfad: sucht erst assets/, dann direkt nebenan ────────────────────────
-_HIER = os.path.dirname(os.path.abspath(__file__))
+# ── Pfade ────────────────────────────────────────────────────────────────────
+_HIER      = os.path.dirname(os.path.abspath(__file__))
+_ICONS_DIR = os.path.join(_HIER, "..", "assets", "icons")
 _GIF  = next(
     (p for p in [
         os.path.join(_HIER, "assets", "ki_makro_editor_demo.gif"),
@@ -42,30 +43,96 @@ def _mkbtn(text, primary=False, parent=None):
 
 
 # ── Alle 19 KI-Anbieter ───────────────────────────────────────────────────────
-# (id, Anzeigename, API-Key-Platzhalter)
+# (id, emoji-fallback, svg-dateiname, Anzeigename, Untertitel, Key-Platzhalter)
 _ALLE_ANBIETER = [
-    ("ollama",      "🖥️  Ollama (Lokal)",          ""),
-    ("anthropic",   "🤖  Anthropic (Claude)",       "sk-ant-api03-…"),
-    ("openai",      "✨  OpenAI (ChatGPT)",          "sk-…"),
-    ("github",      "🐙  GitHub Copilot",            "ghp_…"),
-    ("deepseek",    "🔍  DeepSeek",                  "sk-…"),
-    ("gemini",      "💎  Google Gemini",             "AIza…"),
-    ("groq",        "⚡  Groq",                      "gsk_…"),
-    ("mistral",     "🌪️  Mistral AI",               "…"),
-    ("together",    "🤝  Together AI",               "…"),
-    ("huggingface", "🤗  Hugging Face",              "hf_…"),
-    ("xai",         "𝕏   xAI (Grok)",               "xai-…"),
-    ("fireworks",   "🎆  Fireworks AI",              "fw-…"),
-    ("openrouter",  "🔀  OpenRouter",                "sk-or-…"),
-    ("moonshot",    "🌙  Moonshot",                  "sk-…"),
-    ("qwen",        "🌐  Qwen (Alibaba)",             "sk-…"),
-    ("cohere",      "🧩  Cohere",                    "…"),
-    ("sambanova",   "⚡  SambaNova",                 "…"),
-    ("minimax",     "🔢  MiniMax",                   "…"),
-    ("llama",       "🦙  Meta Llama",                "…"),
-    ("later",       "⏭   Später einrichten",         ""),
+    ("ollama",      "🖥️", None,              "Ollama",         "Lokal · kein API-Key",    ""),
+    ("anthropic",   "🤖", None,              "Anthropic",      "Claude Sonnet / Haiku",   "sk-ant-api03-…"),
+    ("openai",      "✨", "openai.svg",      "OpenAI",         "GPT-4o / GPT-4o-mini",    "sk-…"),
+    ("github",      "🐙", "github.svg",      "GitHub Copilot", "gpt-4o / o1-mini",        "ghp_…"),
+    ("deepseek",    "🔍", "deepseek.svg",    "DeepSeek",       "deepseek-chat",            "sk-…"),
+    ("gemini",      "💎", "gemini.svg",      "Google Gemini",  "gemini-1.5-pro",           "AIza…"),
+    ("groq",        "⚡", "groq.svg",        "Groq",           "llama-3.3-70b",            "gsk_…"),
+    ("mistral",     "🌪️","mistral.svg",     "Mistral AI",     "mistral-large",            "…"),
+    ("together",    "🤝", "together.svg",    "Together AI",    "meta-llama / …",           "…"),
+    ("huggingface", "🤗", "huggingface.svg", "Hugging Face",   "Inference API",            "hf_…"),
+    ("xai",         "𝕏",  "xai.svg",         "xAI (Grok)",     "grok-2",                   "xai-…"),
+    ("fireworks",   "🎆", "fireworks.svg",   "Fireworks AI",   "fast inference",           "fw-…"),
+    ("openrouter",  "🔀", None,              "OpenRouter",     "100+ Modelle",             "sk-or-…"),
+    ("moonshot",    "🌙", "moonshot.svg",    "Moonshot",       "moonshot-v1-8k",           "sk-…"),
+    ("qwen",        "🌐", "qwen.svg",        "Qwen (Alibaba)", "qwen-max",                 "sk-…"),
+    ("cohere",      "🧩", "cohere.svg",      "Cohere",         "command-r-plus",           "…"),
+    ("sambanova",   "⚡", "sambanova.svg",   "SambaNova",      "Llama-3.3-70B",            "…"),
+    ("minimax",     "🔢", "minimax.svg",     "MiniMax",        "MiniMax-Text-01",          "…"),
+    ("llama",       "🦙", "llama.svg",       "Meta Llama",     "Llama API",                "…"),
+    ("later",       "⏭",  None,              "Später",         "Ohne KI starten",          ""),
 ]
 _KEIN_KEY = {"ollama", "later"}
+
+
+def _anbieter_icon(svg: str | None, emoji: str, size: int = 28) -> QtWidgets.QLabel:
+    """Gibt QLabel mit SVG-Icon oder Emoji-Fallback zurück."""
+    lbl = QtWidgets.QLabel()
+    lbl.setFixedSize(size, size)
+    lbl.setAlignment(QtCore.Qt.AlignCenter)
+    if svg:
+        pfad = os.path.join(_ICONS_DIR, svg)
+        if os.path.isfile(pfad):
+            px = QtGui.QIcon(pfad).pixmap(size, size)
+            if not px.isNull():
+                lbl.setPixmap(px)
+                return lbl
+    lbl.setText(emoji)
+    lbl.setStyleSheet(f"font-size: {size - 4}px;")
+    return lbl
+
+
+class AnbieterKarte(QtWidgets.QFrame):
+    """Kompakte Icon-Karte für einen KI-Anbieter."""
+    geklickt = QtCore.Signal(str)
+
+    def __init__(self, aid: str, emoji: str, svg: str | None,
+                 name: str, sub: str, parent=None):
+        super().__init__(parent)
+        self._id = aid
+        self.setCursor(QtCore.Qt.PointingHandCursor)
+        self.setFixedHeight(54)
+        self._set_aktiv(False)
+
+        row = QtWidgets.QHBoxLayout(self)
+        row.setContentsMargins(10, 6, 10, 6)
+        row.setSpacing(10)
+
+        row.addWidget(_anbieter_icon(svg, emoji, 28))
+
+        txt = QtWidgets.QVBoxLayout()
+        txt.setSpacing(1)
+        n = QtWidgets.QLabel(name)
+        n.setStyleSheet("font-weight: bold; font-size: 11px;")
+        s = QtWidgets.QLabel(sub)
+        s.setStyleSheet("font-size: 9px; color: #888;")
+        txt.addWidget(n)
+        txt.addWidget(s)
+        row.addLayout(txt)
+        row.addStretch()
+
+    def _set_aktiv(self, aktiv: bool):
+        if aktiv:
+            self.setStyleSheet(
+                "AnbieterKarte { border: 2px solid #4a9eff; border-radius: 6px;"
+                " background: rgba(74,158,255,0.12); }")
+        else:
+            self.setStyleSheet(
+                "AnbieterKarte { border: 1px solid rgba(128,128,128,0.3);"
+                " border-radius: 6px; background: transparent; }"
+                "AnbieterKarte:hover { border: 1px solid rgba(74,158,255,0.6);"
+                " background: rgba(74,158,255,0.06); }")
+
+    def setAktiv(self, ja: bool):
+        self._set_aktiv(ja)
+
+    def mousePressEvent(self, e):
+        if e.button() == QtCore.Qt.LeftButton:
+            self.geklickt.emit(self._id)
 
 
 # ── Haupt-Dialog ───────────────────────────────────────────────────────────────
@@ -197,7 +264,7 @@ class BegrüssungsDialog(QtWidgets.QDialog):
     def _seite_anbieter(self) -> QtWidgets.QWidget:
         w = QtWidgets.QWidget()
         v = QtWidgets.QVBoxLayout(w)
-        v.setContentsMargins(28, 28, 28, 24)
+        v.setContentsMargins(20, 20, 20, 16)
         v.setSpacing(0)
 
         schritt = QtWidgets.QLabel("SCHRITT 1 VON 2")
@@ -205,67 +272,50 @@ class BegrüssungsDialog(QtWidgets.QDialog):
         titel = QtWidgets.QLabel("Welchen KI-Anbieter möchtest du nutzen?")
         titel.setStyleSheet(theme.STY_ABSCHNITT_LABEL_LG(schrift.pt(schrift.STUFE_XL)))
         titel.setWordWrap(True)
-        hint = QtWidgets.QLabel("Kann jederzeit über die Toolbar oben links geändert werden.")
-        hint.setStyleSheet(theme.STY_STATUS_LABEL(schrift.pt(schrift.STUFE_LG)))
-        hint.setWordWrap(True)
 
         v.addWidget(schritt)
-        v.addSpacing(6)
-        v.addWidget(titel)
         v.addSpacing(4)
-        v.addWidget(hint)
-        v.addSpacing(18)
+        v.addWidget(titel)
+        v.addSpacing(12)
 
-        # Kompakte Dropdown-Auswahl aller 19 Anbieter
-        self._combo = QtWidgets.QComboBox()
-        self._combo.setMinimumHeight(38)
-        for aid, aname, _ in _ALLE_ANBIETER:
-            self._combo.addItem(aname, aid)
-        v.addWidget(self._combo)
-        v.addSpacing(16)
+        # ── Scrollbares 2-spaltiges Karten-Grid ──────────────────────────────
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        scroll.setFixedHeight(300)
 
-        # Hinweis-Label (ändert sich je nach Auswahl)
-        self._anbieter_hint = QtWidgets.QLabel("Kein API-Key benötigt · läuft auf deinem PC")
-        self._anbieter_hint.setStyleSheet(theme.STY_STATUS_LABEL(schrift.pt(schrift.STUFE_LG)))
-        self._anbieter_hint.setWordWrap(True)
-        v.addWidget(self._anbieter_hint)
-        self._combo.currentIndexChanged.connect(self._combo_geaendert)
+        container = QtWidgets.QWidget()
+        grid = QtWidgets.QGridLayout(container)
+        grid.setContentsMargins(0, 0, 4, 0)
+        grid.setSpacing(6)
+        grid.setColumnStretch(0, 1)
+        grid.setColumnStretch(1, 1)
 
-        v.addStretch(1)
+        self._karten: dict[str, AnbieterKarte] = {}
+        for i, (aid, emoji, svg, name, sub, _) in enumerate(_ALLE_ANBIETER):
+            karte = AnbieterKarte(aid, emoji, svg, name, sub)
+            karte.geklickt.connect(self._karte_gewaehlt)
+            self._karten[aid] = karte
+            grid.addWidget(karte, i // 2, i % 2)
 
-        btn_row = QtWidgets.QHBoxLayout()
-        btn_weiter = _mkbtn("Weiter →", primary=True)
-        btn_weiter.clicked.connect(self._anbieter_bestaetigt)
-        btn_row.addStretch()
-        btn_row.addWidget(btn_weiter)
-        v.addLayout(btn_row)
+        scroll.setWidget(container)
+        v.addWidget(scroll)
+        v.addSpacing(10)
+
+        # Weiter-Button (erst nach Auswahl aktiv)
+        self._btn_weiter = _mkbtn("Weiter →", primary=True)
+        self._btn_weiter.setEnabled(False)
+        self._btn_weiter.clicked.connect(self._anbieter_bestaetigt)
+        v.addWidget(self._btn_weiter)
         return w
 
-    def _combo_geaendert(self, idx: int):
-        aid = self._combo.itemData(idx)
-        hints = {
-            "ollama":      "Kein API-Key benötigt · läuft auf deinem PC",
-            "later":       "Ohne KI starten – jederzeit nachholbar",
-            "anthropic":   "API-Key unter platform.anthropic.com erstellen",
-            "openai":      "API-Key unter platform.openai.com erstellen",
-            "github":      "Token unter github.com/settings/tokens erstellen",
-            "deepseek":    "API-Key unter platform.deepseek.com erstellen",
-            "gemini":       "API-Key unter aistudio.google.com erstellen",
-            "groq":         "API-Key unter console.groq.com erstellen",
-            "mistral":      "API-Key unter console.mistral.ai erstellen",
-            "together":     "API-Key unter api.together.xyz erstellen",
-            "huggingface":  "API-Key unter huggingface.co/settings/tokens erstellen",
-            "xai":          "API-Key unter console.x.ai erstellen",
-            "fireworks":    "API-Key unter fireworks.ai erstellen",
-            "openrouter":   "API-Key unter openrouter.ai erstellen",
-            "moonshot":     "API-Key unter platform.moonshot.cn erstellen",
-            "qwen":         "API-Key unter dashscope.aliyuncs.com erstellen",
-            "cohere":       "API-Key unter dashboard.cohere.com erstellen",
-            "sambanova":    "API-Key unter cloud.sambanova.ai erstellen",
-            "minimax":      "API-Key unter api.minimax.chat erstellen",
-            "llama":        "API-Key unter llama.developer.meta.com erstellen",
-        }
-        self._anbieter_hint.setText(hints.get(aid, ""))
+    def _karte_gewaehlt(self, aid: str):
+        for k in self._karten.values():
+            k.setAktiv(False)
+        self._karten[aid].setAktiv(True)
+        self._anbieter_id = aid
+        self._btn_weiter.setEnabled(True)
 
     # ── Seite 2: API-Key ──────────────────────────────────────────────────────
     def _seite_apikey(self) -> QtWidgets.QWidget:
@@ -377,17 +427,15 @@ class BegrüssungsDialog(QtWidgets.QDialog):
 
     # ── Logik ─────────────────────────────────────────────────────────────────
     def _anbieter_bestaetigt(self):
-        idx = self._combo.currentIndex()
-        aid = self._combo.itemData(idx)
-        aname = self._combo.itemText(idx)
-        self._anbieter_id = aid
-
+        aid = self._anbieter_id
+        if not aid:
+            return
         if aid in _KEIN_KEY:
             self._zeige_fertig(aid)
         else:
-            # Platzhalter aus _ALLE_ANBIETER holen
-            placeholder = next((ph for a, _, ph in _ALLE_ANBIETER if a == aid), "…")
-            self._key_label.setText(f"{aname.strip()} API-Key")
+            name = next((n for a, _, _, n, _, _ in _ALLE_ANBIETER if a == aid), aid)
+            placeholder = next((ph for a, _, _, _, _, ph in _ALLE_ANBIETER if a == aid), "…")
+            self._key_label.setText(f"{name} API-Key")
             self._key_feld.setPlaceholderText(placeholder)
             self._key_feld.clear()
             self._stack.setCurrentIndex(self._S_APIKEY)
@@ -404,7 +452,7 @@ class BegrüssungsDialog(QtWidgets.QDialog):
         elif anbieter_id == "later":
             txt = "Du kannst die KI jederzeit über\ndie Toolbar oben links einrichten."
         else:
-            name = next((n.strip() for a, n, _ in _ALLE_ANBIETER if a == anbieter_id), anbieter_id)
+            name = next((n for a, _, _, n, _, _ in _ALLE_ANBIETER if a == anbieter_id), anbieter_id)
             txt = f"Dein {name}-Schlüssel wurde gespeichert.\nJetzt einsatzbereit."
         self._fertig_text.setText(txt)
         self._stack.setCurrentIndex(self._S_FERTIG)
