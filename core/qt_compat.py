@@ -10,4 +10,11 @@ try:
 except ImportError:
     from PySide2 import QtWidgets, QtCore, QtGui
 
-__all__ = ["QtWidgets", "QtCore", "QtGui"]
+try:
+    import requests
+    HAS_REQUESTS = True
+except ImportError:
+    requests = None  # type: ignore[assignment]
+    HAS_REQUESTS = False
+
+__all__ = ["QtWidgets", "QtCore", "QtGui", "requests", "HAS_REQUESTS"]

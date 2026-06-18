@@ -11,8 +11,6 @@ import os
 
 from qt_compat import QtWidgets, QtCore, QtGui
 
-import theme
-import schrift
 from params import (KI_PRESETS, KI_PRESET_KATEGORIEN,
                     lade_api_key, speichere_api_key, speichere_quelle, lade_quelle)
 

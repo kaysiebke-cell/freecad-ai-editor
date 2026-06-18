@@ -14,12 +14,7 @@ Enthält:
 import time
 import threading
 
-try:
-    import requests as _requests
-    _HAS_REQUESTS = True
-except ImportError:
-    _HAS_REQUESTS = False
-
+from qt_compat import requests as _requests, HAS_REQUESTS as _HAS_REQUESTS
 from params import KI_PRESETS
 from provider_daten import _MODELLE
 from ki_verlauf import _VERLAUF_MAX_NACHRICHTEN

@@ -11,7 +11,7 @@ dessen Signale und Session-Objekt.
 import json
 
 from params import lade_api_key
-from provider_daten import _OAI_URLS, lade_anbieter_url
+from provider_daten import lade_anbieter_url
 
 
 class KIStreaming:

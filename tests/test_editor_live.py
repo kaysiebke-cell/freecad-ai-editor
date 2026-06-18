@@ -12,7 +12,6 @@ Ausführen:
 
 import os
 import sys
-import time
 import unittest
 
 # Muss mit FreeCADs eigenem Python laufen:
@@ -27,7 +26,6 @@ for _sub in ("", "core", "editor/widgets", "editor/controller", "editor"):
         sys.path.insert(0, _p)
 
 # ── FreeCAD mocken bevor irgendwas importiert wird ───────────────────────────
-from unittest.mock import MagicMock
 import types
 
 _fc = types.ModuleType("FreeCAD")
@@ -37,12 +35,12 @@ sys.modules.setdefault("FreeCAD",    _fc)
 sys.modules.setdefault("FreeCADGui", _fcg)
 
 # ── Qt + Editor importieren ───────────────────────────────────────────────────
-from qt_compat import QtWidgets, QtCore, QtGui
+from qt_compat import QtWidgets, QtCore
 try:
     from PySide6 import QtTest
 except ImportError:
     from PySide2 import QtTest
-from editor_widgets import CodeEditor, FehlerMinimap, JediEditor
+from editor_widgets import FehlerMinimap, JediEditor
 from werkzeuge import WerkzeugLeiste
 
 # ── QApplication (einmalig) ───────────────────────────────────────────────────

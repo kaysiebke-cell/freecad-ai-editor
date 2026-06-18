@@ -60,8 +60,8 @@ _EIGENE_MODULE = [
     # editor/ki
     "ki_controller", "ki_werkzeuge", "dokument_kontext",
     # editor/controller
-    "browser_controller", "snippet_controller", "vorschau_controller",
-    "werkzeuge", "bibliothek_tab", "ki_tools_tab",
+    "browser_controller", "snippet_controller", "snippet_widgets",
+    "vorschau_controller", "werkzeuge", "bibliothek_tab", "ki_tools_tab",
     # editor/fehler
     "fehler_panel", "fehler",
     # ui

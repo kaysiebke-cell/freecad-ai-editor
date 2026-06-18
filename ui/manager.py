@@ -5,7 +5,6 @@ import re
 
 from qt_compat import QtWidgets, QtCore, QtGui
 import theme
-import schrift
 
 import FreeCADGui as Gui
 

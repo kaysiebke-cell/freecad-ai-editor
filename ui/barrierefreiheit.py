@@ -9,7 +9,7 @@ Bereiche:
   4. Allgemein        – Animationen, Tooltips immer sichtbar
 """
 
-from qt_compat import QtWidgets, QtCore, QtGui
+from qt_compat import QtWidgets, QtCore
 import theme
 import schrift
 

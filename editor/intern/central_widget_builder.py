@@ -6,7 +6,7 @@ Baut das zentrale Widget (Tab-Leiste + Schnellsuche-Leiste) des MakroEditors auf
 Aufgerufen einmalig aus MakroEditor.__init__.
 """
 
-from qt_compat import QtWidgets, QtCore, QtGui
+from qt_compat import QtWidgets, QtGui
 import theme
 import schrift
 

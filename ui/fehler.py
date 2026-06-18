@@ -11,6 +11,12 @@ Verwendung:
 
     # Für rohen Traceback-Text (z.B. aus dem Fehler-Tab):
     meldung = uebersetze_text(raw_traceback_string)
+
+Hinweis: Diese Datei war zuvor doppelt vorhanden (ui/fehler.py und
+editor/fehler/fehler.py, die durch sys.path-Reihenfolge in InitGui.py
+auseinandergelaufen sind). Am 18.06.2026 zu einer Datei zusammengeführt:
+Basis ist diese (robustere) Version inkl. Escaping/Fehlerbehandlung,
+ergänzt um die FreeCAD-spezifischen Muster aus der anderen Kopie.
 """
 
 import re
@@ -21,20 +27,6 @@ import re
 # {0}, {1} … werden durch die gefundenen Gruppen ersetzt.
 
 _MUSTER = [
-
-    # ── TypeError: FreeCAD Part-Operatoren ────────────────────────────────────
-    (r"unsupported operand type\(s\) for (.+?): 'Part\.(.+?)' and 'Part\.(.+?)'",
-     "❌ Falsche Boole'sche Operation\n\n"
-     "FreeCAD-Geometrie kann nicht mit Python-Operatoren ({0}) verknüpft werden.\n\n"
-     "Falsch (KI-Fehler):\n"
-     "  ergebnis = box - zylinder       ← funktioniert NICHT\n"
-     "  ergebnis = box + zylinder       ← funktioniert NICHT\n\n"
-     "Richtig – mit doc.addObject():\n"
-     "  cut = doc.addObject('Part::Cut', 'Schnitt')\n"
-     "  cut.Base = box\n"
-     "  cut.Tool = zylinder\n"
-     "  doc.recompute()\n\n"
-     "Tipp: 'KI korrigieren' schickt diesen Fehler automatisch an die KI."),
 
     # ── AttributeError ────────────────────────────────────────────────────────
     (r"'NoneType' object has no attribute '(.+?)'",
@@ -54,6 +46,20 @@ _MUSTER = [
      "  • Methode wurde versehentlich gelöscht\n"
      "  • Tippfehler im Namen\n"
      "  • Methode wurde noch nicht definiert"),
+
+    # ── TypeError: FreeCAD Part-Operatoren ────────────────────────────────────
+    (r"unsupported operand type\(s\) for (.+?): 'Part\.(.+?)' and 'Part\.(.+?)'",
+     "❌ Falsche Boole'sche Operation\n\n"
+     "FreeCAD-Geometrie kann nicht mit Python-Operatoren ({0}) verknüpft werden.\n\n"
+     "Falsch (KI-Fehler):\n"
+     "  ergebnis = box - zylinder       ← funktioniert NICHT\n"
+     "  ergebnis = box + zylinder       ← funktioniert NICHT\n\n"
+     "Richtig – mit doc.addObject():\n"
+     "  cut = doc.addObject('Part::Cut', 'Schnitt')\n"
+     "  cut.Base = box\n"
+     "  cut.Tool = zylinder\n"
+     "  doc.recompute()\n\n"
+     "Tipp: 'KI korrigieren' schickt diesen Fehler automatisch an die KI."),
 
     # ── NameError: FreeCAD-spezifische Module ─────────────────────────────────
     (r"name '(Part|Mesh|Draft|Arch|Sketcher|FreeCAD|FreeCADGui|App|Gui)' is not defined",
@@ -77,6 +83,18 @@ _MUSTER = [
      "  • Import fehlt"),
 
     # ── ImportError / ModuleNotFoundError ─────────────────────────────────────
+    # WICHTIG: spezifischere Muster müssen VOR der generischen
+    # "No module named"-Regel stehen, sonst greift nur die generische.
+    (r"No module named 'PySide2'",
+     "❌ PySide2 nicht gefunden\n\n"
+     "FreeCAD verwendet PySide6, nicht PySide2.\n"
+     "Ersetze im Code alle PySide2-Imports:\n"
+     "  from PySide2.QtWidgets ...  →  from PySide6.QtWidgets ...\n"
+     "  from PySide2.QtCore ...     →  from PySide6.QtCore ...\n"
+     "  from PySide2.QtGui ...      →  from PySide6.QtGui ...\n\n"
+     "Tipp: Beim nächsten Mal im Suchfeld schreiben:\n"
+     "      'Benutze PySide6, nicht PySide2'"),
+
     (r"No module named '(.+?)'",
      "❌ Modul nicht gefunden\n\n"
      "»{0}« ist nicht installiert oder nicht auffindbar.\n"
@@ -203,7 +221,7 @@ _MUSTER = [
      "Tipp: Vor der Division prüfen ob der Nenner ≠ 0 ist."),
 
     # ── KeyError ──────────────────────────────────────────────────────────────
-    (r"KeyError: '?(.+?)'?$",
+    (r"KeyError:\s*['\"]?(.+?)['\"]?$",
      "❌ Schlüssel nicht gefunden\n\n"
      "»{0}« existiert nicht im Dictionary.\n"
      "Tipp: dict.get(schlüssel) verwenden um Abstürze zu vermeiden."),
@@ -282,13 +300,26 @@ _MUSTER = [
 ]
 
 # Einmalig beim Import kompilieren – spart Overhead bei jedem Aufruf
-_COMPILED = [(re.compile(muster, re.IGNORECASE), vorlage)
+# WICHTIG: re.IGNORECASE nur bei Text-Matching, nicht bei Struktur (z.B. KeyError)
+_COMPILED = [(re.compile(muster, re.IGNORECASE | re.MULTILINE), vorlage)
              for muster, vorlage in _MUSTER]
 
 # Regex für bekannte Fehlertyp-Namen (für Traceback-Erkennung)
 _RE_FEHLERTYP = re.compile(
-    r'^(\w+(?:Error|Exception|Warning|Fault|Interrupt|Stop|Exit)):\s*',
+    r'(\w+(?:Error|Exception|Warning|Fault|Interrupt|Stop|Exit)):\s*',
     re.MULTILINE)
+
+
+def _escape_format_groups(gruppen: tuple) -> tuple:
+    """Escapet Gruppen für sichere format()-Verwendung.
+    
+    Alle { und } in den Gruppen werden escaped, damit sie nicht
+    von format() als Platzhalter interpretiert werden.
+    """
+    return tuple(
+        g.replace("{", "{{").replace("}", "}}") if isinstance(g, str) else g
+        for g in gruppen
+    )
 
 
 def uebersetze_fehler(fehler: Exception) -> str:
@@ -303,8 +334,11 @@ def uebersetze_fehler(fehler: Exception) -> str:
         treffer = regex.search(fehler_text)
         if treffer:
             try:
-                deutsch = vorlage.format(*treffer.groups())
-            except IndexError:
+                # Gruppen escapen für sicheres format()
+                gruppen = _escape_format_groups(treffer.groups())
+                deutsch = vorlage.format(*gruppen)
+            except (IndexError, ValueError, KeyError) as e:
+                # Fallback: Template-Fehler → Original
                 deutsch = vorlage
             return f"{fehler_typ}:\n\n{deutsch}"
 
@@ -329,17 +363,21 @@ def uebersetze_text(text: str) -> str:
     if not text:
         return ""
 
-    # Letzten bekannten Fehlertyp im Text suchen (z.B. am Ende eines Tracebacks)
-    treffer_liste = list(_RE_FEHLERTYP.finditer(text))
-    err_typ = treffer_liste[-1].group(1) if treffer_liste else None
+    # ERSTER Fehlertyp im Text suchen (nicht der letzte!)
+    # Der erste ist meistens der relevante
+    treffer_fehlertyp = _RE_FEHLERTYP.search(text)
+    err_typ = treffer_fehlertyp.group(1) if treffer_fehlertyp else None
 
     # Über alle Muster suchen
     for regex, vorlage in _COMPILED:
         treffer = regex.search(text)
         if treffer:
             try:
-                deutsch = vorlage.format(*treffer.groups())
-            except IndexError:
+                # Gruppen escapen für format()
+                gruppen = _escape_format_groups(treffer.groups())
+                deutsch = vorlage.format(*gruppen)
+            except (IndexError, ValueError, KeyError) as e:
+                # Fallback auf Original-Vorlage
                 deutsch = vorlage
             typ_prefix = (err_typ + ":") if err_typ else "Fehler:"
             return f"{typ_prefix}\n\n{deutsch}"
@@ -352,3 +390,4 @@ def uebersetze_text(text: str) -> str:
         "Dieser Fehlertyp ist noch nicht übersetzt.\n"
         "Beschreibe ihn gerne – dann ergänze ich ihn."
     )
+

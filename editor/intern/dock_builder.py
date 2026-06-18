@@ -297,7 +297,6 @@ def init_docks(editor) -> None:
         _akt_l.addLayout(g)
 
     try:
-        import autopep8 as _ap8
         _fmt_lbl = "✨  autopep8"
     except ImportError:
         _fmt_lbl = "🪄  Einrückung"

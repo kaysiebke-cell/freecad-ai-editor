@@ -18,15 +18,10 @@ from __future__ import annotations
 
 import json
 import re
-import threading
 
 from qt_compat import QtCore, QtWidgets, QtGui
 
-try:
-    import requests as _requests
-    _HAS_REQUESTS = True
-except ImportError:
-    _HAS_REQUESTS = False
+from qt_compat import requests as _requests, HAS_REQUESTS as _HAS_REQUESTS
 
 _RE_BACKTICK = re.compile(r'`([^`]+)`')
 

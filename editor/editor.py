@@ -14,27 +14,19 @@ import os
 import re
 import time
 
-from qt_compat import QtWidgets, QtCore, QtGui
-
-try:
-    import requests
-    _HAS_REQUESTS = True
-except ImportError:
-    _HAS_REQUESTS = False
+from qt_compat import QtWidgets, QtCore, QtGui, requests, HAS_REQUESTS
 
 import theme
-import schrift
 from fehler import uebersetze_fehler
 import params
-from params import lade_api_key, speichere_api_key
 from werkzeuge import WerkzeugLeiste
 
-from ki_controller import KiController as KIMixin
-from browser_controller import BrowserController as BrowserMixin
-from snippet_controller import SnippetController as TabsMixin
-from ki_tools_tab import KiToolsTabMixin
-from bibliothek_tab import BibliothekTabMixin
-from vorschau_controller import VorschauController as VorschauMixin
+from ki_controller import Ki
+from browser_controller import Browser
+from snippet_controller import Snippets
+from ki_tools_tab import KiToolsTab
+from bibliothek_tab import Bibliothek
+from vorschau_controller import Vorschau
 
 from central_widget_builder import init_central_widget
 from ki_widget_builder import init_ki_widgets, get_preset_prompt, baue_preset_menu
@@ -54,8 +46,7 @@ _ICONS_DIR = os.path.join(
 )
 
 
-class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin,
-                  VorschauMixin, KiToolsTabMixin, BibliothekTabMixin):
+class MakroEditor(QtWidgets.QMainWindow):
     """Editor mit frei anordenbaren Dock-Panels (QDockWidget)."""
 
     _ki_chunk          = QtCore.Signal(str)
@@ -123,7 +114,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin,
         self.setStyleSheet(theme.STY_HAUPTFENSTER_FONT())
 
         self._alive   = True
-        self._session = requests.Session() if _HAS_REQUESTS else None
+        self._session = requests.Session() if HAS_REQUESTS else None
 
         self._chunk_buffer: list = []
         self._stream_token_count = 0
@@ -155,12 +146,18 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin,
         self._watcher_pause = False
 
         # Kompositions-Objekte
-        self._datei   = DateiLogik(self)
-        self._suche   = SucheLogik(self)
-        self._code    = CodeLogik(self)
-        self._plan    = PlanLogik(self)
-        self._tabs_lk = TabLogik(self)
-        self._bfrei   = BarriereLogik(self)
+        self._datei      = DateiLogik(self)
+        self._suche      = SucheLogik(self)
+        self._code       = CodeLogik(self)
+        self._plan       = PlanLogik(self)
+        self._tabs_lk    = TabLogik(self)
+        self._bfrei      = BarriereLogik(self)
+        self._bibliothek = Bibliothek(self)
+        self._ki_tools   = KiToolsTab(self)
+        self._vorschau   = Vorschau(self)
+        self._browser    = Browser(self)
+        self._snippets   = Snippets(self)
+        self._ki         = Ki(self)
 
         # Builder
         init_ki_widgets(self, _ICONS_DIR)
@@ -214,7 +211,7 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin,
 
         self._refresh_models()
         self._letzter_editor_cursor = None
-        self._vorschau_init()
+        self._vorschau._vorschau_init()
 
     # ══ Öffentliche API ════════════════════════════════════════════════════
 
@@ -355,6 +352,52 @@ class MakroEditor(QtWidgets.QMainWindow, KIMixin, BrowserMixin, TabsMixin,
     def _on_farbschema(self, d):           self._bfrei.on_farbschema(d)
     def _on_barrierefreiheit(self, k, v):  self._bfrei.on_barrierefreiheit(k, v)
     def _zeige_hilfe(self):                self._bfrei.zeige_hilfe()
+
+    # ── Delegationen: Bibliothek ────────────────────────────────────────────
+
+    def _baue_bibliothek_tab(self):        return self._bibliothek._baue_bibliothek_tab()
+    def _get_editor_code(self) -> str:     return self._bibliothek._get_editor_code()
+    def bibliothek_speichern(self, code: str = "", ki_generiert: bool = False):
+        return self._bibliothek.bibliothek_speichern(code=code, ki_generiert=ki_generiert)
+
+    # ── Delegationen: KiToolsTab ─────────────────────────────────────────────
+
+    def _baue_ki_tools_tab(self):          return self._ki_tools._baue_ki_tools_tab()
+
+    # ── Delegationen: Vorschau ───────────────────────────────────────────────
+
+    def vorschau_starten(self, code: str = None):
+        return self._vorschau.vorschau_starten(code=code)
+
+    # ── Delegationen: Browser ────────────────────────────────────────────────
+
+    def _baue_dateibrowser_tab(self):      return self._browser._baue_dateibrowser_tab()
+
+    # ── Delegationen: Snippets ───────────────────────────────────────────────
+
+    def _baue_snippet_tab(self):           return self._snippets._baue_snippet_tab()
+    def _baue_hints_tab(self):             return self._snippets._baue_hints_tab()
+    def _baue_fehler_panel(self):          return self._snippets._baue_fehler_panel()
+
+    # ── Delegationen: Ki ──────────────────────────────────────────────────────
+
+    def _auto_analyse(self):                       self._ki._auto_analyse()
+    def _extrahiere_code_aus_nl_antwort(self, t):   return self._ki._extrahiere_code_aus_nl_antwort(t)
+    def _flush_chunks(self):                        self._ki._flush_chunks()
+    def _ki_fehler_erklaeren(self):                 self._ki._ki_fehler_erklaeren()
+    def _ki_fragen(self):                           self._ki._ki_fragen()
+    def _ki_verlauf_reset(self):                    self._ki._ki_verlauf_reset()
+    def _on_ki_chunk(self, chunk: str):             self._ki._on_ki_chunk(chunk)
+    def _on_ki_error(self, msg: str):                self._ki._on_ki_error(msg)
+    def _on_ki_stream_done(self):                   self._ki._on_ki_stream_done()
+    def _on_self_correction_needed(self, code, fehler):
+        self._ki._on_self_correction_needed(code, fehler)
+    def _refresh_models(self):                      self._ki._refresh_models()
+    def _schneide_erklaerung_ab(self, t):           return self._ki._schneide_erklaerung_ab(t)
+    def _sitzung_laden(self):                       self._ki._sitzung_laden()
+    def _sitzung_speichern(self):                   self._ki._sitzung_speichern()
+    def _update_stream_status(self):                self._ki._update_stream_status()
+    def fehler_anzeigen(self, fehlertext: str):     self._ki.fehler_anzeigen(fehlertext)
     def _widget_blinken(self, n):          self._bfrei.widget_blinken(n)
 
     # ── Slots (KI-Kompakt-Anzeige) ─────────────────────────────────────────

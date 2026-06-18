@@ -570,18 +570,6 @@ class JediEditor(CodeEditor):
         new_source.setText("\n".join(neu))
         super().insertFromMimeData(new_source)
 
-        if event.modifiers() & (QtCore.Qt.ControlModifier | QtCore.Qt.AltModifier):
-            popup.hide()
-            return
-        if event.text() in (" ", ";", "(", ")", "[", "]", "{", "}"):
-            popup.hide()
-            self._jedi_timer.stop()
-            return
-        if _HAS_JEDI and (event.text() == "." or len(self._text_under_cursor()) >= 1):
-            self._jedi_timer.start()
-        else:
-            popup.hide()
-
     def _einruecken(self):
         cursor = self.textCursor()
         if cursor.hasSelection():

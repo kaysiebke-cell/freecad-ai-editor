@@ -6,7 +6,7 @@ Baut die Panel-Toolbar (Toggle-Buttons für alle Dock-Panels) des MakroEditors a
 Aufgerufen einmalig aus MakroEditor.__init__.
 """
 
-from qt_compat import QtWidgets, QtCore, QtGui
+from qt_compat import QtWidgets, QtCore
 
 import theme
 import schrift

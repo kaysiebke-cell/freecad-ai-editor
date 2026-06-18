@@ -22,7 +22,6 @@ import threading
 
 from qt_compat import QtCore, QtWidgets, QtGui
 import theme
-import schrift
 
 # anbieter_formate liegt in data/ — Pfad einmalig eintragen wenn nötig
 try:
@@ -104,11 +103,7 @@ class _RechtschreibHighlighter(QtGui.QSyntaxHighlighter):
 
 
 # ── Ollama ────────────────────────────────────────────────────────────────────
-try:
-    import requests as _requests
-    _HAS_REQUESTS = True
-except ImportError:
-    _HAS_REQUESTS = False
+from qt_compat import requests as _requests, HAS_REQUESTS as _HAS_REQUESTS
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
 
