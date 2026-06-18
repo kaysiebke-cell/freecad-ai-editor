@@ -334,13 +334,16 @@ class MakroLeiste(QtWidgets.QWidget):
 
     @staticmethod
     def _freecad_inhalte(verstecken: bool):
-        """Blendet FreeCAD-Zentralbereich + alle Dock-Panels aus/ein."""
+        """Blendet FreeCAD-Zentralbereich, Toolbars und Dock-Panels aus/ein."""
         mw = Gui.getMainWindow()
         # Zentrales MDI-Widget (3D-Ansicht)
         cw = mw.centralWidget()
         if cw:
             cw.setVisible(not verstecken)
-        # Alle vorhandenen Dock-Panels außer dem Editor selbst
+        # Werkzeugleisten (alle QToolBar-Kinder des Hauptfensters)
+        for tb in mw.findChildren(QtWidgets.QToolBar):
+            tb.setVisible(not verstecken)
+        # Alle Dock-Panels außer dem Editor selbst
         for dock in mw.findChildren(QtWidgets.QDockWidget):
             name = dock.objectName()
             if not name.startswith("EditorDock_") and name != "EigeneMakroLeiste":
