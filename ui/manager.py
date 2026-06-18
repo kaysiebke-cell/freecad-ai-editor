@@ -340,9 +340,16 @@ class MakroLeiste(QtWidgets.QWidget):
         cw = mw.centralWidget()
         if cw:
             cw.setVisible(not verstecken)
-        # Werkzeugleisten (alle QToolBar-Kinder des Hauptfensters)
+        # Werkzeugleisten – Workbench-Leiste bleibt immer sichtbar
         for tb in mw.findChildren(QtWidgets.QToolBar):
-            tb.setVisible(not verstecken)
+            # Workbench-Leiste erkennen: enthält eine ComboBox (Workbench-Auswahl)
+            # oder heißt "Workbench"
+            ist_wb_leiste = (
+                tb.objectName() == "Workbench"
+                or bool(tb.findChildren(QtWidgets.QComboBox))
+            )
+            if not ist_wb_leiste:
+                tb.setVisible(not verstecken)
         # Alle Dock-Panels außer dem Editor selbst
         for dock in mw.findChildren(QtWidgets.QDockWidget):
             name = dock.objectName()
