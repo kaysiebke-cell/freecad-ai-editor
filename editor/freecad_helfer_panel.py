@@ -5,25 +5,28 @@ freecad_helfer_panel.py
 Barrierefreiheits-Helfer für Legastheniker und FreeCAD-Einsteiger.
 
 Nimmt frei geschriebenen deutschen Text (Rechtschreibung egal) und
-lässt Ollama daraus eine saubere, präzise FreeCAD-Beschreibung machen.
-Optional kann ein Bild (Skizze, Foto, Handzeichnung) mitgeschickt werden —
-Vision-fähige Modelle (llava, moondream) sehen dann Text + Bild zusammen.
+lässt einen KI-Anbieter daraus eine saubere, präzise FreeCAD-Beschreibung machen.
+Optional kann ein Bild (Skizze, Foto, Handzeichnung) mitgeschickt werden.
 
 Keine hardkodierten Farben — alles über QPalette (hell + dunkel).
 """
 
 import base64
-import difflib
-import html
 import json
-import re
 import sys
 import threading
 
 from qt_compat import QtCore, QtWidgets, QtGui
 import theme
 
-# anbieter_formate liegt in data/ — Pfad einmalig eintragen wenn nötig
+from _helfer_rechtschreibung import (
+    BACKEND as _SPELL_BACKEND,
+    HAT_RECHTSCHREIBUNG as _HAT_RECHTSCHREIBUNG,
+    RechtschreibHighlighter,
+)
+from _helfer_ui import ChatBubble, DiffBlase, BildVorschau
+
+# anbieter_formate liegt in data/
 try:
     from anbieter_formate import datei_filter, format_info, format_pruefen
 except ImportError:
@@ -34,83 +37,17 @@ except ImportError:
     try:
         from anbieter_formate import datei_filter, format_info, format_pruefen
     except ImportError:
-        # Fallback wenn Datei fehlt
         def datei_filter(_): return "Bilder (*.png *.jpg *.jpeg *.webp *.gif *.bmp)"
         def format_info(_):  return ""
         def format_pruefen(_, e): return True
 
+
 def _aktueller_anbieter() -> str:
-    """Liest den aktuell in den Einstellungen gewählten KI-Anbieter."""
     try:
         from params import lade_quelle
         return lade_quelle()
     except Exception:
         return "Ollama (Lokal)"
-
-# ── Rechtschreibprüfung — Fallback-Kette ─────────────────────────────────────
-class _SpellBackend:
-    def pruefen(self, wort: str) -> bool: return True
-    def vorschlaege(self, wort: str) -> list[str]: return []
-
-class _EnchantBackend(_SpellBackend):
-    def __init__(self):
-        import enchant as _e
-        self._d = _e.Dict("de_DE")
-    def pruefen(self, wort): return self._d.check(wort)
-    def vorschlaege(self, wort): return self._d.suggest(wort)[:8]
-
-class _SpellcheckerBackend(_SpellBackend):
-    def __init__(self):
-        from spellchecker import SpellChecker
-        self._s = SpellChecker(language="de")
-    def pruefen(self, wort): return not self._s.unknown([wort])
-    def vorschlaege(self, wort):
-        c = self._s.candidates(wort)
-        return sorted(c)[:8] if c else []
-
-def _lade_backend() -> tuple[_SpellBackend, str]:
-    # Alle ~/.local/lib/pythonX.Y/site-packages einbinden –
-    # AppImage nutzt ggf. andere Python-Version als das System.
-    try:
-        import glob as _glob
-        for _sp in _glob.glob(
-                __import__("os").path.expanduser("~/.local/lib/python*/site-packages")):
-            if _sp not in sys.path:
-                sys.path.insert(0, _sp)
-    except Exception:
-        pass
-
-    for Klasse, name in [(_EnchantBackend, "enchant"),
-                         (_SpellcheckerBackend, "pyspellchecker")]:
-        try:
-            return Klasse(), name
-        except Exception:
-            continue
-    return _SpellBackend(), ""
-
-_SPELL_BACKEND, _SPELL_NAME = _lade_backend()
-_HAT_RECHTSCHREIBUNG = bool(_SPELL_NAME)
-
-
-class _RechtschreibHighlighter(QtGui.QSyntaxHighlighter):
-    """Unterstreicht falsch geschriebene Wörter rot während des Tippens."""
-
-    _WORT_RE = re.compile(r"\b[A-Za-zÄäÖöÜüß]{2,}\b")
-
-    def __init__(self, dokument):
-        super().__init__(dokument)
-        self._format = QtGui.QTextCharFormat()
-        self._format.setUnderlineStyle(
-            QtGui.QTextCharFormat.SpellCheckUnderline)
-        self._format.setUnderlineColor(QtGui.QColor("red"))
-
-    def highlightBlock(self, text):
-        if not _HAT_RECHTSCHREIBUNG:
-            return
-        for m in self._WORT_RE.finditer(text):
-            wort = m.group()
-            if not _SPELL_BACKEND.pruefen(wort):
-                self.setFormat(m.start(), len(wort), self._format)
 
 
 # ── Ollama ────────────────────────────────────────────────────────────────────
@@ -127,11 +64,10 @@ SYSTEM_PROMPT = (
     "Nur der korrigierte Text, auf Deutsch."
 )
 
-# ── Vision-Modell-Erkennung ───────────────────────────────────────────────────
 _VISION_SCHLUESSEL = ("llava", "bakllava", "moondream", "vision", "minicpm-v")
 
+
 def _ist_vision_modell(name: str) -> bool:
-    """Gibt True zurück wenn das Ollama-Modell Bilder verarbeiten kann."""
     n = name.lower()
     return any(v in n for v in _VISION_SCHLUESSEL)
 
@@ -148,7 +84,6 @@ def _ollama_modelle() -> list[str]:
 
 
 def _pixmap_zu_base64(pixmap: QtGui.QPixmap) -> str:
-    """Konvertiert QPixmap in Base64-String für die Ollama-API (images-Feld)."""
     ba  = QtCore.QByteArray()
     buf = QtCore.QBuffer(ba)
     buf.open(QtCore.QIODevice.WriteOnly)
@@ -157,217 +92,11 @@ def _pixmap_zu_base64(pixmap: QtGui.QPixmap) -> str:
     return base64.b64encode(bytes(ba)).decode("ascii")
 
 
-# ── Diff-Anzeige ──────────────────────────────────────────────────────────────
-def _berechne_diff_html(original: str, korrigiert: str, widget: QtWidgets.QWidget) -> str:
-    pal    = widget.palette()
-    dunkel = pal.color(QtGui.QPalette.Base).lightness() < 128
-    rot    = QtGui.QColor.fromHsl(4,  210, 80 if dunkel else 45).name()
-    gruen  = QtGui.QColor.fromHsl(130, 180, 80 if dunkel else 40).name()
-
-    w_orig = original.split()
-    w_korr = korrigiert.split()
-    matcher = difflib.SequenceMatcher(None, w_orig, w_korr, autojunk=False)
-    teile   = []
-    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-        if tag == "equal":
-            teile.append(html.escape(" ".join(w_orig[i1:i2])))
-        elif tag == "replace":
-            for w in w_orig[i1:i2]:
-                teile.append(
-                    f'<span style="color:{rot};text-decoration:line-through;">'
-                    f'{html.escape(w)}</span>')
-            for w in w_korr[j1:j2]:
-                teile.append(
-                    f'<span style="color:{gruen};font-weight:bold;">'
-                    f'{html.escape(w)}</span>')
-        elif tag == "delete":
-            for w in w_orig[i1:i2]:
-                teile.append(
-                    f'<span style="color:{rot};text-decoration:line-through;">'
-                    f'{html.escape(w)}</span>')
-        elif tag == "insert":
-            for w in w_korr[j1:j2]:
-                teile.append(
-                    f'<span style="color:{gruen};font-weight:bold;">'
-                    f'{html.escape(w)}</span>')
-    return " ".join(teile)
-
-
-class _DiffBlase(QtWidgets.QFrame):
-    def __init__(self, original: str, korrigiert: str, parent=None):
-        super().__init__(parent)
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(12, 6, 12, 6)
-        layout.setSpacing(2)
-
-        kopf = QtWidgets.QLabel("✏️ Deine Korrekturen:")
-        kopf.setStyleSheet(theme.STY_HELFER_BLASE_KOPF())
-        layout.addWidget(kopf)
-
-        self._lbl = QtWidgets.QLabel()
-        self._lbl.setWordWrap(True)
-        self._lbl.setTextFormat(QtCore.Qt.RichText)
-        self._lbl.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        layout.addWidget(self._lbl)
-
-        self._original   = original
-        self._korrigiert = korrigiert
-        QtCore.QTimer.singleShot(50, self._render)
-
-    def _render(self):
-        diff = _berechne_diff_html(self._original, self._korrigiert, self)
-        self._lbl.setText(diff)
-        pal    = self.palette()
-        dunkel = pal.color(QtGui.QPalette.Base).lightness() < 128
-        bg     = QtGui.QColor.fromHsl(50, 60, 40 if dunkel else 220)
-        fg     = pal.color(QtGui.QPalette.WindowText)
-        self.setStyleSheet(
-            f"QFrame {{ background-color: {bg.name()}; border-radius: 8px; }}")
-        self._lbl.setStyleSheet(theme.STY_HELFER_DIFF_TEXT(fg.name()))
-
-    def changeEvent(self, event):
-        if event.type() == QtCore.QEvent.PaletteChange:
-            self._render()
-        super().changeEvent(event)
-
-
-# ── Chat-Blase ────────────────────────────────────────────────────────────────
-class _ChatBubble(QtWidgets.QFrame):
-    def __init__(self, text: str, rolle: str, parent=None):
-        super().__init__(parent)
-        self._rolle = rolle
-        self._text  = text
-
-        outer = QtWidgets.QHBoxLayout(self)
-        outer.setContentsMargins(0, 4, 0, 4)
-        outer.setSpacing(8)
-
-        avatar = QtWidgets.QLabel("🤖" if rolle == "ki" else "🧑")
-        avatar.setFixedSize(32, 32)
-        avatar.setAlignment(QtCore.Qt.AlignCenter)
-        outer.addWidget(avatar) if rolle == "ki" else outer.addSpacing(40)
-
-        bubble = QtWidgets.QFrame()
-        blay   = QtWidgets.QVBoxLayout(bubble)
-        blay.setContentsMargins(12, 8, 12, 8)
-        blay.setSpacing(4)
-
-        self._lbl = QtWidgets.QLabel(text)
-        self._lbl.setWordWrap(True)
-        self._lbl.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        blay.addWidget(self._lbl)
-
-        if rolle == "ki":
-            self._copy_btn = QtWidgets.QPushButton("📋  Kopieren")
-            self._copy_btn.setVisible(bool(text))
-            self._copy_btn.clicked.connect(self._kopieren)
-            blay.addWidget(self._copy_btn)
-        else:
-            self._copy_btn = None
-
-        outer.addWidget(bubble, 1)
-        outer.addWidget(avatar) if rolle == "nutzer" else outer.addSpacing(40)
-
-        self._bubble = bubble
-        self._aktualisiere_farben()
-
-    def _aktualisiere_farben(self):
-        pal    = self.palette()
-        base   = pal.color(QtGui.QPalette.Base)
-        dunkel = base.lightness() < 128
-        if self._rolle == "ki":
-            hue, sat, lit_d, lit_h = 220, 80, 45, 210
-        else:
-            hue, sat, lit_d, lit_h = 260, 60, 50, 205
-        lit = lit_d if dunkel else lit_h
-        bg  = QtGui.QColor.fromHsl(hue, sat, lit)
-        fg  = pal.color(QtGui.QPalette.WindowText)
-        self._bubble.setStyleSheet(
-            f"QFrame {{ background-color: {bg.name()}; border-radius: 10px; }}")
-        self._lbl.setStyleSheet(theme.STY_HELFER_BUBBLE_TEXT(fg.name()))
-
-    def changeEvent(self, event):
-        if event.type() == QtCore.QEvent.PaletteChange:
-            self._aktualisiere_farben()
-        super().changeEvent(event)
-
-    def append(self, chunk: str):
-        self._text += chunk
-        self._lbl.setText(self._text)
-
-    def finalize(self):
-        if self._copy_btn:
-            self._copy_btn.setVisible(True)
-
-    def _kopieren(self):
-        QtWidgets.QApplication.clipboard().setText(self._text)
-        self._copy_btn.setText("✅  Kopiert!")
-        QtCore.QTimer.singleShot(
-            2500, lambda: self._copy_btn.setText("📋  Kopieren"))
-
-
-# ── Bild-Vorschau ─────────────────────────────────────────────────────────────
-class _BildVorschau(QtWidgets.QFrame):
-    """Zeigt das angehängte Bild als Thumbnail mit Entfernen-Button."""
-
-    entfernt = QtCore.Signal()
-
-    def __init__(self, pixmap: QtGui.QPixmap, parent=None):
-        super().__init__(parent)
-        layout = QtWidgets.QHBoxLayout(self)
-        layout.setContentsMargins(8, 6, 8, 6)
-        layout.setSpacing(10)
-
-        # Thumbnail
-        thumb = QtWidgets.QLabel()
-        thumb.setFixedSize(72, 72)
-        thumb.setAlignment(QtCore.Qt.AlignCenter)
-        thumb.setPixmap(pixmap.scaled(
-            72, 72,
-            QtCore.Qt.KeepAspectRatio,
-            QtCore.Qt.SmoothTransformation))
-        layout.addWidget(thumb)
-
-        # Info + Entfernen-Button
-        rechts = QtWidgets.QVBoxLayout()
-        rechts.setSpacing(4)
-
-        info = QtWidgets.QLabel(f"📎  {pixmap.width()} × {pixmap.height()} px")
-        info.setStyleSheet(theme.STY_HELFER_BLASE_KOPF())
-        rechts.addWidget(info)
-
-        entf = QtWidgets.QPushButton("✕  Bild entfernen")
-        entf.setFixedHeight(26)
-        entf.setToolTip("Angehängtes Bild entfernen")
-        entf.clicked.connect(self.entfernt)
-        rechts.addWidget(entf)
-        rechts.addStretch()
-
-        layout.addLayout(rechts)
-        layout.addStretch()
-
-        self._aktualisiere_rahmen()
-
-    def _aktualisiere_rahmen(self):
-        pal    = self.palette()
-        dunkel = pal.color(QtGui.QPalette.Base).lightness() < 128
-        bg     = QtGui.QColor.fromHsl(200, 60, 38 if dunkel else 230)
-        rand   = pal.color(QtGui.QPalette.Mid)
-        self.setStyleSheet(
-            f"QFrame {{ background-color: {bg.name()}; "
-            f"border: 1px solid {rand.name()}; border-radius: 8px; }}")
-
-    def changeEvent(self, event):
-        if event.type() == QtCore.QEvent.PaletteChange:
-            self._aktualisiere_rahmen()
-        super().changeEvent(event)
-
-
 # ── Haupt-Panel ───────────────────────────────────────────────────────────────
 class FreecadHelferPanel(QtWidgets.QWidget):
     """
     Barrierefreiheits-Panel: frei geschriebener Text (+ optionales Bild)
-    → saubere FreeCAD-Beschreibung via Ollama.
+    → saubere FreeCAD-Beschreibung via KI.
     """
 
     _chunk_signal = QtCore.Signal(str)
@@ -376,10 +105,10 @@ class FreecadHelferPanel(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._stream_bubble  = None
-        self._anhang_pixmap  = None
+        self._stream_bubble        = None
+        self._anhang_pixmap        = None
         self._letzter_eingabe_text = ""
-        self._aktuelles_modell = ""
+        self._aktuelles_modell     = ""
 
         self._chunk_signal.connect(self._on_chunk)
         self._done_signal.connect(self._on_done)
@@ -419,8 +148,8 @@ class FreecadHelferPanel(QtWidgets.QWidget):
         self._scroll.setWidgetResizable(True)
         self._scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
 
-        self._chat_widget  = QtWidgets.QWidget()
-        self._chat_layout  = QtWidgets.QVBoxLayout(self._chat_widget)
+        self._chat_widget = QtWidgets.QWidget()
+        self._chat_layout = QtWidgets.QVBoxLayout(self._chat_widget)
         self._chat_layout.setContentsMargins(4, 4, 4, 4)
         self._chat_layout.setSpacing(6)
         self._chat_layout.addStretch()
@@ -433,7 +162,7 @@ class FreecadHelferPanel(QtWidgets.QWidget):
             "dann sehe ich Text und Bild zusammen.", "ki"
         ).finalize()
 
-        # ── Splitter: Chat oben / Eingabe unten (frei skalierbar) ────────────
+        # Splitter: Chat oben / Eingabe unten
         splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
         splitter.setChildrenCollapsible(False)
         splitter.addWidget(self._scroll)
@@ -452,7 +181,7 @@ class FreecadHelferPanel(QtWidgets.QWidget):
         self._eingabe.setMinimumHeight(30)
         self._eingabe.setAcceptDrops(True)
         self._eingabe.installEventFilter(self)
-        self._highlighter = _RechtschreibHighlighter(self._eingabe.document())
+        self._highlighter = RechtschreibHighlighter(self._eingabe.document())
         self._eingabe.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self._eingabe.customContextMenuRequested.connect(self._kontext_menu)
         _unten_lay.addWidget(self._eingabe, 1)
@@ -539,7 +268,6 @@ class FreecadHelferPanel(QtWidgets.QWidget):
             datei_filter(_aktueller_anbieter()))
         if not path:
             return
-        # Format-Prüfung anhand der Dateiendung
         endung = path.rsplit(".", 1)[-1] if "." in path else ""
         if endung and not format_pruefen(_aktueller_anbieter(), endung):
             self._status_lbl.setText(
@@ -566,14 +294,13 @@ class FreecadHelferPanel(QtWidgets.QWidget):
     def _setze_bild(self, pixmap: QtGui.QPixmap):
         self._anhang_pixmap = pixmap
 
-        # Altes Vorschau-Widget entfernen
         lay = self._vorschau_container.layout()
         for i in reversed(range(lay.count())):
             w = lay.itemAt(i).widget()
             if w:
                 w.deleteLater()
 
-        vorschau = _BildVorschau(pixmap)
+        vorschau = BildVorschau(pixmap)
         vorschau.entfernt.connect(self._bild_entfernen)
         lay.addWidget(vorschau)
         self._vorschau_container.setVisible(True)
@@ -588,7 +315,6 @@ class FreecadHelferPanel(QtWidgets.QWidget):
         self._status_lbl.setText("")
 
     def _pruefe_vision_modell(self):
-        """Zeigt Warnung wenn Bild angehängt aber Modell kein Vision kann."""
         if self._anhang_pixmap is None:
             self._vision_warnung.setVisible(False)
             return
@@ -598,8 +324,7 @@ class FreecadHelferPanel(QtWidgets.QWidget):
             dunkel = pal.color(QtGui.QPalette.Base).lightness() < 128
             bg     = QtGui.QColor.fromHsl(40, 200, 40 if dunkel else 230).name()
             fg     = QtGui.QColor.fromHsl(40, 200, 200 if dunkel else 60).name()
-            self._vision_warnung.setStyleSheet(
-                theme.STY_HELFER_VISION_WARN(bg, fg))
+            self._vision_warnung.setStyleSheet(theme.STY_HELFER_VISION_WARN(bg, fg))
             self._vision_warnung.setText(
                 f"⚠  '{modell}' unterstützt keine Bilder. "
                 f"Wechsle zu llava oder moondream — "
@@ -610,8 +335,8 @@ class FreecadHelferPanel(QtWidgets.QWidget):
 
     # ── Chat-Blasen ───────────────────────────────────────────────────────────
 
-    def _füge_bubble_ein(self, text: str, rolle: str) -> _ChatBubble:
-        bubble = _ChatBubble(text, rolle)
+    def _füge_bubble_ein(self, text: str, rolle: str) -> ChatBubble:
+        bubble = ChatBubble(text, rolle)
         self._chat_layout.insertWidget(self._chat_layout.count() - 1, bubble)
         QtCore.QTimer.singleShot(50, self._scroll_unten)
         return bubble
@@ -631,7 +356,6 @@ class FreecadHelferPanel(QtWidgets.QWidget):
         self._eingabe.clear()
         self._senden_btn.setEnabled(False)
 
-        # Nutzer-Bubble (mit Bild-Hinweis wenn Bild angehängt)
         anzeige_text = text
         if self._anhang_pixmap is not None:
             px = self._anhang_pixmap
@@ -649,7 +373,6 @@ class FreecadHelferPanel(QtWidgets.QWidget):
         except Exception:
             quelle, api_key = "Ollama (Lokal)", ""
 
-        # Vision: nur mit Ollama möglich
         bild_b64 = None
         if self._anhang_pixmap is not None:
             if quelle.startswith("Ollama") and _ist_vision_modell(modell):
@@ -668,23 +391,23 @@ class FreecadHelferPanel(QtWidgets.QWidget):
     # ── Anbieter-Routing ──────────────────────────────────────────────────────
 
     _BASES = {
-        "OpenAI":     "https://api.openai.com/v1",
-        "GitHub":     "https://models.inference.ai.azure.com",
-        "DeepSeek":   "https://api.deepseek.com/v1",
-        "Gemini":     "https://generativelanguage.googleapis.com/v1beta/openai",
-        "Groq":       "https://api.groq.com/openai/v1",
-        "Mistral":    "https://api.mistral.ai/v1",
-        "Together":   "https://api.together.xyz/v1",
-        "OpenRouter": "https://openrouter.ai/api/v1",
-        "xAI":        "https://api.x.ai/v1",
-        "Fireworks":  "https://api.fireworks.ai/inference/v1",
-        "Moonshot":   "https://api.moonshot.cn/v1",
-        "Qwen":       "https://dashscope.aliyuncs.com/compatible-mode/v1",
-        "Cohere":     "https://api.cohere.com/compatibility/v1",
-        "SambaNova":  "https://api.sambanova.ai/v1",
-        "MiniMax":    "https://api.minimaxi.chat/v1",
-        "Llama":      "https://api.llama-api.com",
-        "HuggingFace":"https://api-inference.huggingface.co/v1",
+        "OpenAI":      "https://api.openai.com/v1",
+        "GitHub":      "https://models.inference.ai.azure.com",
+        "DeepSeek":    "https://api.deepseek.com/v1",
+        "Gemini":      "https://generativelanguage.googleapis.com/v1beta/openai",
+        "Groq":        "https://api.groq.com/openai/v1",
+        "Mistral":     "https://api.mistral.ai/v1",
+        "Together":    "https://api.together.xyz/v1",
+        "OpenRouter":  "https://openrouter.ai/api/v1",
+        "xAI":         "https://api.x.ai/v1",
+        "Fireworks":   "https://api.fireworks.ai/inference/v1",
+        "Moonshot":    "https://api.moonshot.cn/v1",
+        "Qwen":        "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "Cohere":      "https://api.cohere.com/compatibility/v1",
+        "SambaNova":   "https://api.sambanova.ai/v1",
+        "MiniMax":     "https://api.minimaxi.chat/v1",
+        "Llama":       "https://api.llama-api.com",
+        "HuggingFace": "https://api-inference.huggingface.co/v1",
     }
 
     def _worker(self, quelle: str, modell: str, api_key: str,
@@ -794,7 +517,7 @@ class FreecadHelferPanel(QtWidgets.QWidget):
 
         original = self._letzter_eingabe_text
         if original and korrigiert and original.strip() != korrigiert.strip():
-            diff_blase = _DiffBlase(original, korrigiert)
+            diff_blase = DiffBlase(original, korrigiert)
             self._chat_layout.insertWidget(
                 self._chat_layout.count() - 1, diff_blase)
             QtCore.QTimer.singleShot(50, self._scroll_unten)
@@ -857,25 +580,21 @@ class FreecadHelferPanel(QtWidgets.QWidget):
         if obj is self._eingabe:
             t = event.type()
 
-            # Tastendruck
             if t == QtCore.QEvent.KeyPress:
                 key  = event.key()
                 mods = event.modifiers()
 
-                # Enter = senden
                 if (key in (QtCore.Qt.Key_Return, QtCore.Qt.Key_Enter)
                         and not (mods & QtCore.Qt.ShiftModifier)):
                     self._senden()
                     return True
 
-                # Strg+V: erst auf Bild in Zwischenablage prüfen
                 if key == QtCore.Qt.Key_V and (mods & QtCore.Qt.ControlModifier):
                     clipboard = QtWidgets.QApplication.clipboard()
                     if not clipboard.image().isNull():
                         self._bild_aus_zwischenablage()
-                        return True   # Bild eingefügt, Text-Paste verhindern
+                        return True
 
-            # Drag-Enter: akzeptieren wenn Bild oder unterstützte Datei
             elif t == QtCore.QEvent.DragEnter:
                 md = event.mimeData()
                 if md.hasImage():
@@ -888,7 +607,6 @@ class FreecadHelferPanel(QtWidgets.QWidget):
                             event.acceptProposedAction()
                             return True
 
-            # Drop: Bild laden + Format prüfen
             elif t == QtCore.QEvent.Drop:
                 md = event.mimeData()
                 if md.hasImage():
