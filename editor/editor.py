@@ -170,8 +170,9 @@ class MakroEditor(QtWidgets.QMainWindow):
         import json as _json
         _STATE_DATEI    = os.path.join(os.path.expanduser("~"), ".ki_makro_editor_layout.json")
         _GUARD_DATEI    = os.path.join(os.path.expanduser("~"), ".ki_makro_editor_restore_guard")
-        _LAYOUT_VERSION = "v7"
-        self._layout_state_datei = _STATE_DATEI
+        _LAYOUT_VERSION = "v8"
+        self._layout_state_datei    = _STATE_DATEI
+        self._layout_version        = _LAYOUT_VERSION
 
         def _lade_layout():
             try:
@@ -441,9 +442,12 @@ class MakroEditor(QtWidgets.QMainWindow):
         self._alive = False
         try:
             import json as _json
+            # Fehler-Dock nie als sichtbar speichern — es wird on-demand geöffnet
+            if hasattr(self, "_dock_fehler"):
+                self._dock_fehler.hide()
             _state = self.saveState().toBase64().data().decode("ascii")
             with open(self._layout_state_datei, "w", encoding="utf-8") as _sf:
-                _json.dump({"version": "v6", "state": _state}, _sf)
+                _json.dump({"version": self._layout_version, "state": _state}, _sf)
         except Exception:
             pass
         for attr in ("_flush_timer", "_status_timer", "_baum_timer", "_refresh_timer"):

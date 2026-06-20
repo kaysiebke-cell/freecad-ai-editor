@@ -198,6 +198,30 @@ def _ap(props, obj, attr, fmt="{}"):
         pass
 
 
+# ── Kompakter Einzeiler für Ollama ─────────────────────────────────────────────
+
+def get_dokument_kontext_kompakt(max_objekte: int = 8) -> str:
+    """Einzeiler-Kontext für token-sensitive Modelle (Ollama).
+
+    Beispiel: 'Objekte: Box(L=40 B=30 H=5), Zylinder(R=2.5 H=10)'
+    Leer wenn kein Dokument oder keine Objekte.
+    """
+    doc = _hole_aktives_dokument()
+    if doc is None:
+        return ""
+    objekte = doc.Objects
+    if not objekte:
+        return ""
+    teile = []
+    for obj in objekte[:max_objekte]:
+        typ = getattr(obj, "TypeId", "").split("::")[-1]  # nur z.B. "Box"
+        props = _schluessel_eigenschaften(obj)
+        props_str = " ".join(props)
+        teile.append(f"{obj.Label}({typ} {props_str})".strip())
+    rest = f" +{len(objekte)-max_objekte}" if len(objekte) > max_objekte else ""
+    return f"Objekte: {', '.join(teile)}{rest}"
+
+
 # ── Prompt-Baustein ────────────────────────────────────────────────────────────
 
 def baue_kontext_prompt(basis_system: str, agents_datei: str = "") -> str:

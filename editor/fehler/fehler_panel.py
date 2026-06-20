@@ -307,7 +307,7 @@ class FehlerPanel(QtWidgets.QWidget):
         if self._ki_cb:
             self._btn_ki.clicked.connect(self._ki_cb)
 
-        self.setMinimumHeight(143)
+        self.setMinimumHeight(80)
         self.setMaximumHeight(16777215)
         self._style_anwenden()
 

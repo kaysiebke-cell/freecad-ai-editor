@@ -43,9 +43,15 @@ class KIAnfrage:
                 r.raise_for_status()
                 models = [m["name"] for m in r.json().get("models", [])]
                 self._c._model_box.addItems(models or ["(keine Modelle)"])
-                self._c._set_status(
-                    f"🔄 Ollama: {len(models)} Modell(e) geladen" if models
-                    else "⚠  Ollama: keine Modelle gefunden")
+                hat_coder = any("coder" in m.lower() for m in models)
+                if not models:
+                    self._c._set_status("⚠  Ollama: keine Modelle gefunden")
+                elif not hat_coder:
+                    self._c._set_status(
+                        f"🔄 Ollama: {len(models)} Modell(e) geladen — "
+                        "💡 Tipp: 'ollama pull qwen2.5-coder:7b' für bessere FreeCAD-Code-Ergebnisse")
+                else:
+                    self._c._set_status(f"🔄 Ollama: {len(models)} Modell(e) geladen")
             except Exception as e:
                 self._c._model_box.addItem(f"Ollama: {e}")
                 self._c._set_status(f"⚠  Ollama nicht erreichbar: {e}")
@@ -90,17 +96,23 @@ class KIAnfrage:
         if not code:
             alle_zeilen = self._c._editor.toPlainText().splitlines()
             if not alle_zeilen:
-                self._c._set_status("⚠  Suchfeld und Editor sind leer")
-                return
-            if len(alle_zeilen) > 200:
+                # Kein Code — nur erlaubt wenn eine eigene Frage vorhanden ist
+                _fq_check = getattr(self._c, "_frage_feld", None)
+                if not (_fq_check and _fq_check.toPlainText().strip()):
+                    self._c._set_status("⚠  KI-Input und Editor sind leer – bitte Frage oder Code eingeben")
+                    return
+                code_quelle = "nur_frage"
+            elif len(alle_zeilen) > 200:
                 code = "\n".join(alle_zeilen[:200]) + "\n# … [gekürzt auf 200 Zeilen]"
                 self._c._set_status("ℹ  Suchfeld leer – sende erste 200 Zeilen des Editors")
+                code_quelle = "editor"
             else:
                 code = "\n".join(alle_zeilen)
                 self._c._set_status("ℹ  Suchfeld leer – sende gesamten Editor-Inhalt")
-            code_quelle = "editor"
+                code_quelle = "editor"
 
-        from editor.ki.nl_generator import (NL_SYSTEM_PROMPT, NL_PRESET_SCHLUESSEL,
+        from editor.ki.nl_generator import (NL_SYSTEM_PROMPT, NL_SYSTEM_PROMPT_OLLAMA,
+                                            NL_PRESET_SCHLUESSEL,
                                             NL_SYSTEM_PROMPT_PARTDESIGN, NL_PRESET_SCHLUESSEL_PD,
                                             NL_SYSTEM_PROMPT_SCHRITTWEISE, NL_PRESET_SCHLUESSEL_SW)
         preset_name  = self._c._preset_box.currentText()
@@ -208,14 +220,22 @@ class KIAnfrage:
         modus_prefix = MODUS_PROMPTS.get(
             getattr(self._c, "_ki_modus", MODUS_DEFAULT), "")
 
-        herkunft = "Markierter Block" if code_quelle == "suchfeld" else "Editor-Inhalt"
-        full_prompt = (
-            f"{sitemap_block}"
-            f"Aufgabe: {prompt}\n\n"
-            f"{herkunft}:\n```python\n{code}\n```\n\n"
-            "Antworte ausschließlich mit fertigem Python-Code ohne Markdown.\n"
-            f"{modus_prefix}"
-        )
+        if code_quelle == "nur_frage":
+            # Reine Frage ohne Code — kein Code-Block im Prompt
+            full_prompt = (
+                f"{sitemap_block}"
+                f"{prompt}\n\n"
+                f"{modus_prefix}"
+            )
+        else:
+            herkunft = "Markierter Block" if code_quelle == "suchfeld" else "Editor-Inhalt"
+            full_prompt = (
+                f"{sitemap_block}"
+                f"Aufgabe: {prompt}\n\n"
+                f"{herkunft}:\n```python\n{code}\n```\n\n"
+                "Antworte ausschließlich mit fertigem Python-Code ohne Markdown.\n"
+                f"{modus_prefix}"
+            )
 
         # Verlauf erweitern + absolutes Limit prüfen
         if not hasattr(self._c, "_chat_verlauf"):
@@ -233,12 +253,54 @@ class KIAnfrage:
         verlauf_kopie = list(self._c._chat_verlauf)
         ki_modus_wert = getattr(self._c, "_ki_modus", None)
 
+        nl_inhalt = code or eigene_frage  # bei reiner Frage ohne Code: Frage direkt senden
+
+        # FreeCAD-Dokumentzustand einbauen — kompakt für Ollama, voll für Cloud
+        try:
+            from editor.ki.dokument_kontext import (get_dokument_kontext_kompakt,
+                                                     get_dokument_kontext)
+            ist_ollama = source_text.startswith("Ollama")
+            if ist_ollama:
+                dok_info = get_dokument_kontext_kompakt()
+                if dok_info:
+                    nl_inhalt = f"{dok_info}\n\n{nl_inhalt}"
+            else:
+                dok_info = get_dokument_kontext()
+                if dok_info and "nicht verfügbar" not in dok_info and "Objekte: (keine)" not in dok_info:
+                    nl_inhalt = f"Aktueller FreeCAD-Zustand:\n{dok_info}\n\n{nl_inhalt}"
+        except Exception:
+            pass
+
         if ist_nl_modus:
             from editor.ki.nl_generator import NL_TEMPERATURE
+            ist_ollama_nl = source_text.startswith("Ollama")
+            fc11_prompt = (NL_SYSTEM_PROMPT_OLLAMA if ist_ollama_nl else NL_SYSTEM_PROMPT)
+
+            # Tipp: qwen2.5-coder empfehlen wenn kein Code-Modell gewählt
+            if ist_ollama_nl and "coder" not in model_text.lower():
+                self._c._set_status(
+                    "💡 Tipp: qwen2.5-coder:7b liefert bessere FreeCAD-Code-Ergebnisse "
+                    "als allgemeine Modelle (ollama pull qwen2.5-coder:7b)")
+
+            # AGENTS.md neben geöffneter Datei oder im Home-Verzeichnis laden
+            try:
+                import os as _os
+                _pfad = getattr(self._c, "_pfad", None)
+                if _pfad:
+                    _agents_pfad = _os.path.join(_os.path.dirname(_pfad), "AGENTS.md")
+                else:
+                    _agents_pfad = _os.path.join(_os.path.expanduser("~"), "AGENTS.md")
+                from editor.ki.dokument_kontext import _lade_agents_md
+                _agents_text = _lade_agents_md(_agents_pfad)
+                if _agents_text:
+                    fc11_prompt = fc11_prompt + "\n━━━ PROJEKTANWEISUNGEN ━━━\n" + _agents_text
+            except Exception:
+                pass
+
             self._c._nl_antwort_aktiv = True
             threading.Thread(
                 target=self._c._streaming.worker_mit_system,
-                args=(source_text, model_text, NL_SYSTEM_PROMPT, code,
+                args=(source_text, model_text, fc11_prompt, nl_inhalt,
                       NL_TEMPERATURE),
                 kwargs={"preset_name": preset_name, "ki_modus": ki_modus_wert},
                 daemon=True
@@ -249,7 +311,7 @@ class KIAnfrage:
             threading.Thread(
                 target=self._c._streaming.worker_mit_system,
                 args=(source_text, model_text, NL_SYSTEM_PROMPT_PARTDESIGN,
-                      code, NL_TEMPERATURE),
+                      nl_inhalt, NL_TEMPERATURE),
                 kwargs={"preset_name": preset_name, "ki_modus": ki_modus_wert},
                 daemon=True
             ).start()

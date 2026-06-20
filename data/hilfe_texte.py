@@ -102,6 +102,8 @@ Natürlichsprache direkt in FreeCAD-Code umwandeln.
   3. 🤖 Fragen
   4. Code prüfen → ✅ Ersetzen
   Funktioniert mit allen Backends inkl. Ollama.
+  💡 Empfohlen mit Ollama: qwen2.5-coder:7b
+     ollama pull qwen2.5-coder:7b
 
 ── FC12 · PartDesign aus Beschreibung ───────────────
   Erzeugt parametrisches PartDesign-Makro:
@@ -115,6 +117,13 @@ Natürlichsprache direkt in FreeCAD-Code umwandeln.
   vorhandenen Editor-Code an.
   → Ideal für komplexere Modelle in mehreren Runden
   ⚠ Nur mit starken Modellen (kein Ollama)
+
+AGENTS.md – Projektanweisungen:
+  Eine Datei „AGENTS.md" neben deiner geöffneten
+  Datei (oder im Home-Verzeichnis) wird automatisch
+  erkannt und dem FC11-Prompt angehängt.
+  Beispiel ~/AGENTS.md:
+    Alle Maße in mm. Standardmaterial: Aluminium.
 
 Tipp: Im Anfänger-Modus erklärt die KI jeden Schritt."""),
 
@@ -162,7 +171,7 @@ Aktionen per Doppelklick:
 
 Lesezeichen: ☆-Button → Ordner merken"""),
 
-    ("⚠ Fehler-Übersetzer", """\
+    ("⚠ Fehler-Übersetzer & Vorschau-Fehler", """\
 Panel „⚠ Fehler" öffnen (Toolbar):
 
 Englische Fehlermeldung / Traceback einfügen
@@ -174,7 +183,17 @@ der Fehlertyp wird automatisch erkannt.
 
 KI-Korrektur:
 → „🔧 KI korrigieren" schickt den Fehler
-  direkt an die KI die den Code automatisch repariert."""),
+  direkt an die KI die den Code automatisch repariert.
+
+VORSCHAU-FEHLER (Vorschau-Tab):
+Tritt beim Vorschau-Test ein Laufzeitfehler auf,
+erscheinen im Vorschau-Tab zwei Buttons:
+  ⚠ Fehler erklären  – öffnet Fehler-Panel mit
+    Fehlertext + Übersetzung vorausgefüllt
+  🔧 KI korrigieren  – schickt Fehler + Code
+    direkt an die KI-Selbstkorrektur
+Der Fehler-Übersetzer wird dabei nicht automatisch
+geöffnet – Panels bleiben im gewohnten Layout."""),
 
     ("🔍 Suche & Ersetzen im Editor", """\
 Im KI-Panel (🤖 KI) ganz unten:
@@ -325,11 +344,14 @@ Vision-Modelle bei Ollama:
 
 ⚠ OLLAMA (LOKAL)
   Ollama muss laufen: http://localhost:11434
-  Modell vorher laden:
-    ollama pull codellama
+  Empfohlenes Modell für FreeCAD-Code:
+    ollama pull qwen2.5-coder:7b
+  Alternativ: codellama · llama3
+  → Der Editor zeigt einen Hinweis wenn kein
+    Code-Modell gefunden wird.
 
-⚠ FC12 NUR MIT STARKEM MODELL
-  FC12 bei Ollama gesperrt.
+⚠ FC12/FC13 NUR MIT STARKEM MODELL
+  FC12 und FC13 bei Ollama gesperrt.
   Empfohlen: Claude (Anthropic) oder GPT-4o.
 
 ⚠ GROSSE DATEIEN

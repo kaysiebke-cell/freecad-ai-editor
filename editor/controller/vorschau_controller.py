@@ -57,7 +57,9 @@ class Vorschau:
         self._vorschau_orig_parent:  QtWidgets.QWidget | None = None  # MdiSubWindow
         self._vorschau_orig_geom:    QtCore.QRect      | None = None
         self._vorschau_shot_timer:   QtCore.QTimer     | None = None
-        self._vorschau_code_override: str | None = None
+        self._vorschau_code_override:  str | None = None
+        self._vorschau_letzter_fehler: str | None = None
+        self._vorschau_letzter_code:   str | None = None
 
         self._e._editor_tab_widget.tabCloseRequested.connect(
             self._vorschau_tab_close_requested)
@@ -85,11 +87,13 @@ class Vorschau:
         if self._vorschau_shot_timer:
             self._vorschau_shot_timer.stop()
             self._vorschau_shot_timer = None
-        if self._vorschau_tab_index >= 0:
-            self._e._editor_tab_widget.removeTab(self._vorschau_tab_index)
-            self._vorschau_tab_index = -1
-        self._vorschau_widget   = None
-        self._vorschau_container = None
+        if self._vorschau_widget is not None:
+            idx = self._e._editor_tab_widget.indexOf(self._vorschau_widget)
+            if idx >= 0:
+                self._e._editor_tab_widget.removeTab(idx)
+        self._vorschau_tab_index  = -1
+        self._vorschau_widget     = None
+        self._vorschau_container  = None
         self._vorschau_status_lbl = None
         self._vorschau_log_box    = None
         self._e._set_status("👁 Vorschau geschlossen")
@@ -124,7 +128,7 @@ class Vorschau:
         # Container für den eingebetteten View
         self._vorschau_container = QtWidgets.QWidget()
         self._vorschau_container.setObjectName("VorschauContainer")
-        self._vorschau_container.setMinimumHeight(300)
+        self._vorschau_container.setMinimumHeight(80)
         self._vorschau_container.setStyleSheet(theme.STY_VORSCHAU_CONTAINER)
         container_lay = QtWidgets.QVBoxLayout(self._vorschau_container)
         container_lay.setContentsMargins(0, 0, 0, 0)
@@ -173,6 +177,14 @@ class Vorschau:
         self._btn_vp_fit  = _btn("⊡  Einpassen",
                                   self._vorschau_fit_all,
                                   "fitAll() — Modell ins Bild einpassen")
+        self._btn_vp_fehler = _btn("⚠  Fehler erklären",
+                                   self._vorschau_fehler_oeffnen,
+                                   "Letzten Vorschau-Fehler im Fehler-Übersetzer öffnen")
+        self._btn_vp_fehler.setVisible(False)
+        self._btn_vp_ki_fix = _btn("🔧  KI korrigieren",
+                                   self._vorschau_ki_korrigieren,
+                                   "Vorschau-Fehler an KI schicken und Code automatisch reparieren")
+        self._btn_vp_ki_fix.setVisible(False)
         root.addLayout(bz)
 
         warn = QtWidgets.QLabel(
@@ -222,9 +234,21 @@ class Vorschau:
         fehler = self._vorschau_exec(code)
         if fehler:
             self._vorschau_status(f"❌ {fehler}")
-            if hasattr(self._e, "fehler_anzeigen"):
-                self._e.fehler_anzeigen(fehler)
+            self._vorschau_letzter_fehler = fehler
+            self._vorschau_letzter_code   = code
+            self._vorschau_fehler_panel_befuellen(fehler)
+            if hasattr(self, "_btn_vp_fehler"):
+                self._btn_vp_fehler.setVisible(True)
+            if hasattr(self, "_btn_vp_ki_fix"):
+                self._btn_vp_ki_fix.setVisible(True)
             return
+        # Erfolg: Fehler-Buttons ausblenden
+        self._vorschau_letzter_fehler = None
+        self._vorschau_letzter_code   = None
+        if hasattr(self, "_btn_vp_fehler"):
+            self._btn_vp_fehler.setVisible(False)
+        if hasattr(self, "_btn_vp_ki_fix"):
+            self._btn_vp_ki_fix.setVisible(False)
 
         self._vorschau_log("✅ Ausgeführt — bette Viewport ein …")
 
@@ -279,6 +303,33 @@ class Vorschau:
                     f"   KI-Code wurde NICHT ausgeführt.\n"
                     f"   → Bitte KI erneut anfragen oder Beschreibung anpassen."
                 )
+
+        # Halluzination: .Base auf Part-Primitive (Box, Sphere, Cylinder …)
+        # PrimitivePy-Objekte haben kein .Base-Attribut
+        _PRIMITIVE_TYPEN = (
+            "Part::Box", "Part::Sphere", "Part::Cylinder",
+            "Part::Cone", "Part::Torus", "Part::Wedge",
+            "Part::Ellipsoid", "Part::Prism", "Part::RegularPolygon",
+        )
+        _base_fehler = _re.search(r'\.Base\s*=', code)
+        if _base_fehler:
+            # Prüfen ob eine Variable die auf ein Primitiv zeigt .Base zugewiesen bekommt
+            _prim_vars = set()
+            for _pt in _PRIMITIVE_TYPEN:
+                for _m in _re.finditer(
+                        r'(\w+)\s*=\s*\w+\.addObject\s*\(\s*["\']' + _re.escape(_pt) + r'["\']',
+                        code):
+                    _prim_vars.add(_m.group(1))
+            for _var in _prim_vars:
+                if _re.search(r'\b' + _re.escape(_var) + r'\s*\.\s*Base\s*=', code):
+                    return (
+                        f"❌ Halluziniertes Attribut '.Base' auf Part-Primitiv '{_var}'\n"
+                        f"   Part::Box / Sphere / Cylinder usw. haben KEIN .Base-Attribut.\n"
+                        f"   KI-Code wurde NICHT ausgeführt.\n"
+                        f"   Tipp: Für Boolean-Operationen → Part.fuse() / Part.cut() verwenden,\n"
+                        f"   oder Part::Cut / Part::Fuse als doc.addObject() mit .Base und .Tool\n"
+                        f"   nur auf dem Boolean-Objekt selbst setzen (nicht auf den Primitiven)."
+                    )
 
         doc = App.ActiveDocument
         in_transaction = False
@@ -468,7 +519,8 @@ class Vorschau:
 
     # ── Tab-Close ────────────────────────────────────────────────────────
     def _vorschau_tab_close_requested(self, index: int):
-        if index == self._vorschau_tab_index:
+        if (self._vorschau_widget is not None and
+                self._e._editor_tab_widget.widget(index) is self._vorschau_widget):
             self.vorschau_schliessen()
 
     # ── Hilfsmethoden ────────────────────────────────────────────────────
@@ -483,3 +535,53 @@ class Vorschau:
             self._vorschau_status_lbl.setText(text)
             self._vorschau_status_lbl.setStyleSheet(
                 theme.STY_VORSCHAU_STATUS(schrift.pt(schrift.STUFE_BASE)))
+
+    def _vorschau_fehler_panel_befuellen(self, fehlertext: str) -> None:
+        """Lädt Vorschau-Fehler in Fehler-Übersetzer + Sandbox (Dock bleibt zu)."""
+        # Fehler-Übersetzer (Seite 0) befüllen
+        if hasattr(self._e, "_fehler_eingabe"):
+            self._e._fehler_eingabe.setPlainText(fehlertext)
+        if hasattr(self._e, "_fehler_ausgabe"):
+            try:
+                from ui.fehler import uebersetze_text
+                self._e._fehler_ausgabe.setPlainText(uebersetze_text(fehlertext))
+            except Exception:
+                pass
+
+        # Sandbox in Fehlerzustand versetzen über die offizielle API (_sandbox_ergebnis).
+        # Dock bleibt zu — Zustand ist bereit wenn der User ihn öffnet.
+        panel = getattr(self._e, "_fehler_inhalt", None)
+        if panel is not None:
+            code = getattr(self, "_vorschau_letzter_code", "") or ""
+            # _sandbox_ergebnis setzt: Ausgabe, roter Rahmen, KI-Button, Code
+            panel._sandbox_ergebnis(False, fehlertext, code)
+            # Stack auf Sandbox-Seite stellen OHNE zeige_seite() —
+            # das würde _sandbox_toggle_cb auslösen und den Dock aufmachen
+            panel._stack.setCurrentIndex(1)
+            panel._ist_sandbox = True
+            panel._btn_toggle.setText("🔍 Fehler-Übersetzer")
+
+    def _vorschau_fehler_oeffnen(self) -> None:
+        """Öffnet den Fehler-Übersetzer-Dock mit dem letzten Vorschau-Fehler."""
+        fehler = getattr(self, "_vorschau_letzter_fehler", None)
+        if fehler:
+            self._vorschau_fehler_panel_befuellen(fehler)
+        if hasattr(self._e, "_dock_fehler"):
+            self._e._dock_fehler.show()
+            self._e._dock_fehler.raise_()
+
+    def _vorschau_ki_korrigieren(self) -> None:
+        """Schickt den fehlgeschlagenen Vorschau-Code + Fehler direkt an die KI."""
+        code   = getattr(self, "_vorschau_letzter_code",   None)
+        fehler = getattr(self, "_vorschau_letzter_fehler", None)
+        if not code or not fehler:
+            self._vorschau_status("⚠ Kein Fehler vorhanden zum Korrigieren")
+            return
+        if not hasattr(self._e, "_on_self_correction_needed"):
+            self._vorschau_status("⚠ KI-Korrektur nicht verfügbar")
+            return
+        if hasattr(self, "_btn_vp_ki_fix"):
+            self._btn_vp_ki_fix.setEnabled(False)
+        self._vorschau_status("🔧 KI korrigiert Vorschau-Fehler …")
+        self._vorschau_log("🔧 Sende Fehler an KI zur Korrektur …")
+        self._e._on_self_correction_needed(code, fehler)

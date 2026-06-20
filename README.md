@@ -66,6 +66,10 @@ FreeCAD-Automatisierung.
 - Zwei Modi: 🟢 Anfänger (ausführlich, Deutsch) / 🔵 Experte (knapp, technisch)
 - Makro aus natürlichsprachlicher Beschreibung generieren (FC11 / FC12 / FC13)
 - KI-Tool-Calling für strukturierte FreeCAD-Operationen
+- KI-Frage auch ohne Code im Editor stellen (reines Frage-Antwort-Modus)
+- **FreeCAD-Dokumentzustand** automatisch im Prompt — kompakt für Ollama, vollständig für Cloud-Modelle
+- **AGENTS.md-Support** — projektspezifische Anweisungen neben der geöffneten Datei oder im Home-Verzeichnis werden automatisch geladen
+- **Vorschau-Fehler → KI-Sandbox** — Laufzeitfehler aus der Vorschau direkt mit „⚠ Fehler erklären" oder „🔧 KI korrigieren" beheben
 
 ### Benutzeroberfläche
 - 11 frei anordnbare Dock-Panels (verschieben, abdocken, zu Tabs zusammenfassen)
@@ -183,15 +187,19 @@ ln -s /pfad/zum/FreeCAD_MultiAI_Panel ~/.var/app/org.freecad.FreeCAD/data/FreeCA
 ### Ollama (lokal, kostenlos)
 ```bash
 # 1. Ollama installieren: https://ollama.ai
-# 2. Modell herunterladen
+# 2. Empfohlenes Modell für FreeCAD-Code herunterladen
+ollama pull qwen2.5-coder:7b   # ← empfohlen für FC11-Makros
+
+# Alternativ allgemeine Modelle
 ollama pull codellama
-# oder
 ollama pull llama3
 
 # 3. Ollama-Dienst starten (läuft auf http://localhost:11434)
 ollama serve
 ```
 Im Editor: **⚙ Einstellungen** → Quelle: `Ollama (Lokal)` → kein API-Key nötig → **🔄 Modelle neu laden**
+
+> 💡 **Tipp:** Der Editor erkennt automatisch ob ein Code-Modell installiert ist und zeigt einen Hinweis wenn `qwen2.5-coder` fehlt.
 
 ### Anthropic / OpenAI / weitere Cloud-Anbieter
 Im Editor: **⚙ Einstellungen** → Anbieter wählen → API-Schlüssel eingeben → **Tab drücken** (wird automatisch in den FreeCAD-Einstellungen gespeichert)
@@ -330,10 +338,11 @@ FreeCAD_MultiAI_Panel/
 | Problem | Ursache | Lösung |
 |---------|---------|--------|
 | **Emojis als Umriss** im Flatpak | Flatpak-Sandbox blockiert System-Emoji-Fonts | Nativer Paket / AppImage verwenden |
-| **FC12 bei Ollama gesperrt** | Zu komplex für lokale Modelle | Claude (Anthropic) oder GPT-4o verwenden |
+| **FC12/FC13 bei Ollama gesperrt** | Zu komplex für lokale Modelle | Claude (Anthropic) oder GPT-4o verwenden |
 | **API-Keys unverschlüsselt** | FreeCAD-Einstellungen haben keine Verschlüsselung | Keine Produktions-Keys verwenden |
 | **Große Dateien (>2000 Zeilen)** | KI-Kontextfenster begrenzt | Nur relevante Abschnitte ins Eingabefeld laden |
 | **Ollama nicht gefunden** | Dienst läuft nicht | `ollama serve` im Terminal starten |
+| **Ollama liefert schlechten FreeCAD-Code** | Allgemeines Modell ohne Code-Fokus | `ollama pull qwen2.5-coder:7b` installieren |
 
 ---
 

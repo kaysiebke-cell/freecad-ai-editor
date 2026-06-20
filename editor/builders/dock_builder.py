@@ -473,6 +473,7 @@ def init_docks(editor) -> None:
     editor._btn_fehler_toggle.hide()
     editor._dock_fehler = editor._make_dock(
         "⚠  Fehler-Übersetzer", "dock_fehler", _B, fehler_panel_widget)
+    editor._dock_fehler.setMinimumHeight(160)
     editor._dock_fehler.hide()
 
     def _sandbox_toggle_cb(sandbox_aktiv: bool):
