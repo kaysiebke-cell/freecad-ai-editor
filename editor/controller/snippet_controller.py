@@ -606,7 +606,6 @@ class Snippets:
         panel = FehlerPanel(
             uebersetze_fn = _ue,
             ki_callback   = self._e._ki_fehler_erklaeren,
-            max_hoehe     = 150,
         )
 
         # Rückwärts-Kompatibilität: Attribute die ki_fehler.py direkt auf dem

@@ -307,17 +307,15 @@ class FehlerPanel(QtWidgets.QWidget):
         if self._ki_cb:
             self._btn_ki.clicked.connect(self._ki_cb)
 
-        # Höhe: kann vom Splitter vergrößert werden, aber nicht kleiner als nötig
-        self.setMinimumHeight(self._max_h)
-        self.setMaximumHeight(16777215)   # QWIDGETSIZE_MAX – unbegrenzt nach oben
+        self.setMinimumHeight(60)
+        self.setMaximumHeight(16777215)
         self._style_anwenden()
 
     # ── Seiten umschalten ─────────────────────────────────────────────────
 
     def zeige_seite(self, sandbox: bool) -> None:
         """Schaltet zwischen Übersetzer (Index 0) und Sandbox (Index 1) um.
-        Die Höhe des Widgets bleibt immer gleich (self._max_h).
-        Die Höhen-Anpassung des Splitters übernimmt der Editor via Callback.
+        Die Höhe des Widgets passt sich dem Dock frei an.
         """
         self._ist_sandbox = sandbox
 
