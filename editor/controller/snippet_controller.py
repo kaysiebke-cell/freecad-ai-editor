@@ -387,7 +387,7 @@ class Snippets:
         self._snippet_liste.clear()
         self._snippet_vorschau.clear()
         self._snippet_liste.addItem("⏳ Verbinde mit GitHub …")
-        self._snip_worker = OnlineMakroWorker(self)
+        self._snip_worker = OnlineMakroWorker()
         self._snip_worker.liste_geladen.connect(self._on_online_liste_geladen)
         self._snip_worker.fehler.connect(self._on_online_fehler)
         self._snip_worker.start()
