@@ -10,6 +10,8 @@ Hilfs-Widgets und Worker-Threads für den Snippet-Tab:
 """
 
 import json
+import os
+import time
 import urllib.request
 
 from core.qt_compat import QtWidgets, QtCore, QtGui
@@ -18,7 +20,40 @@ from core import schrift
 
 import re as _re
 
-_FC_MAKRO_API = "https://api.github.com/repos/FreeCAD/FreeCAD-macros/contents/Utility"
+_FC_MAKRO_API  = "https://api.github.com/repos/FreeCAD/FreeCAD-macros/contents/Utility"
+_CACHE_TTL_SEK = 86400  # 24 Stunden
+
+
+def _cache_pfad() -> str:
+    try:
+        import FreeCAD as App
+        basis = App.getUserAppDataDir()
+    except ImportError:
+        basis = os.path.expanduser("~")
+    return os.path.join(basis, "makro_editor_online_cache.json")
+
+
+def _lade_liste_aus_cache() -> dict:
+    """Gibt gecachte Makro-Liste zurück wenn < 24h alt, sonst {}."""
+    pfad = _cache_pfad()
+    if not os.path.exists(pfad):
+        return {}
+    try:
+        with open(pfad, "r", encoding="utf-8") as f:
+            daten = json.load(f)
+        if time.time() - daten.get("ts", 0) < _CACHE_TTL_SEK:
+            return daten.get("makros", {})
+    except Exception:
+        pass
+    return {}
+
+
+def _speichere_liste_in_cache(makros: dict):
+    try:
+        with open(_cache_pfad(), "w", encoding="utf-8") as f:
+            json.dump({"ts": time.time(), "makros": makros}, f)
+    except Exception:
+        pass
 
 
 # ══ Snip-Command-Eingabefeld ══════════════════════════════════════════════════
@@ -181,11 +216,18 @@ class SnipCommandEdit(QtWidgets.QPlainTextEdit):
 # ══ Hintergrund-Worker ═══════════════════════════════════════════════════════
 
 class OnlineMakroWorker(QtCore.QThread):
-    """Lädt die Makro-Liste vom offiziellen FreeCAD-GitHub-Repo im Hintergrund."""
+    """Lädt die Makro-Liste vom offiziellen FreeCAD-GitHub-Repo im Hintergrund.
+    Nutzt einen 24h-Disk-Cache — bei Cache-Treffer sofortige Antwort ohne Netzwerk."""
     liste_geladen = QtCore.Signal(dict)
     fehler        = QtCore.Signal(str)
 
     def run(self):
+        # Cache-Treffer: sofort zurückgeben
+        gecacht = _lade_liste_aus_cache()
+        if gecacht:
+            self.liste_geladen.emit(gecacht)
+            return
+        # Cache-Miss: GitHub anfragen
         try:
             req = urllib.request.Request(
                 _FC_MAKRO_API,
@@ -199,6 +241,7 @@ class OnlineMakroWorker(QtCore.QThread):
                     for item in daten
                     if item.get("name", "").endswith((".FCMacro", ".py"))
                 }
+                _speichere_liste_in_cache(makros)
                 self.liste_geladen.emit(makros)
         except Exception as e:
             self.fehler.emit(str(e))
