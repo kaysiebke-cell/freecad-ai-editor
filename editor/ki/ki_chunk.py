@@ -95,6 +95,24 @@ class KIChunkUI:
             clean = extrahiere_code_aus_nl_antwort(clean)
             clean = schneide_erklaerung_ab(clean)
 
+        # FC14: Tool-Calls → FreeCAD-Python-Code
+        if getattr(self._c, "_tc_modus_aktiv", False):
+            self._c._tc_modus_aktiv = False
+            from editor.ki.fc14_tool_calling import ist_tool_call_antwort, parse_und_generiere_code
+            if ist_tool_call_antwort(clean):
+                python_code = parse_und_generiere_code(clean)
+                if python_code:
+                    self._c._ki_area.setPlainText(python_code)
+                    self._c._btn_ki.setEnabled(True)
+                    self._c._btn_einfuegen.setEnabled(True)
+                    self._c._btn_ersetzen.setEnabled(True)
+                    self._c._set_status(
+                        f"✅ Fertig – {self._c._stream_token_count} Token "
+                        f"in {elapsed:.1f} s  → ✅ Ersetzen")
+                    return
+                else:
+                    clean = f"# ❌ Tool-Calls konnten nicht konvertiert werden:\n{clean}"
+
         clean, korrigiert = freecad_code_korrigieren(clean)
         self._c._ki_area.setPlainText(clean)
         self._c._btn_ki.setEnabled(True)

@@ -14,6 +14,7 @@ Kein UI-Code – nur Daten und Konstanten.
 NL_PRESET_SCHLUESSEL    = "FC11 · Makro aus Beschreibung"
 NL_PRESET_SCHLUESSEL_PD = "FC12 · PartDesign aus Beschreibung"
 NL_PRESET_SCHLUESSEL_SW = "FC13 · Schrittweise aufbauen"
+NL_PRESET_SCHLUESSEL_TC = "FC14 · Objekt-Befehle (lokal)"
 
 # ── Optimale Temperature für Code-Generierung ─────────────────────────────────
 NL_TEMPERATURE = 0.07   # niedrig = konsistent, regelkonform, weniger Fantasie

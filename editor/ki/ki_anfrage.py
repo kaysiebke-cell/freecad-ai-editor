@@ -114,11 +114,13 @@ class KIAnfrage:
         from editor.ki.nl_generator import (NL_SYSTEM_PROMPT, NL_SYSTEM_PROMPT_OLLAMA,
                                             NL_PRESET_SCHLUESSEL,
                                             NL_SYSTEM_PROMPT_PARTDESIGN, NL_PRESET_SCHLUESSEL_PD,
-                                            NL_SYSTEM_PROMPT_SCHRITTWEISE, NL_PRESET_SCHLUESSEL_SW)
+                                            NL_SYSTEM_PROMPT_SCHRITTWEISE, NL_PRESET_SCHLUESSEL_SW,
+                                            NL_PRESET_SCHLUESSEL_TC)
         preset_name  = self._c._preset_box.currentText()
         ist_nl_modus = preset_name == NL_PRESET_SCHLUESSEL
         ist_pd_modus = preset_name == NL_PRESET_SCHLUESSEL_PD
         ist_sw_modus = preset_name == NL_PRESET_SCHLUESSEL_SW
+        ist_tc_modus = preset_name == NL_PRESET_SCHLUESSEL_TC
 
         # FC12/FC13: Harte Sperre bei Ollama
         if ist_sw_modus and self._c._src_box.currentText().startswith("Ollama"):
@@ -334,6 +336,18 @@ class KIAnfrage:
                 target=self._c._streaming.worker_mit_system,
                 args=(source_text, model_text, NL_SYSTEM_PROMPT_SCHRITTWEISE,
                       sw_user_prompt, NL_TEMPERATURE),
+                kwargs={"preset_name": preset_name, "ki_modus": ki_modus_wert},
+                daemon=True
+            ).start()
+        elif ist_tc_modus:
+            from editor.ki.nl_generator import NL_TEMPERATURE
+            from editor.ki.fc14_tool_calling import FC14_SYSTEM_PROMPT
+            self._c._nl_antwort_aktiv = True
+            self._c._tc_modus_aktiv   = True
+            threading.Thread(
+                target=self._c._streaming.worker_mit_system,
+                args=(source_text, model_text, FC14_SYSTEM_PROMPT,
+                      nl_inhalt, NL_TEMPERATURE),
                 kwargs={"preset_name": preset_name, "ki_modus": ki_modus_wert},
                 daemon=True
             ).start()

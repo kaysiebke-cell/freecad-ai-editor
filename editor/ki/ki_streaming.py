@@ -54,7 +54,7 @@ class KIStreaming:
         """
         from editor.ki.ki_modi import MODUS_DEFAULT, MODUS_ANFAENGER
         from editor.ki.nl_generator import (NL_PRESET_SCHLUESSEL, NL_PRESET_SCHLUESSEL_PD,
-                                            NL_PRESET_SCHLUESSEL_SW)
+                                            NL_PRESET_SCHLUESSEL_SW, NL_PRESET_SCHLUESSEL_TC)
         if ki_modus is None:
             ki_modus = MODUS_DEFAULT
         ist_nl = preset_name in (
@@ -72,6 +72,8 @@ class KIStreaming:
             user_prompt = f"FreeCAD Part Workbench:\n{user_prompt}"
         elif preset_name == NL_PRESET_SCHLUESSEL_SW:
             user_prompt = f"FreeCAD Part Workbench (Erweiterung):\n{user_prompt}"
+        elif preset_name == NL_PRESET_SCHLUESSEL_TC:
+            user_prompt = f"Task:\n{user_prompt}"
         full = f"{system_prompt}\n\nFrage des Users:\n{user_prompt}"
         try:
             if self._c._alive:

@@ -81,4 +81,11 @@ FC_KI_PRESETS: dict[str, str] = {
         "Beschreibe den nächsten Schritt für dein Bauteil. Der vorhandene Code im "
         "Editor wird als Kontext mitgeschickt – die KI hängt nur den neuen Block ans "
         "Ende, keine Dopplungen, kein Neustart. Dein nächster Schritt: ",
+
+    "FC14 · Objekt-Befehle (lokal)":
+        "Describe your object in plain English. "
+        "Best for local Ollama models (qwen2.5-coder). "
+        "The AI outputs simple commands (box, cylinder, fuse, cut …) "
+        "which are automatically converted to FreeCAD Python code. "
+        "Your description: ",
 }
