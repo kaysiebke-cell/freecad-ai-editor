@@ -12,9 +12,9 @@ Hilfs-Widgets und Worker-Threads für den Snippet-Tab:
 import json
 import urllib.request
 
-from qt_compat import QtWidgets, QtCore, QtGui
-import theme
-import schrift
+from core.qt_compat import QtWidgets, QtCore, QtGui
+from core import theme
+from core import schrift
 
 import re as _re
 

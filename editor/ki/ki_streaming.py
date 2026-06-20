@@ -10,8 +10,8 @@ dessen Signale und Session-Objekt.
 
 import json
 
-from params import lade_api_key
-from provider_daten import lade_anbieter_url
+from core.params import lade_api_key
+from editor.ki.provider_daten import lade_anbieter_url
 
 
 class KIStreaming:
@@ -52,9 +52,9 @@ class KIStreaming:
         preset_name und ki_modus im Hauptthread gesichert übergeben —
         niemals aus dem Worker-Thread von Qt-Widgets lesen.
         """
-        from ki_modi import MODUS_DEFAULT, MODUS_ANFAENGER
-        from nl_generator import (NL_PRESET_SCHLUESSEL, NL_PRESET_SCHLUESSEL_PD,
-                                   NL_PRESET_SCHLUESSEL_SW)
+        from editor.ki.ki_modi import MODUS_DEFAULT, MODUS_ANFAENGER
+        from editor.ki.nl_generator import (NL_PRESET_SCHLUESSEL, NL_PRESET_SCHLUESSEL_PD,
+                                            NL_PRESET_SCHLUESSEL_SW)
         if ki_modus is None:
             ki_modus = MODUS_DEFAULT
         ist_nl = preset_name in (
@@ -67,7 +67,7 @@ class KIStreaming:
                 "# 2. Welche Standardwerte gewaehlt wurden\n"
                 "# 3. Welche Konstante der Nutzer anpassen muss"
             )
-        from nl_generator import NL_PRESET_SCHLUESSEL, NL_PRESET_SCHLUESSEL_SW
+        from editor.ki.nl_generator import NL_PRESET_SCHLUESSEL, NL_PRESET_SCHLUESSEL_SW
         if preset_name == NL_PRESET_SCHLUESSEL:
             user_prompt = f"FreeCAD Part Workbench:\n{user_prompt}"
         elif preset_name == NL_PRESET_SCHLUESSEL_SW:
@@ -85,7 +85,7 @@ class KIStreaming:
 
     def worker_mit_verlauf(self, source, model, verlauf, temperature=0.2):
         """Worker mit Gesprächsverlauf + automatischem Context Compacting."""
-        from ki_verlauf import _COMPACT_SCHWELLE
+        from editor.ki.ki_verlauf import _COMPACT_SCHWELLE
         gesamt_zeichen = sum(len(m["content"]) for m in verlauf)
         if gesamt_zeichen > _COMPACT_SCHWELLE:
             self._c._verlauf.komprimieren(source, model, temperature)

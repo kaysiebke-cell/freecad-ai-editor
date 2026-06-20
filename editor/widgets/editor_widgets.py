@@ -18,19 +18,9 @@ Exports:
 import os
 import threading
 
-from qt_compat import QtWidgets, QtCore, QtGui
-import theme
-import schrift
-
-try:
-    import os as _os, sys as _sys, glob as _glob
-    # Alle ~/.local/lib/pythonX.Y/site-packages einbinden –
-    # AppImage nutzt ggf. andere Python-Version als das System.
-    for _sp in _glob.glob(_os.path.expanduser("~/.local/lib/python*/site-packages")):
-        if _sp not in _sys.path:
-            _sys.path.insert(0, _sp)
-except Exception:
-    pass
+from core.qt_compat import QtWidgets, QtCore, QtGui
+from core import theme
+from core import schrift
 
 try:
     import jedi

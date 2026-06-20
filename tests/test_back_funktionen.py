@@ -419,18 +419,17 @@ class TestPresets(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        for sub in ("data", "core"):
-            p = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", sub))
-            if p not in sys.path:
-                sys.path.insert(0, p)
+        p = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
+        if p not in sys.path:
+            sys.path.insert(0, p)
         # FreeCAD mocken – params.py benötigt es beim Import
         import types
         _fc = types.ModuleType("FreeCAD")
         _fc.getUserAppDataDir = lambda: "/tmp/"
         sys.modules.setdefault("FreeCAD",    _fc)
         sys.modules.setdefault("FreeCADGui", types.ModuleType("FreeCADGui"))
-        from params import KI_PRESETS, KI_PRESET_KATEGORIEN
-        from freecad_data import FC_KI_PRESETS
+        from core.params import KI_PRESETS, KI_PRESET_KATEGORIEN
+        from data.freecad_data import FC_KI_PRESETS
         cls.presets     = KI_PRESETS
         cls.kategorien  = KI_PRESET_KATEGORIEN
         cls.fc_presets  = FC_KI_PRESETS

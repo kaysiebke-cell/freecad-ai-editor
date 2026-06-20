@@ -11,7 +11,7 @@ try:
 except ImportError:
     _HAS_AUTOPEP8 = False
 
-from qt_compat import QtGui
+from core.qt_compat import QtGui
 
 
 class CodeLogik:

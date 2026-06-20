@@ -11,6 +11,6 @@ Sub-Module:
     theme_styles   – UI-Texte, alle anderen STY_* Funktionen und Konstanten
 """
 
-from theme_schrift import *   # noqa: F401, F403
-from theme_farben import *    # noqa: F401, F403
-from theme_styles import *    # noqa: F401, F403
+from core.theme_schrift import *   # noqa: F401, F403
+from core.theme_farben import *    # noqa: F401, F403
+from core.theme_styles import *    # noqa: F401, F403

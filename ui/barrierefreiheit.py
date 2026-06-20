@@ -9,9 +9,9 @@ Bereiche:
   4. Allgemein        – Animationen, Tooltips immer sichtbar
 """
 
-from qt_compat import QtWidgets, QtCore
-import theme
-import schrift
+from core.qt_compat import QtWidgets, QtCore
+from core import theme
+from core import schrift
 
 # ── Einstellungs-Schlüssel (werden in FreeCAD-Parametern gespeichert) ─────────
 try:

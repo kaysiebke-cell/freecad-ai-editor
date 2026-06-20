@@ -21,20 +21,10 @@ UI-Struktur:
 """
 
 import os
-import sys
 
-_DIR = os.path.dirname(os.path.abspath(__file__))
-for _p in [
-    os.path.join(_DIR, "..", "ki"),
-    os.path.join(_DIR, "..", "..", "data"),
-    os.path.join(_DIR, "..", "..", "core"),
-]:
-    if os.path.exists(_p) and _p not in sys.path:
-        sys.path.insert(0, _p)
-
-from qt_compat import QtWidgets, QtCore, QtGui
-import schrift
-import theme
+from core.qt_compat import QtWidgets, QtCore, QtGui
+from core import schrift
+from core import theme
 
 
 class Bibliothek:
@@ -56,7 +46,7 @@ class Bibliothek:
 
         # ── Info-Banner ───────────────────────────────────────────────────
         _bib_verstecke = []
-        from snippet_controller import Snippets as _TM
+        from editor.controller.snippet_controller import Snippets as _TM
         layout.addWidget(_TM._baue_info_banner(
             "📚 Was ist die Bibliothek?",
             "Getestete FreeCAD-Makros speichern & direkt ausführen.<br>"
@@ -162,7 +152,7 @@ class Bibliothek:
 
     def _bib_laden(self) -> list[dict]:
         try:
-            from bibliothek import laden
+            from data.bibliothek import laden
             return laden()
         except ImportError:
             return []
@@ -180,7 +170,7 @@ class Bibliothek:
 
     def _bib_liste_aktualisieren(self):
         try:
-            from bibliothek import suchen
+            from data.bibliothek import suchen
             suchbegriff = self._bib_suche.text()
             eintraege   = suchen(suchbegriff)
         except ImportError:
@@ -244,13 +234,13 @@ class Bibliothek:
 
         try:
             # Sandbox-Mechanismus aus fehler_panel wiederverwenden
-            from fehler_panel import FehlerPanel
+            from editor.fehler.fehler_panel import FehlerPanel
             ergebnis = FehlerPanel._execute_in_sandbox(code)
             if ergebnis.get("success"):
                 self._bib_status.setText(f"✅ '{e['name']}' erfolgreich ausgeführt")
                 # Zähler erhöhen
                 try:
-                    from bibliothek import ausfuehrung_zaehlen
+                    from data.bibliothek import ausfuehrung_zaehlen
                     ausfuehrung_zaehlen(e["name"])
                     self._bib_liste_aktualisieren()
                 except Exception:
@@ -305,7 +295,7 @@ class Bibliothek:
         if antwort != QtWidgets.QMessageBox.Yes:
             return
         try:
-            from bibliothek import eintrag_loeschen
+            from data.bibliothek import eintrag_loeschen
             if eintrag_loeschen(e["name"]):
                 self._bib_status.setText(f"🗑 '{e['name']}' gelöscht")
                 self._bib_liste_aktualisieren()
@@ -383,7 +373,7 @@ class Bibliothek:
                 return
             tags = [t.strip() for t in tags_feld.text().split(",") if t.strip()]
             try:
-                from bibliothek import eintrag_hinzufuegen
+                from data.bibliothek import eintrag_hinzufuegen
                 eintrag_hinzufuegen(
                     name=name,
                     code=code_text,

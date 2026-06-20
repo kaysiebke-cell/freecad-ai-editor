@@ -77,7 +77,7 @@ class KiAssistentCommand:
         dock.setFont(_f)
         dock.setStyleSheet(theme.STY_DOCK_FONT_RESET)
 
-        from panel import FreeCAD_MultiAI_Panel
+        from editor.panel import FreeCAD_MultiAI_Panel
         panel = FreeCAD_MultiAI_Panel()
         dock.setWidget(panel)
         mw.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
@@ -89,15 +89,8 @@ Gui.addCommand('Cmd_KiAssistent', KiAssistentCommand())
 
 # ── Pfade einrichten ───────────────────────────────────────────────────────────
 def _pfade_einrichten():
-    for sub in ("", "core",
-                "editor", "editor/intern",
-                "editor/fehler",
-                "editor/ki", "editor/ki/intern",
-                "editor/controller", "editor/widgets",
-                "ui", "data"):
-        p = os.path.join(_MODDIR, sub) if sub else _MODDIR
-        if os.path.isdir(p) and p not in sys.path:
-            sys.path.insert(0, p)
+    if _MODDIR not in sys.path:
+        sys.path.insert(0, _MODDIR)
 
 
 def _panel_starten():
@@ -107,6 +100,11 @@ def _panel_starten():
         makro_main.erstelle_leiste()
     except Exception as e:
         FreeCAD.Console.PrintError(f"[MultiAI] Panel-Start fehlgeschlagen: {e}\n")
+
+
+# Klassen-Methoden sehen nur exec-globals → Funktionen dort eintragen
+globals()['_pfade_einrichten'] = _pfade_einrichten
+globals()['_panel_starten']    = _panel_starten
 
 
 # ── DIE HAUPT-WORKBENCH ────────────────────────────────────────────────────────
@@ -134,13 +132,3 @@ class MeineMakroWorkbench(Gui.Workbench):
 
 
 Gui.addWorkbench(MeineMakroWorkbench())
-
-
-# ── Fallback: Panel auch laden wenn FreeCAD auf anderer Workbench startet ─────
-# Initialize() läuft nur bei erster Workbench-Aktivierung. Startet FreeCAD
-# z.B. auf Part Design, muss der Timer das Panel trotzdem erstellen.
-try:
-    from PySide6.QtCore import QTimer
-    QTimer.singleShot(1500, _panel_starten)
-except Exception:
-    pass

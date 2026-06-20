@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import FreeCAD as App
-from freecad_data import FC_KI_PRESETS
+from data.freecad_data import FC_KI_PRESETS
 
 DOCK_NAME = "EigeneMakroLeiste"
 PREF_KEY  = "User parameter:BaseApp/Preferences/Macros"

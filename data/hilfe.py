@@ -11,10 +11,10 @@ Verwendung:
     left_tabs.addTab(HilfeTab(), "❓ Hilfe")
 """
 
-from qt_compat import QtWidgets, QtCore, QtGui
-import theme
-import schrift
-from hilfe_texte import HILFE_ABSCHNITTE
+from core.qt_compat import QtWidgets, QtCore, QtGui
+from core import theme
+from core import schrift
+from data.hilfe_texte import HILFE_ABSCHNITTE
 
 
 class HilfeTab(QtWidgets.QWidget):

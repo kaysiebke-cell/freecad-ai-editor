@@ -3,13 +3,13 @@ import os
 import shutil
 import re
 
-from qt_compat import QtWidgets, QtCore, QtGui
-import theme
+from core.qt_compat import QtWidgets, QtCore, QtGui
+from core import theme
 
 import FreeCADGui as Gui
 
-from editor import MakroEditor
-from params import lade_pfad, speichere_pfad
+from editor.editor import MakroEditor
+from core.params import lade_pfad, speichere_pfad
 
 
 class SuchFeld(QtWidgets.QLineEdit):
@@ -87,15 +87,6 @@ class MakroLeiste(QtWidgets.QWidget):
         self.suche.setStyleSheet(theme.STY_MAKRO_SUCHE)
         self.suche.textChanged.connect(self._filter_makros)
         root.addWidget(self.suche)
-
-        self.chk_inhalt = QtWidgets.QCheckBox("📄  Im Dateiinhalt suchen")
-        self.chk_inhalt.setChecked(False)
-        self.chk_inhalt.setToolTip(
-            "Durchsucht den Inhalt aller Makro-Dateien nach dem Suchbegriff.\n"
-            "Treffer: Klick öffnet die Datei direkt im Editor.")
-        self.chk_inhalt.setStyleSheet(theme.STY_MAKRO_CHECKBOX())
-        self.chk_inhalt.stateChanged.connect(lambda: self._filter_makros(self.suche.text()))
-        root.addWidget(self.chk_inhalt)
 
         scroll = QtWidgets.QScrollArea()
         scroll.setWidgetResizable(True)
@@ -225,19 +216,11 @@ class MakroLeiste(QtWidgets.QWidget):
             self._filter_makros(self.suche.text())
 
     def _button_klick(self, pfad: str, name: str):
-        """Öffnet Datei im Editor (Inhalts-Modus) oder führt sie aus (Normal-Modus)."""
-        if self.chk_inhalt.isChecked():
-            self._hole_editor(pfad)
-        else:
-            self._fuehre_aus(pfad, name)
+        self._fuehre_aus(pfad, name)
 
     def _filter_makros(self, text):
-        """
-        Filtert nach Dateinamen UND Ordnernamen.
-        Mit Checkbox 'Im Dateiinhalt suchen' zusätzlich nach Dateiinhalt.
-        """
+        """Filtert nach Dateinamen UND Ordnernamen."""
         woerter = text.lower().split()
-        inhalt_modus = self.chk_inhalt.isChecked() and len(text.strip()) >= 2
 
         if not woerter:
             for btn, _, _, pfad in self._makro_buttons:
@@ -251,27 +234,9 @@ class MakroLeiste(QtWidgets.QWidget):
         for btn, name_low, rel_low, pfad in self._makro_buttons:
             datei_match  = all(w in name_low for w in woerter)
             ordner_match = all(w in rel_low  for w in woerter)
-
-            inhalt_match   = False
-            treffer_zeile  = ""
-            if inhalt_modus and not datei_match:
-                try:
-                    with open(pfad, "r", encoding="utf-8", errors="ignore") as f:
-                        for nr, zeile in enumerate(f, 1):
-                            if all(w in zeile.lower() for w in woerter):
-                                inhalt_match  = True
-                                treffer_zeile = f"Zeile {nr}: {zeile.strip()[:80]}"
-                                break
-                except Exception:
-                    pass
-
-            ist_sichtbar = datei_match or ordner_match or inhalt_match
+            ist_sichtbar = datei_match or ordner_match
             btn.setVisible(ist_sichtbar)
-
-            if inhalt_match and treffer_zeile:
-                btn.setToolTip(f"{pfad}\n\n📄 Treffer:\n  {treffer_zeile}")
-            else:
-                btn.setToolTip(pfad)
+            btn.setToolTip(pfad)
 
             if ist_sichtbar and rel_low != ".":
                 sichtbare_ordner.add(rel_low)
@@ -396,7 +361,6 @@ class MakroLeiste(QtWidgets.QWidget):
             QtCore.QTimer.singleShot(80, _markiere)
         else:
             self.suche.setText(suchtext.splitlines()[0][:60])
-            self.chk_inhalt.setChecked(True)
             self.status.setText(f"🔍 {len(treffer)} Treffer – Datei anklicken zum Öffnen")
 
     def _editor_geschlossen(self, pfad: str):
@@ -424,7 +388,7 @@ class MakroLeiste(QtWidgets.QWidget):
             self.status.setText(f"✔  Gespeichert als: {os.path.basename(ziel)}")
             self._lade_makros()
         except Exception as e:
-            from fehler import uebersetze_fehler
+            from ui.fehler import uebersetze_fehler
             QtWidgets.QMessageBox.critical(self, "Fehler", uebersetze_fehler(e))
 
     def _umbenennen(self, pfad, name):
@@ -448,7 +412,7 @@ class MakroLeiste(QtWidgets.QWidget):
             self.status.setText(f"✔  Umbenannt → {neu}")
             self._lade_makros()
         except Exception as e:
-            from fehler import uebersetze_fehler
+            from ui.fehler import uebersetze_fehler
             QtWidgets.QMessageBox.critical(self, "Fehler", uebersetze_fehler(e))
 
     def _loesche_datei(self, pfad, name):
@@ -467,7 +431,7 @@ class MakroLeiste(QtWidgets.QWidget):
             self.status.setText(f"🗑  '{name}' gelöscht")
             self._lade_makros()
         except Exception as e:
-            from fehler import uebersetze_fehler
+            from ui.fehler import uebersetze_fehler
             QtWidgets.QMessageBox.critical(self, "Fehler beim Löschen", uebersetze_fehler(e))
 
     def _loesche_ordner(self, ordner):
@@ -498,7 +462,7 @@ class MakroLeiste(QtWidgets.QWidget):
             self.status.setText(f"🗑  Ordner '{rel}' gelöscht")
             self._lade_makros()
         except Exception as e:
-            from fehler import uebersetze_fehler
+            from ui.fehler import uebersetze_fehler
             QtWidgets.QMessageBox.critical(self, "Fehler beim Löschen", uebersetze_fehler(e))
 
     def _fuehre_aus(self, pfad, name):
@@ -518,7 +482,7 @@ class MakroLeiste(QtWidgets.QWidget):
             self.status.setText(f"✔ {name} ausgeführt")
         except Exception as e:
             import traceback as _tb
-            from fehler import uebersetze_fehler
+            from ui.fehler import uebersetze_fehler
             fehlertext = _tb.format_exc()
             # Fehler-Panel im zugehörigen Editor befüllen (falls geöffnet)
             ed = self._offene_editoren.get(pfad)

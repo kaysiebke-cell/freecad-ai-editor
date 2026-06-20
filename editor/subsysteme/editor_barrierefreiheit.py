@@ -7,10 +7,10 @@ Farbschema-Umschaltung, Barrierefreiheits-Handler und Widget-Blinken.
 
 import re
 
-from qt_compat import QtWidgets, QtCore, QtGui
+from core.qt_compat import QtWidgets, QtCore, QtGui
 
-import theme
-import params
+from core import theme
+from core import params
 
 
 class BarriereLogik:

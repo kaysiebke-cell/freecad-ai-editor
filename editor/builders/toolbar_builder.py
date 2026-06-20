@@ -6,10 +6,10 @@ Baut die Panel-Toolbar (Toggle-Buttons für alle Dock-Panels) des MakroEditors a
 Aufgerufen einmalig aus MakroEditor.__init__.
 """
 
-from qt_compat import QtWidgets, QtCore
+from core.qt_compat import QtWidgets, QtCore
 
-import theme
-import schrift
+from core import theme
+from core import schrift
 
 
 def init_toolbar(editor) -> None:
@@ -77,7 +77,7 @@ def init_toolbar(editor) -> None:
     _panel_btn(editor._dock_fehler,    "⚠",  "Fehler",        _B)
     editor._btn_bf_gruppe = _panel_btn(editor._dock_bf_gruppe, "♿", "Hilfe+Zugang", _R)
 
-    from barrierefreiheit import _get_bool as _bf_bool
+    from ui.barrierefreiheit import _get_bool as _bf_bool
     if _bf_bool("BF_IconText", False):
         for _pb, _ico, _lbl in editor._panel_btns:
             _pb.setText(f"{_ico}  {_lbl}")

@@ -13,10 +13,10 @@ Ablauf:
 
 import os
 
-from qt_compat import QtWidgets, QtCore, QtGui
-import theme
-import schrift
-from params import speichere_api_key, erststart_erledigt
+from core.qt_compat import QtWidgets, QtCore, QtGui
+from core import theme
+from core import schrift
+from core.params import speichere_api_key, erststart_erledigt
 
 # ── Pfade ────────────────────────────────────────────────────────────────────
 _HIER      = os.path.dirname(os.path.abspath(__file__))

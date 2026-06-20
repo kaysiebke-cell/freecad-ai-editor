@@ -19,11 +19,9 @@ import unittest
 #       /pfad/zu/tests/test_editor_live.py
 
 # ── Pfade zum Projekt einrichten ─────────────────────────────────────────────
-_BASIS = os.path.join(os.path.dirname(__file__), "..")
-for _sub in ("", "core", "editor/widgets", "editor/controller", "editor"):
-    _p = os.path.normpath(os.path.join(_BASIS, _sub))
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
+_BASIS = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
+if _BASIS not in sys.path:
+    sys.path.insert(0, _BASIS)
 
 # ── FreeCAD mocken bevor irgendwas importiert wird ───────────────────────────
 import types
@@ -35,13 +33,13 @@ sys.modules.setdefault("FreeCAD",    _fc)
 sys.modules.setdefault("FreeCADGui", _fcg)
 
 # ── Qt + Editor importieren ───────────────────────────────────────────────────
-from qt_compat import QtWidgets, QtCore
+from core.qt_compat import QtWidgets, QtCore
 try:
     from PySide6 import QtTest
 except ImportError:
     from PySide2 import QtTest
-from editor_widgets import FehlerMinimap, JediEditor
-from werkzeuge import WerkzeugLeiste
+from editor.widgets.editor_widgets import FehlerMinimap, JediEditor
+from editor.controller.werkzeuge import WerkzeugLeiste
 
 # ── QApplication (einmalig) ───────────────────────────────────────────────────
 _app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
@@ -138,7 +136,7 @@ class TestFehlerMinimap(unittest.TestCase):
 
     def test_minimap_breite(self):
         """Minimap muss die definierte Breite haben."""
-        from editor_widgets import _MINIMAP_BREITE
+        from editor.widgets.editor_widgets import _MINIMAP_BREITE
         self.assertEqual(self.editor._fehler_minimap.width(), _MINIMAP_BREITE)
 
 

@@ -7,7 +7,7 @@ Schnellsuche-Leiste und Code-Block-Suche für den MakroEditor.
 
 import re
 
-from qt_compat import QtWidgets, QtGui
+from core.qt_compat import QtWidgets, QtGui
 
 _RE_WORD_CHARS = re.compile(r"\w+")
 

@@ -19,9 +19,9 @@ from __future__ import annotations
 import json
 import re
 
-from qt_compat import QtCore, QtWidgets, QtGui
+from core.qt_compat import QtCore, QtWidgets, QtGui
 
-from qt_compat import requests as _requests, HAS_REQUESTS as _HAS_REQUESTS
+from core.qt_compat import requests as _requests, HAS_REQUESTS as _HAS_REQUESTS
 
 _RE_BACKTICK = re.compile(r'`([^`]+)`')
 
@@ -251,11 +251,11 @@ class AssistentPanel(QtWidgets.QWidget):
             # KI-Einstellungen aus dem Editor lesen
             source  = self._editor._src_box.currentText()
             model   = self._editor._model_box.currentText()
-            from params import lade_api_key
+            from core.params import lade_api_key
             kid = source.split()[0].lower()
             api_key = lade_api_key(kid)
 
-            from assistent_prompt import (
+            from editor.ki.assistent_prompt import (
                 ASSISTENT_SYSTEM_PROMPT_OLLAMA,
                 ASSISTENT_SYSTEM_PROMPT_CLOUD,
             )
@@ -286,7 +286,7 @@ class AssistentPanel(QtWidgets.QWidget):
         self._btn_fragen.setEnabled(True)
         self._anzeige.append("<br>")
 
-        from assistent_prompt import BEKANNTE_WIDGETS
+        from editor.ki.assistent_prompt import BEKANNTE_WIDGETS
 
         # 1. Backtick-Format: `Name`
         treffer = [m.group(1).strip() for m in _RE_BACKTICK.finditer(vollstaendig)]

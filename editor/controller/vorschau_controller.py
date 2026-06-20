@@ -27,9 +27,9 @@ Ablauf:
 import ast
 import traceback as _tb
 
-from qt_compat import QtWidgets, QtCore, QtGui
-import theme
-import schrift
+from core.qt_compat import QtWidgets, QtCore, QtGui
+from core import theme
+from core import schrift
 
 
 class Vorschau:

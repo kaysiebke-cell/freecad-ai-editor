@@ -19,12 +19,12 @@ Snippets – linke Tab-Inhalte:
 
 import os
 
-from qt_compat import QtWidgets, QtCore, QtGui
-import theme
-import schrift
+from core.qt_compat import QtWidgets, QtCore, QtGui
+from core import theme
+from core import schrift
 
-from freecad_data import SNIPPETS, FC_API_HINTS
-from snippet_widgets import SnipCommandEdit, OnlineMakroWorker, OnlinePreviewWorker, _BlauBanner
+from data.freecad_data import SNIPPETS, FC_API_HINTS
+from editor.controller.snippet_widgets import SnipCommandEdit, OnlineMakroWorker, OnlinePreviewWorker, _BlauBanner
 
 
 
@@ -506,7 +506,7 @@ class Snippets:
     # ══ Fehler-Tab (linke Leiste) ══════════════════════════════════════════
     def _baue_fehler_tab(self) -> QtWidgets.QWidget:
         """Fehler-Übersetzer als eigenständiger Tab in der linken Leiste."""
-        from fehler import uebersetze_text as _ue
+        from ui.fehler import uebersetze_text as _ue
         w = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(w)
         layout.setContentsMargins(6, 6, 6, 6)
@@ -600,8 +600,8 @@ class Snippets:
         Erstellt das FehlerPanel-Widget und verdrahtet die internen Referenzen.
         Das eigentliche Widget lebt in fehler_panel.py.
         """
-        from fehler import uebersetze_text as _ue
-        from fehler_panel import FehlerPanel
+        from ui.fehler import uebersetze_text as _ue
+        from editor.fehler.fehler_panel import FehlerPanel
 
         panel = FehlerPanel(
             uebersetze_fn = _ue,

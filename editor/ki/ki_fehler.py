@@ -9,8 +9,8 @@ import re as _re
 import time
 import threading
 
-from qt_compat import QtCore, QtWidgets
-from kod_korrektor import freecad_code_korrigieren
+from core.qt_compat import QtCore, QtWidgets
+from editor.ki.kod_korrektor import freecad_code_korrigieren
 
 
 class KIFehlerUI:
@@ -31,7 +31,7 @@ class KIFehlerUI:
 
         self._c._fehler_eingabe.setPlainText(fehlertext)
 
-        from fehler import uebersetze_text
+        from ui.fehler import uebersetze_text
         self._c._fehler_ausgabe.setPlainText(uebersetze_text(fehlertext))
 
         self._c._set_status("⚠ Fehler erkannt → Fehler-Panel geöffnet")
@@ -63,7 +63,7 @@ class KIFehlerUI:
             self._c._korrektur_verlauf = []
         self._c._korrektur_verlauf.append((code, fehler))
 
-        from data.nl_generator import NL_SYSTEM_PROMPT
+        from editor.ki.nl_generator import NL_SYSTEM_PROMPT
         system_prompt = (
             NL_SYSTEM_PROMPT
             + "\n\n━━━ KORREKTUR-MODUS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"

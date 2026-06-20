@@ -14,11 +14,11 @@ Enthält:
 import time
 import threading
 
-from qt_compat import requests as _requests, HAS_REQUESTS as _HAS_REQUESTS
-from params import KI_PRESETS
-from provider_daten import _MODELLE
-from ki_verlauf import _VERLAUF_MAX_NACHRICHTEN
-from kod_analyse import erstelle_code_sitemap, extrahiere_fehler_kontext
+from core.qt_compat import requests as _requests, HAS_REQUESTS as _HAS_REQUESTS
+from core.params import KI_PRESETS
+from editor.ki.provider_daten import _MODELLE
+from editor.ki.ki_verlauf import _VERLAUF_MAX_NACHRICHTEN
+from editor.ki.kod_analyse import erstelle_code_sitemap, extrahiere_fehler_kontext
 
 
 class KIAnfrage:
@@ -100,9 +100,9 @@ class KIAnfrage:
                 self._c._set_status("ℹ  Suchfeld leer – sende gesamten Editor-Inhalt")
             code_quelle = "editor"
 
-        from nl_generator import (NL_SYSTEM_PROMPT, NL_PRESET_SCHLUESSEL,
-                                   NL_SYSTEM_PROMPT_PARTDESIGN, NL_PRESET_SCHLUESSEL_PD,
-                                   NL_SYSTEM_PROMPT_SCHRITTWEISE, NL_PRESET_SCHLUESSEL_SW)
+        from editor.ki.nl_generator import (NL_SYSTEM_PROMPT, NL_PRESET_SCHLUESSEL,
+                                            NL_SYSTEM_PROMPT_PARTDESIGN, NL_PRESET_SCHLUESSEL_PD,
+                                            NL_SYSTEM_PROMPT_SCHRITTWEISE, NL_PRESET_SCHLUESSEL_SW)
         preset_name  = self._c._preset_box.currentText()
         ist_nl_modus = preset_name == NL_PRESET_SCHLUESSEL
         ist_pd_modus = preset_name == NL_PRESET_SCHLUESSEL_PD
@@ -110,7 +110,7 @@ class KIAnfrage:
 
         # FC12/FC13: Harte Sperre bei Ollama
         if ist_sw_modus and self._c._src_box.currentText().startswith("Ollama"):
-            from qt_compat import QtWidgets
+            from core.qt_compat import QtWidgets
             QtWidgets.QMessageBox.critical(
                 self._c,
                 "❌  FC13 · Schrittweise — Modell nicht unterstützt",
@@ -129,7 +129,7 @@ class KIAnfrage:
             return
 
         if ist_pd_modus and self._c._src_box.currentText().startswith("Ollama"):
-            from qt_compat import QtWidgets
+            from core.qt_compat import QtWidgets
             QtWidgets.QMessageBox.critical(
                 self._c,
                 "❌  FC12 · PartDesign — Modell nicht unterstützt",
@@ -147,13 +147,19 @@ class KIAnfrage:
                 "❌ FC12 benötigt Claude oder GPT-4o – bitte Backend wechseln")
             return
 
+        # Eigene Fragestellung hat Vorrang vor dem Preset
+        _frage_widget = getattr(self._c, "_frage_feld", None)
+        eigene_frage = _frage_widget.toPlainText().strip() if _frage_widget else ""
+
         prompt = KI_PRESETS.get(preset_name, "").strip()
         if not prompt:
             prompt = "Verbessere und kommentiere diesen Python-Code auf Deutsch."
+        if eigene_frage:
+            prompt = eigene_frage
 
         # Barrierefreiheit: Sprach-Zusätze an Prompt anhängen
         try:
-            from barrierefreiheit import BarrierefreiheitPanel as _BF
+            from ui.barrierefreiheit import BarrierefreiheitPanel as _BF
             if _BF.einfache_sprache():
                 prompt += (
                     "\n\nWICHTIG: Antworte in einfacher Sprache. "
@@ -198,7 +204,7 @@ class KIAnfrage:
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
         ) if sitemap else ""
 
-        from ki_modi import MODUS_PROMPTS, MODUS_DEFAULT
+        from editor.ki.ki_modi import MODUS_PROMPTS, MODUS_DEFAULT
         modus_prefix = MODUS_PROMPTS.get(
             getattr(self._c, "_ki_modus", MODUS_DEFAULT), "")
 
@@ -228,7 +234,7 @@ class KIAnfrage:
         ki_modus_wert = getattr(self._c, "_ki_modus", None)
 
         if ist_nl_modus:
-            from nl_generator import NL_TEMPERATURE
+            from editor.ki.nl_generator import NL_TEMPERATURE
             self._c._nl_antwort_aktiv = True
             threading.Thread(
                 target=self._c._streaming.worker_mit_system,
@@ -238,7 +244,7 @@ class KIAnfrage:
                 daemon=True
             ).start()
         elif ist_pd_modus:
-            from nl_generator import NL_TEMPERATURE
+            from editor.ki.nl_generator import NL_TEMPERATURE
             self._c._nl_antwort_aktiv = True
             threading.Thread(
                 target=self._c._streaming.worker_mit_system,
@@ -248,7 +254,7 @@ class KIAnfrage:
                 daemon=True
             ).start()
         elif ist_sw_modus:
-            from nl_generator import NL_TEMPERATURE
+            from editor.ki.nl_generator import NL_TEMPERATURE
             vorhandener_code = self._c._editor.toPlainText().strip()
             if vorhandener_code:
                 sw_user_prompt = (

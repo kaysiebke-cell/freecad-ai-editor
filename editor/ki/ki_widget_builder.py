@@ -9,17 +9,17 @@ Aufgerufen einmalig aus MakroEditor.__init__.
 
 import os
 
-from qt_compat import QtWidgets, QtCore, QtGui
+from core.qt_compat import QtWidgets, QtCore, QtGui
 
-from params import (KI_PRESETS, KI_PRESET_KATEGORIEN,
-                    lade_api_key, speichere_api_key, speichere_quelle, lade_quelle,
-                    speichere_modell)
+from core.params import (KI_PRESETS, KI_PRESET_KATEGORIEN,
+                         lade_api_key, speichere_api_key, speichere_quelle, lade_quelle,
+                         speichere_modell)
 
 
 # ── Interne Event-Handler (nur hier verbunden) ────────────────────────────
 
 def _on_modus_geaendert(editor):
-    from ki_modi import MODUS_EXPERTE, MODUS_ANFAENGER, MODUS_LABELS
+    from editor.ki.ki_modi import MODUS_EXPERTE, MODUS_ANFAENGER, MODUS_LABELS
     editor._ki_modus = (MODUS_EXPERTE
                         if editor._btn_modus_experte.isChecked()
                         else MODUS_ANFAENGER)
@@ -35,10 +35,18 @@ def _on_anbieter_gewechselt(editor):
         "moonshot":"sk-…",      "qwen":"sk-…",        "cohere":"…",
         "sambanova":"…",        "minimax":"…",        "llama":"…",
     }
-    speichere_api_key(editor._prev_anbieter_id, editor._key_feld.text().strip())
-    editor._prev_anbieter_id = editor._key_anbieter_id()
-    editor._key_feld.setText(lade_api_key(editor._prev_anbieter_id))
-    editor._key_feld.setPlaceholderText(_PLACEHOLDERS.get(editor._prev_anbieter_id, ""))
+    if editor._prev_anbieter_id:
+        speichere_api_key(editor._prev_anbieter_id, editor._key_feld.text().strip())
+    neuer_id = editor._key_anbieter_id()
+    editor._prev_anbieter_id = neuer_id
+    if neuer_id:
+        editor._key_feld.setText(lade_api_key(neuer_id))
+        editor._key_feld.setPlaceholderText(_PLACEHOLDERS.get(neuer_id, ""))
+        editor._key_feld.setEnabled(True)
+    else:
+        editor._key_feld.clear()
+        editor._key_feld.setPlaceholderText("(kein API-Key benötigt)")
+        editor._key_feld.setEnabled(False)
 
 
 def _baue_preset_menu(editor):
@@ -75,7 +83,7 @@ def _preset_gewaehlt(editor, name: str, prompt: str):
 
 def init_ki_widgets(editor, icons_dir: str) -> None:
     """Erstellt alle KI-Einstellungs-Widgets und setzt sie als Attribute am editor."""
-    from ki_modi import (MODUS_ANFAENGER, MODUS_EXPERTE,
+    from editor.ki.ki_modi import (MODUS_ANFAENGER, MODUS_EXPERTE,
                          MODUS_LABELS, MODUS_TOOLTIPS, MODUS_DEFAULT)
     editor._ki_modus = MODUS_DEFAULT
 
@@ -103,6 +111,7 @@ def init_ki_widgets(editor, icons_dir: str) -> None:
     # Signal erst verbinden nachdem _model_box existiert
     editor._src_box.currentIndexChanged.connect(editor._refresh_models)
     editor._src_box.currentTextChanged.connect(speichere_quelle)
+    editor._src_box.currentIndexChanged.connect(lambda _: _on_anbieter_gewechselt(editor))
     editor._model_box.currentTextChanged.connect(speichere_modell)
 
     editor._preset_btn = QtWidgets.QToolButton()
@@ -138,20 +147,13 @@ def init_ki_widgets(editor, icons_dir: str) -> None:
     editor._btn_modus_anfaenger.toggled.connect(lambda: _on_modus_geaendert(editor))
     editor._btn_modus_experte.toggled.connect(lambda: _on_modus_geaendert(editor))
 
-    editor._key_anbieter = QtWidgets.QComboBox()
-    editor._key_anbieter.addItems([k for _, k, _, _ in editor._ANBIETER if k is not None])
-    editor._key_anbieter.setSizePolicy(
-        QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
-    editor._key_anbieter.setToolTip("KI-Anbieter wählen")
     editor._key_feld = QtWidgets.QLineEdit()
     editor._key_feld.setEchoMode(QtWidgets.QLineEdit.Password)
     editor._key_feld.setMinimumHeight(26)
     editor._key_feld.setPlaceholderText("sk-ant-…")
-    editor._prev_anbieter_id = "anthropic"
+    editor._prev_anbieter_id = editor._key_anbieter_id()
     editor._key_feld.editingFinished.connect(
         lambda: speichere_api_key(editor._key_anbieter_id(), editor._key_feld.text().strip()))
-    editor._key_anbieter.currentIndexChanged.connect(
-        lambda _: _on_anbieter_gewechselt(editor))
     _on_anbieter_gewechselt(editor)
 
 

@@ -1,22 +1,14 @@
 # -*- coding: utf-8 -*-
 import re as _re
-import sys as _sys
 
-from qt_compat import QtGui, QtCore
-import theme
+from core.qt_compat import QtGui, QtCore
+from core import theme
 
 
 # ── Rechtschreibprüfung ───────────────────────────────────────────────────────
 
 def _lade_spell_backend():
     """Lädt enchant oder pyspellchecker; gibt (pruefen_fn, bool) zurück."""
-    try:
-        import glob as _glob, os as _os
-        for _sp in _glob.glob(_os.path.expanduser("~/.local/lib/python*/site-packages")):
-            if _sp not in _sys.path:
-                _sys.path.insert(0, _sp)
-    except Exception:
-        pass
 
     try:
         import enchant as _e
@@ -63,7 +55,7 @@ class PythonHighlighter(QtGui.QSyntaxHighlighter):
 
     def aktualisiere_theme(self):
         """Prüft ob sich das Theme geändert hat und baut Regeln neu auf."""
-        from qt_compat import QtWidgets, QtGui as _QtGui
+        from core.qt_compat import QtWidgets, QtGui as _QtGui
         app = QtWidgets.QApplication.instance()
         pal = app.palette() if app else _QtGui.QPalette()
         dunkel = theme.ist_dunkel()

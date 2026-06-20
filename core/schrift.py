@@ -28,7 +28,7 @@ Alle Größen sind Vielfache der System-Standardschrift.
 def _bildschirm_klein() -> bool:
     """True wenn der Bildschirm schmaler als 1366px ist (kleiner Laptop/Monitor)."""
     try:
-        from qt_compat import QtWidgets
+        from core.qt_compat import QtWidgets
         app = QtWidgets.QApplication.instance()
         if app:
             screen = app.primaryScreen()
@@ -57,7 +57,7 @@ else:
 
 # ── Berechnungslogik  (nicht ändern) ──────────────────────────────────────────
 
-from qt_compat import QtWidgets, QtGui
+from core.qt_compat import QtWidgets, QtGui
 
 
 def _system_pt() -> int:

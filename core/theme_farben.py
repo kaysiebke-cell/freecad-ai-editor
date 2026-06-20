@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """Farbschema, semantische Tints, Syntax-Highlight-Farben, Status-Farben."""
 
-from qt_compat import QtWidgets, QtCore, QtGui
-import schrift
-import farben as _farben_mod
+from core.qt_compat import QtWidgets, QtCore, QtGui
+from core import schrift
+from core import farben as _farben_mod
 
 # Standard Dunkelmod; wird beim Start aus Prefs geladen
 _FARBSCHEMA_DUNKEL: bool = True

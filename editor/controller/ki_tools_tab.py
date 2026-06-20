@@ -3,19 +3,10 @@
 ki_tools_tab.py  —  🛠 Tools-Tab für den MakroEditor.
 """
 
-import sys, os
+import os
 
-_DIR = os.path.dirname(os.path.abspath(__file__))
-for _p in [
-    os.path.join(_DIR, "..", "ki"),
-    os.path.join(_DIR, "..", "..", "data"),
-    os.path.join(_DIR, "..", "..", "core"),
-]:
-    if os.path.exists(_p) and _p not in sys.path:
-        sys.path.insert(0, _p)
-
-from qt_compat import QtWidgets, QtCore, QtGui
-import theme
+from core.qt_compat import QtWidgets, QtCore, QtGui
+from core import theme
 
 
 # ── Aufklappbarer Abschnitt ───────────────────────────────────────────────────
@@ -81,7 +72,7 @@ class KiToolsTab:
 
         # Info-Banner
         _verstecke = []
-        from snippet_controller import Snippets as _TM
+        from editor.controller.snippet_controller import Snippets as _TM
         aussen.addWidget(_TM._baue_info_banner(
             "🛠 Was kann der Tools-Tab?",
             "Dokumentkontext: KI sieht dein FreeCAD-Dokument.<br>"
@@ -133,7 +124,7 @@ class KiToolsTab:
         sek2.addWidget(info2)
 
         try:
-            from ki_werkzeuge import WERKZEUG_REGISTER
+            from editor.ki.ki_werkzeuge import WERKZEUG_REGISTER
             for name, defn in WERKZEUG_REGISTER.items():
                 btn_start = QtWidgets.QPushButton(f"▶  {name}")
                 btn_start.setFixedHeight(26)
@@ -178,7 +169,7 @@ class KiToolsTab:
 
     def _kontext_aktualisieren(self):
         try:
-            from dokument_kontext import get_dokument_kontext
+            from editor.ki.dokument_kontext import get_dokument_kontext
             text = get_dokument_kontext()
             self._kontext_anzeige.setPlainText(
                 text if text else "(Kein Dokument geöffnet)")
@@ -333,7 +324,7 @@ class KiToolsTab:
             QtWidgets.QApplication.processEvents()
 
             try:
-                from ki_werkzeuge import werkzeug_ausfuehren
+                from editor.ki.ki_werkzeuge import werkzeug_ausfuehren
                 ergebnis = werkzeug_ausfuehren(name, kwargs)
                 if ergebnis.erfolg:
                     ergebnis_lbl.setStyleSheet(theme.sty_status(dlg, "ok"))

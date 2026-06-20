@@ -6,17 +6,17 @@ Baut alle Dock-Panels des MakroEditors auf und registriert sie.
 Aufgerufen einmalig aus MakroEditor.__init__.
 """
 
-from qt_compat import QtWidgets, QtCore, QtGui
+from core.qt_compat import QtWidgets, QtCore, QtGui
 
-import theme
-import schrift
-from highlighter import PythonHighlighter
-from params import lade_kontext, speichere_kontext
-from barrierefreiheit import BarrierefreiheitPanel
-from freecad_helfer_panel import FreecadHelferPanel
-from hilfe import HilfeTab
-from assistent import AssistentPanel
-from snippet_controller import SnipCommandEdit
+from core import theme
+from core import schrift
+from core.highlighter import PythonHighlighter
+from core.params import lade_kontext, speichere_kontext
+from ui.barrierefreiheit import BarrierefreiheitPanel
+from editor.panel import FreecadHelferPanel
+from data.hilfe import HilfeTab
+from editor.controller.assistent import AssistentPanel
+from editor.controller.snippet_widgets import SnipCommandEdit
 
 
 # ── Dock-Infrastruktur ─────────────────────────────────────────────────────
@@ -144,7 +144,7 @@ def init_docks(editor) -> None:
     _farbe_gruppe.addButton(editor._btn_farbe_dunkel)
     _farbe_gruppe.addButton(editor._btn_farbe_hell)
 
-    import params as _params
+    import core.params as _params
     _ist_dunkel = _params.farbschema_dunkel()
     editor._btn_farbe_dunkel.setChecked(_ist_dunkel)
     editor._btn_farbe_hell.setChecked(not _ist_dunkel)
@@ -155,7 +155,6 @@ def init_docks(editor) -> None:
     _r_farbe.addStretch()
     _cfg_l.addLayout(_r_farbe)
     _cfg_l.addWidget(_cfg_lbl("API-SCHLÜSSEL"))
-    _cfg_l.addWidget(editor._key_anbieter)
     _cfg_l.addWidget(editor._key_feld)
     _cfg_l.addStretch()
     editor._dock_cfg = editor._make_dock(
@@ -169,7 +168,7 @@ def init_docks(editor) -> None:
     _ki_splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
 
     def _alle_snippets() -> dict:
-        from freecad_data import SNIPPETS as _SNIPS
+        from data.freecad_data import SNIPPETS as _SNIPS
         alle = {}
         for kat_dict in _SNIPS.values():
             alle.update(kat_dict)
@@ -186,6 +185,8 @@ def init_docks(editor) -> None:
     _input_l = QtWidgets.QVBoxLayout(_input_w)
     _input_l.setContentsMargins(0, 0, 0, 0)
     _input_l.setSpacing(2)
+
+    # Header-Zeile über dem kombinierten Feld
     _input_hdr = QtWidgets.QHBoxLayout()
     _input_hdr.addWidget(QtWidgets.QLabel("🔍 KI-Input"))
     _input_hdr.addStretch()
@@ -202,6 +203,32 @@ def init_docks(editor) -> None:
         _input_hdr.addWidget(_b)
     _input_l.addLayout(_input_hdr)
 
+    # Ein Feld, ein Rahmen — Label ist der einzige interne Trenner, keine Linien.
+    _feld_rahmen = QtWidgets.QFrame()
+    _feld_rahmen.setObjectName("ki_eingabe_rahmen")
+    _feld_rahmen.setStyleSheet(
+        "QFrame#ki_eingabe_rahmen { border:1px solid palette(shadow); border-radius:3px; }"
+    )
+    _feld_rahmen_l = QtWidgets.QVBoxLayout(_feld_rahmen)
+    _feld_rahmen_l.setContentsMargins(0, 0, 0, 0)
+    _feld_rahmen_l.setSpacing(0)
+
+    editor._frage_feld = QtWidgets.QPlainTextEdit()
+    editor._frage_feld.setFont(QtGui.QFont("Courier New", 10))
+    editor._frage_feld.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
+    editor._frage_feld.setFixedHeight(54)
+    editor._frage_feld.setStyleSheet(
+        "QPlainTextEdit { font-family:'Courier New',monospace; border:none; border-radius:0; }"
+    )
+    editor._frage_feld.setPlaceholderText("Frage oder Aufgabe … (optional, überschreibt Preset)")
+    theme.apply_input_bg_suche(editor._frage_feld)
+    _feld_rahmen_l.addWidget(editor._frage_feld)
+
+    editor._ki_trenner_lbl = QtWidgets.QLabel("  Code-Block:")
+    editor._ki_trenner_lbl.setFixedHeight(16)
+    theme.apply_input_bg_suche(editor._ki_trenner_lbl)
+    _feld_rahmen_l.addWidget(editor._ki_trenner_lbl)
+
     editor.find_area = SnipCommandEdit(_alle_snippets)
     editor.find_area.snip_gewaehlt.connect(editor._on_snip_slash_cmd)
     editor.find_area.setFont(QtGui.QFont("Courier New", 10))
@@ -209,13 +236,18 @@ def init_docks(editor) -> None:
     _opt = editor.find_area.document().defaultTextOption()
     _opt.setAlignment(QtCore.Qt.AlignLeft)
     editor.find_area.document().setDefaultTextOption(_opt)
-    editor.find_area.setStyleSheet(theme.STY_KI_INPUT_FIELD())
+    editor.find_area.setStyleSheet(
+        "QPlainTextEdit { font-family:'Courier New',monospace; border:none; border-radius:0; }"
+    )
     theme.apply_input_bg_suche(editor.find_area)
     editor.find_area.setPlaceholderText(
-        "Suchbegriff oder Codeblock …\n/ + Snippet-Name → Autocomplete")
+        "Code-Block hier einfügen …\n/ + Snippet-Name → Autocomplete")
     editor._hl_find = PythonHighlighter(editor.find_area.document())
     QtCore.QTimer.singleShot(200, editor._hl_find.aktualisiere_theme)
-    _input_l.addWidget(editor.find_area)
+    _feld_rahmen_l.addWidget(editor.find_area, stretch=1)
+
+    _input_l.addWidget(_feld_rahmen, stretch=1)
+
     _ki_splitter.addWidget(_input_w)
 
     _output_w = QtWidgets.QWidget()
@@ -259,7 +291,7 @@ def init_docks(editor) -> None:
     _kontext_l.addWidget(editor._kontext)
     _ki_splitter.addWidget(_kontext_w)
 
-    _ki_splitter.setSizes([260, 220, 100])
+    _ki_splitter.setSizes([320, 220, 100])
     ki_layout.addWidget(_ki_splitter, stretch=1)
     editor._dock_ki = editor._make_dock("🤖  KI", "dock_ki", _L, ki_widget)
 
@@ -349,7 +381,6 @@ def init_docks(editor) -> None:
         _abtn("☰  Alles",   "Alles markieren",  editor.alles_auswaehlen),
         _abtn("✕  Löschen", "Auswahl löschen",  editor.loeschen_auswahl),
         _abtn(_fmt_lbl,     "Code formatieren", editor._formatieren),
-        _abtn("❓  Hilfe",  "Hilfe öffnen",     editor._zeige_hilfe),
     )
     _abschnitt("BIBLIOTHEK")
     _agrid(

@@ -1,6 +1,3 @@
 __pycache__/
 *.pyc
 *.pyo
-*.pyd
-*.bak
-.DS_Store

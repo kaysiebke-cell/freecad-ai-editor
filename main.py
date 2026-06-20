@@ -41,41 +41,45 @@ if not os.path.isdir(os.path.join(_DIR, "core")):
         if os.path.isdir(os.path.join(_candidate, "core")):
             _DIR = _candidate
             break
-for _sub in ("", "core", "editor/fehler", "editor/ki", "editor/ki/intern", "editor/controller", "editor/widgets", "editor/intern", "editor", "ui", "data"):
-    _p = os.path.join(_DIR, _sub) if _sub else _DIR
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
-
-# ── Editor-Pfad explizit sicherstellen ───────────────────────────────────────
-_EDITOR_DIR = os.path.join(_DIR, "editor")
-if _EDITOR_DIR not in sys.path:
-    sys.path.insert(0, _EDITOR_DIR)
+if _DIR not in sys.path:
+    sys.path.insert(0, _DIR)
 
 # ── Modul-Cache leeren (Hot-Reload ohne FreeCAD-Neustart) ─────────────────────
 _EIGENE_MODULE = [
     # core
-    "params", "qt_compat", "theme", "highlighter", "schrift",
+    "core.params", "core.qt_compat", "core.theme", "core.highlighter", "core.schrift",
     # editor (Haupt)
-    "editor", "editor_widgets", "freecad_helfer_panel",
+    "editor.panel", "editor.editor", "editor.widgets.editor_widgets",
     # editor/ki
-    "ki_controller", "ki_werkzeuge", "dokument_kontext",
+    "editor.ki.ki_controller", "editor.ki.ki_werkzeuge", "editor.ki.dokument_kontext",
     # editor/controller
-    "browser_controller", "snippet_controller", "snippet_widgets",
-    "vorschau_controller", "werkzeuge", "bibliothek_tab", "ki_tools_tab",
+    "editor.controller.browser_controller", "editor.controller.snippet_controller",
+    "editor.controller.snippet_widgets", "editor.controller.vorschau_controller",
+    "editor.controller.werkzeuge", "editor.controller.bibliothek_tab",
+    "editor.controller.ki_tools_tab",
     # editor/fehler
-    "fehler_panel", "fehler",
+    "editor.fehler.fehler_panel", "ui.fehler",
+    # editor/builders, editor/subsysteme
+    "editor.builders.central_widget_builder", "editor.builders.dock_builder",
+    "editor.builders.toolbar_builder", "editor.ki.ki_widget_builder",
+    "editor.subsysteme.editor_barrierefreiheit", "editor.subsysteme.editor_code",
+    "editor.subsysteme.editor_datei", "editor.subsysteme.editor_plan",
+    "editor.subsysteme.editor_suche", "editor.subsysteme.editor_tabs",
     # ui
-    "manager", "begruessung", "barrierefreiheit",
+    "ui.manager", "ui.begruessung", "ui.barrierefreiheit",
     # data
-    "freecad_data", "hilfe", "hilfe_texte", "nl_generator", "ki_modi", "bibliothek",
+    "data.freecad_data", "data.hilfe", "data.hilfe_texte",
+    "data.bibliothek",
+    # ki
+    "editor.ki.nl_generator", "editor.ki.ki_modi",
     # sandbox_cache bewusst NICHT hier — bleibt persistent für Python-Pfad-Cache
 ]
 for _modul in _EIGENE_MODULE:
     sys.modules.pop(_modul, None)
 
 # ── Imports (nach Cache-Leerung!) ─────────────────────────────────────────────
-from qt_compat import QtWidgets, QtCore, QtGui
-import theme
+from core.qt_compat import QtWidgets, QtCore, QtGui
+from core import theme
 
 import FreeCADGui as Gui
 
@@ -85,9 +89,9 @@ def emoji_font(f: QtGui.QFont) -> QtGui.QFont:
     return f
 
 
-from params import DOCK_NAME, ist_erststart, fenster_schwebend, set_fenster_schwebend
-from manager import MakroLeiste
-from begruessung import zeige_begruessung
+from core.params import DOCK_NAME, ist_erststart, fenster_schwebend, set_fenster_schwebend
+from ui.manager import MakroLeiste
+from ui.begruessung import zeige_begruessung
 
 
 def erstelle_leiste():

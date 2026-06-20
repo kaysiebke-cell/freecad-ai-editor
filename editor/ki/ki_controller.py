@@ -14,20 +14,20 @@ Delegiert an Kompositions-Objekte in editor/ki/intern/:
 """
 
 
-from qt_compat import QtCore
+from core.qt_compat import QtCore
 
-from provider_daten import _OAI_URLS, _MODELLE
-from ki_streaming import KIStreaming
-from ki_verlauf import KIVerlauf
-from ki_sitzung import KISitzung
-from ki_anfrage import KIAnfrage
-from ki_chunk import KIChunkUI
-from ki_fehler import KIFehlerUI
-from kod_korrektor import (freecad_code_korrigieren,
-                           extrahiere_code_aus_nl_antwort,
-                           schneide_erklaerung_ab,
-                           kommentiere_text_zeilen)
-from kod_analyse import erstelle_code_sitemap, extrahiere_fehler_kontext
+from editor.ki.provider_daten import _OAI_URLS, _MODELLE
+from editor.ki.ki_streaming import KIStreaming
+from editor.ki.ki_verlauf import KIVerlauf
+from editor.ki.ki_sitzung import KISitzung
+from editor.ki.ki_anfrage import KIAnfrage
+from editor.ki.ki_chunk import KIChunkUI
+from editor.ki.ki_fehler import KIFehlerUI
+from editor.ki.kod_korrektor import (freecad_code_korrigieren,
+                                     extrahiere_code_aus_nl_antwort,
+                                     schneide_erklaerung_ab,
+                                     kommentiere_text_zeilen)
+from editor.ki.kod_analyse import erstelle_code_sitemap, extrahiere_fehler_kontext
 
 
 class Ki:

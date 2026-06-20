@@ -10,9 +10,9 @@ QStackedWidget; zeige_seite() schaltet via setCurrentIndex() um.
 from __future__ import annotations
 import traceback
 from typing import Callable, Dict, Optional
-from qt_compat import QtWidgets, QtCore, QtGui
-import theme
-import schrift
+from core.qt_compat import QtWidgets, QtCore, QtGui
+from core import theme
+from core import schrift
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Vordefinierte Themes
@@ -353,7 +353,7 @@ class FehlerPanel(QtWidgets.QWidget):
 
     def _sb_rahmen(self, art: str) -> None:
         """Setzt einen farbigen Rahmen um das Sandbox-Ausgabefeld."""
-        import theme as _theme
+        from core import theme as _theme
         farbe = _theme.farbe_ok(self._sb_ausgabe) if art == "ok" else _theme.farbe_fehler(self._sb_ausgabe)
         self._sb_ausgabe.setStyleSheet(
             f"QPlainTextEdit {{ border: 2px solid {farbe}; border-radius: 3px; }}"

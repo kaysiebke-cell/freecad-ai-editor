@@ -13,7 +13,10 @@
 - **API-Schlüssel** pro Anbieter eingeben & automatisch speichern
 
 ## 🤖 KI-Panel
-- **Eingabefeld** (grün hinterlegt) – Prompt oder zu analysierender Code
+- **KI-Eingabefeld** (grün hinterlegt) – ein einziges Feld, innen durch das Label unterteilt:
+  - **Oben:** Frage oder Aufgabe frei eingeben (überschreibt das gewählte Preset)
+  - **Code-Block:** darunter – zu analysierenden oder zu bearbeitenden Code einfügen
+  - Beide Bereiche werden bei `🤖 Fragen` gemeinsam an die KI geschickt
   - `/snippetname` tippen → Snippet-Autovervollständigung öffnet sich
 - **KI-Antwort** (blau hinterlegt) – Antwort erscheint live gestreamt
 - **Projekt-Kontext** – wird bei jedem KI-Aufruf als Hintergrundinfo mitgeschickt

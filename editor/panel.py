@@ -13,45 +13,37 @@ Keine hardkodierten Farben — alles über QPalette (hell + dunkel).
 
 import base64
 import json
-import sys
 import threading
 
-from qt_compat import QtCore, QtWidgets, QtGui
-import theme
+from core.qt_compat import QtCore, QtWidgets, QtGui
+from core import theme
 
-from _helfer_rechtschreibung import (
+from editor._helfer_rechtschreibung import (
     BACKEND as _SPELL_BACKEND,
     HAT_RECHTSCHREIBUNG as _HAT_RECHTSCHREIBUNG,
     RechtschreibHighlighter,
 )
-from _helfer_ui import ChatBubble, DiffBlase, BildVorschau
+from editor._helfer_ui import ChatBubble, DiffBlase, BildVorschau
 
 # anbieter_formate liegt in data/
 try:
-    from anbieter_formate import datei_filter, format_info, format_pruefen
+    from data.anbieter_formate import datei_filter, format_info, format_pruefen
 except ImportError:
-    import os as _os
-    _data = _os.path.normpath(_os.path.join(_os.path.dirname(__file__), "..", "data"))
-    if _data not in sys.path:
-        sys.path.insert(0, _data)
-    try:
-        from anbieter_formate import datei_filter, format_info, format_pruefen
-    except ImportError:
-        def datei_filter(_): return "Bilder (*.png *.jpg *.jpeg *.webp *.gif *.bmp)"
-        def format_info(_):  return ""
-        def format_pruefen(_, e): return True
+    def datei_filter(_): return "Bilder (*.png *.jpg *.jpeg *.webp *.gif *.bmp)"
+    def format_info(_):  return ""
+    def format_pruefen(_, e): return True
 
 
 def _aktueller_anbieter() -> str:
     try:
-        from params import lade_quelle
+        from core.params import lade_quelle
         return lade_quelle()
     except Exception:
         return "Ollama (Lokal)"
 
 
 # ── Ollama ────────────────────────────────────────────────────────────────────
-from qt_compat import requests as _requests, HAS_REQUESTS as _HAS_REQUESTS
+from core.qt_compat import requests as _requests, HAS_REQUESTS as _HAS_REQUESTS
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
 
@@ -241,7 +233,7 @@ class FreecadHelferPanel(QtWidgets.QWidget):
 
     def _lade_modelle(self):
         try:
-            from params import lade_quelle, lade_modell
+            from core.params import lade_quelle, lade_modell
             quelle = lade_quelle()
             modell = lade_modell()
         except Exception:
@@ -366,7 +358,7 @@ class FreecadHelferPanel(QtWidgets.QWidget):
         modell = self._aktuelles_modell or "llama3"
 
         try:
-            from params import lade_quelle, lade_api_key
+            from core.params import lade_quelle, lade_api_key
             quelle  = lade_quelle()
             kid     = quelle.split()[0].lower()
             api_key = lade_api_key(kid)

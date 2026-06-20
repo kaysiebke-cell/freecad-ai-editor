@@ -4,8 +4,8 @@
 import difflib
 import html
 
-from qt_compat import QtCore, QtWidgets, QtGui
-import theme
+from core.qt_compat import QtCore, QtWidgets, QtGui
+from core import theme
 
 
 # ── Diff-Berechnung ───────────────────────────────────────────────────────────

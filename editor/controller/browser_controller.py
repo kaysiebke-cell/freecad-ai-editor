@@ -11,11 +11,11 @@ Browser – Datei-Browser-Tab:
 import os
 import json
 
-from qt_compat import QtWidgets, QtCore
-import theme
-import schrift
+from core.qt_compat import QtWidgets, QtCore
+from core import theme
+from core import schrift
 
-from editor_widgets import _DateiFilterProxy
+from editor.widgets.editor_widgets import _DateiFilterProxy
 
 
 class Browser:
@@ -210,7 +210,7 @@ class Browser:
     def _makro_pfad_holen(self) -> str:
         """Makro-Pfad aus params holen (ohne direkten Import von manager)."""
         try:
-            from params import lade_pfad
+            from core.params import lade_pfad
             return lade_pfad()
         except Exception:
             return os.path.expanduser("~")
@@ -298,7 +298,7 @@ class Browser:
         if not ordner:
             return
         try:
-            from params import speichere_pfad
+            from core.params import speichere_pfad
             speichere_pfad(ordner)
             self._db_status.setText(f"✔ Makro-Pfad gesetzt: {ordner}")
         except Exception as e:
@@ -332,7 +332,7 @@ class Browser:
 
     def _db_lz_laden(self):
         try:
-            from params import PREF_KEY
+            from core.params import PREF_KEY
             import FreeCAD as App
             raw = App.ParamGet(PREF_KEY).GetString(
                 self._db_lz_schluessel(), "")
@@ -348,7 +348,7 @@ class Browser:
 
     def _db_lz_speichern(self):
         try:
-            from params import PREF_KEY
+            from core.params import PREF_KEY
             import FreeCAD as App
             App.ParamGet(PREF_KEY).SetString(
                 self._db_lz_schluessel(),

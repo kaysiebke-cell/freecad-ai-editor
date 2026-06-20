@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """Schrift-Konfiguration und Widget-Stabilisierungs-Funktionen."""
 
-from qt_compat import QtWidgets, QtCore, QtGui
-import schrift
+from core.qt_compat import QtWidgets, QtCore, QtGui
+from core import schrift
 
 _FONT_UI_FAMILY   = schrift.FAMILIE_UI
 _FONT_MONO_FAMILY = schrift.FAMILIE_MONO

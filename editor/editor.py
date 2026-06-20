@@ -14,31 +14,31 @@ import os
 import re
 import time
 
-from qt_compat import QtWidgets, QtCore, QtGui, requests, HAS_REQUESTS
+from core.qt_compat import QtWidgets, QtCore, QtGui, requests, HAS_REQUESTS
 
-import theme
-from fehler import uebersetze_fehler
-import params
-from werkzeuge import WerkzeugLeiste
+from core import theme
+from ui.fehler import uebersetze_fehler
+from core import params
+from editor.controller.werkzeuge import WerkzeugLeiste
 
-from ki_controller import Ki
-from browser_controller import Browser
-from snippet_controller import Snippets
-from ki_tools_tab import KiToolsTab
-from bibliothek_tab import Bibliothek
-from vorschau_controller import Vorschau
+from editor.ki.ki_controller import Ki
+from editor.controller.browser_controller import Browser
+from editor.controller.snippet_controller import Snippets
+from editor.controller.ki_tools_tab import KiToolsTab
+from editor.controller.bibliothek_tab import Bibliothek
+from editor.controller.vorschau_controller import Vorschau
 
-from central_widget_builder import init_central_widget
-from ki_widget_builder import init_ki_widgets, get_preset_prompt, baue_preset_menu
-from dock_builder import init_docks
-from toolbar_builder import init_toolbar
+from editor.builders.central_widget_builder import init_central_widget
+from editor.ki.ki_widget_builder import init_ki_widgets, get_preset_prompt, baue_preset_menu
+from editor.builders.dock_builder import init_docks
+from editor.builders.toolbar_builder import init_toolbar
 
-from editor_datei import DateiLogik
-from editor_suche import SucheLogik
-from editor_code import CodeLogik
-from editor_plan import PlanLogik
-from editor_tabs import TabLogik
-from editor_barrierefreiheit import BarriereLogik
+from editor.subsysteme.editor_datei import DateiLogik
+from editor.subsysteme.editor_suche import SucheLogik
+from editor.subsysteme.editor_code import CodeLogik
+from editor.subsysteme.editor_plan import PlanLogik
+from editor.subsysteme.editor_tabs import TabLogik
+from editor.subsysteme.editor_barrierefreiheit import BarriereLogik
 
 _ICONS_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -170,7 +170,7 @@ class MakroEditor(QtWidgets.QMainWindow):
         import json as _json
         _STATE_DATEI    = os.path.join(os.path.expanduser("~"), ".ki_makro_editor_layout.json")
         _GUARD_DATEI    = os.path.join(os.path.expanduser("~"), ".ki_makro_editor_restore_guard")
-        _LAYOUT_VERSION = "v6"
+        _LAYOUT_VERSION = "v7"
         self._layout_state_datei = _STATE_DATEI
 
         def _lade_layout():
@@ -252,8 +252,10 @@ class MakroEditor(QtWidgets.QMainWindow):
     # ══ Gemeinsame Hilfsmethoden ═══════════════════════════════════════════
 
     def _key_anbieter_id(self) -> str:
-        mapping = {k: kid for _, k, kid, _ in self._ANBIETER if k is not None}
-        return mapping.get(self._key_anbieter.currentText(), "anthropic")
+        idx = self._src_box.currentIndex()
+        if 0 <= idx < len(self._ANBIETER):
+            return self._ANBIETER[idx][2] or ""
+        return "anthropic"
 
     def _update_cursor_info(self):
         c      = self._editor.textCursor()

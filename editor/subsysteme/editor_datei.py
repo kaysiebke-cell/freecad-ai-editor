@@ -10,9 +10,9 @@ import glob
 import shutil
 from datetime import datetime
 
-from qt_compat import QtWidgets, QtCore
+from core.qt_compat import QtWidgets, QtCore
 
-from fehler import uebersetze_fehler
+from ui.fehler import uebersetze_fehler
 
 
 class DateiLogik:

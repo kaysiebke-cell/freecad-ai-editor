@@ -8,8 +8,8 @@ KIChunkUI – Chunk-Puffer, Stream-Statusanzeige und Stream-Done-Verarbeitung.
 import time
 import re as _re
 
-from qt_compat import QtGui
-from kod_korrektor import freecad_code_korrigieren, extrahiere_code_aus_nl_antwort, schneide_erklaerung_ab
+from core.qt_compat import QtGui
+from editor.ki.kod_korrektor import freecad_code_korrigieren, extrahiere_code_aus_nl_antwort, schneide_erklaerung_ab
 
 _RE_CODE_FENCE = _re.compile(r"```python|```")
 

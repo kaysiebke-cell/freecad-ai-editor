@@ -2,9 +2,8 @@
 """Rechtschreib-Backends für den FreeCAD-Helfer (enchant → pyspellchecker → Fallback)."""
 
 import re
-import sys
 
-from qt_compat import QtGui
+from core.qt_compat import QtGui
 
 
 class _SpellBackend:
@@ -33,17 +32,6 @@ class _SpellcheckerBackend(_SpellBackend):
 
 
 def _lade_backend() -> tuple[_SpellBackend, str]:
-    # Alle ~/.local/lib/pythonX.Y/site-packages einbinden –
-    # AppImage nutzt ggf. andere Python-Version als das System.
-    try:
-        import glob as _glob
-        for _sp in _glob.glob(
-                __import__("os").path.expanduser("~/.local/lib/python*/site-packages")):
-            if _sp not in sys.path:
-                sys.path.insert(0, _sp)
-    except Exception:
-        pass
-
     for Klasse, name in [(_EnchantBackend, "enchant"),
                          (_SpellcheckerBackend, "pyspellchecker")]:
         try:

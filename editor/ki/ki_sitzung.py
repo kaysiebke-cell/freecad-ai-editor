@@ -8,7 +8,7 @@ KISitzung – Sitzung speichern und laden (JSON).
 import json as _json
 import os as _os
 
-from qt_compat import QtWidgets
+from core.qt_compat import QtWidgets
 
 
 class KISitzung:

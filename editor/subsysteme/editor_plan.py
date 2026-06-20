@@ -5,7 +5,7 @@ editor_plan.py
 Plan-Modus und KI-Code-Einfüge-Operationen für den MakroEditor.
 """
 
-from qt_compat import QtWidgets, QtGui
+from core.qt_compat import QtWidgets, QtGui
 
 
 class PlanLogik:

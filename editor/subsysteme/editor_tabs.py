@@ -7,12 +7,12 @@ Multi-Tab-Lebenszyklus des MakroEditors: Öffnen, Wechseln, Schließen.
 
 import os
 
-from qt_compat import QtWidgets, QtCore, QtGui
+from core.qt_compat import QtWidgets, QtCore, QtGui
 
-import theme
-from highlighter import PythonHighlighter
-from fehler import uebersetze_fehler
-from editor_widgets import JediEditor
+from core import theme
+from core.highlighter import PythonHighlighter
+from ui.fehler import uebersetze_fehler
+from editor.widgets.editor_widgets import JediEditor
 
 
 class TabLogik:
