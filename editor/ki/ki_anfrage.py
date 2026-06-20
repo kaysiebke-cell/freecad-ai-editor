@@ -341,16 +341,27 @@ class KIAnfrage:
             ).start()
         elif ist_tc_modus:
             from editor.ki.nl_generator import NL_TEMPERATURE
-            from editor.ki.fc14_tool_calling import FC14_SYSTEM_PROMPT
-            self._c._nl_antwort_aktiv = True
-            self._c._tc_modus_aktiv   = True
-            threading.Thread(
-                target=self._c._streaming.worker_mit_system,
-                args=(source_text, model_text, FC14_SYSTEM_PROMPT,
-                      nl_inhalt, NL_TEMPERATURE),
-                kwargs={"preset_name": preset_name, "ki_modus": ki_modus_wert},
-                daemon=True
-            ).start()
+            if source_text.startswith("Ollama"):
+                # Echtes API Tool-Calling — /api/chat + tools-Array
+                self._c._nl_antwort_aktiv = False
+                self._c._tc_modus_aktiv   = False
+                threading.Thread(
+                    target=self._c._streaming.worker_ollama_tools,
+                    args=(model_text, nl_inhalt, NL_TEMPERATURE),
+                    daemon=True
+                ).start()
+            else:
+                # Cloud-Anbieter: Text-Prompt als Fallback
+                from editor.ki.fc14_tool_calling import FC14_SYSTEM_PROMPT
+                self._c._nl_antwort_aktiv = True
+                self._c._tc_modus_aktiv   = True
+                threading.Thread(
+                    target=self._c._streaming.worker_mit_system,
+                    args=(source_text, model_text, FC14_SYSTEM_PROMPT,
+                          nl_inhalt, NL_TEMPERATURE),
+                    kwargs={"preset_name": preset_name, "ki_modus": ki_modus_wert},
+                    daemon=True
+                ).start()
         else:
             self._c._nl_antwort_aktiv = False
             threading.Thread(

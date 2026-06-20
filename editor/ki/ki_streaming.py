@@ -111,6 +111,56 @@ class KIStreaming:
             if self._c._alive:
                 self._c._ki_error.emit(f"# ❌ Fehler:\n{e}")
 
+    # ── FC14: Ollama Tool-Calling (/api/chat + tools) ─────────────────────
+
+    def worker_ollama_tools(self, model, user_prompt, temperature):
+        """FC14-Worker: Ollama /api/chat mit echtem Tool-Calling."""
+        try:
+            if self._c._alive:
+                self._c._ki_chunk.emit("# ⏳ Warte auf Ollama Tool-Calling ...\n")
+            python_code = self._stream_ollama_tools(model, user_prompt, temperature)
+            if self._c._alive:
+                self._c._ki_chunk.emit(python_code)
+                self._c._ki_stream_done.emit()
+        except Exception as e:
+            if self._c._alive:
+                self._c._ki_error.emit(f"# ❌ Fehler:\n{e}")
+
+    def _stream_ollama_tools(self, model, user_prompt, temperature) -> str:
+        """POST /api/chat mit tools-Array — gibt FreeCAD-Python-Code zurück."""
+        import os as _os
+        from editor.ki.fc14_tool_calling import FC14_TOOLS, tool_calls_zu_code
+
+        r = self._c._session.post(
+            "http://localhost:11434/api/chat",
+            json={
+                "model":    model,
+                "messages": [{"role": "user", "content": user_prompt}],
+                "tools":    FC14_TOOLS,
+                "stream":   False,
+                "options": {
+                    "temperature": temperature,
+                    "num_ctx":    2048,
+                    "num_thread": _os.cpu_count() or 4,
+                },
+            },
+            timeout=120,
+        )
+        r.raise_for_status()
+        data       = r.json()
+        tool_calls = data.get("message", {}).get("tool_calls", [])
+
+        if not tool_calls:
+            content = data.get("message", {}).get("content", "(keine Antwort)")
+            return (
+                "# ⚠ Modell hat keine Tool-Calls zurückgegeben.\n"
+                "# Tipp: qwen2.5-coder unterstützt Tool-Calling — prüfe ob das Modell\n"
+                "# korrekt geladen ist (ollama pull qwen2.5-coder:7b).\n"
+                f"# Modell-Antwort: {content[:200]}\n"
+            )
+
+        return tool_calls_zu_code(tool_calls) or "# ❌ Tool-Calls konnten nicht konvertiert werden"
+
     # ── Streaming: Ollama ─────────────────────────────────────────────────
 
     def stream_ollama(self, model, prompt, temperature):
