@@ -54,6 +54,13 @@ try:
 except Exception as e:
     QMessageBox.critical(None, "Fehler", str(e))
 
+GEOMETRIE-ZERLEGUNG (wie Formen aufgebaut werden):
+- L-/T-/U-/Z-Profil = mehrere Part::Box getrennt erstellen + mit Part::Fuse verbinden
+- Bohrung/Loch/Gewinde = Part::Cylinder erstellen + mit Part::Cut vom Körper abziehen
+- Jede einzelne Bohrung braucht IMMER einen eigenen Part::Cut
+- Aushöhlen/Hohlkörper = innere Form als Part::Cut abziehen
+- Nut/Schlitz = schmale Part::Box + Part::Cut
+
 BOOLESCHE OPERATIONEN — KRITISCH:
 - SUBTRAKTION (bohren, ausschneiden, aushöhlen): doc.addObject("Part::Cut", "Name")
   → cut.Base = grundkoerper; cut.Tool = werkzeug
@@ -94,6 +101,13 @@ try:
     # aufgabenspezifischer Code
     doc.recompute()
 except Exception as e: QMessageBox.critical(None,"Fehler",str(e))
+
+GEOMETRIE-ZERLEGUNG (wie Formen aufgebaut werden):
+- L-/T-/U-/Z-Profil = mehrere Part::Box + Part::Fuse verbinden
+- Bohrung/Loch/Gewinde = Part::Cylinder erstellen + Part::Cut abziehen (NIEMALS nur Cylinder stehen lassen!)
+- Aushöhlen/Hohlkörper = innere Form als Part::Cut abziehen
+- Fase/Rundung = mehrere Körper + Part::Cut
+- Jede Bohrung braucht IMMER einen eigenen Part::Cut!
 
 REGELN:
 - App.Vector(x,y,z) — niemals FreeCAD.Vector()
