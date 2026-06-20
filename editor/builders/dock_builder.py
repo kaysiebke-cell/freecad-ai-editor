@@ -216,13 +216,13 @@ def init_docks(editor) -> None:
     editor._frage_feld = QtWidgets.QPlainTextEdit()
     editor._frage_feld.setFont(QtGui.QFont("Courier New", 10))
     editor._frage_feld.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
-    editor._frage_feld.setFixedHeight(54)
+    editor._frage_feld.setMinimumHeight(30)
     editor._frage_feld.setStyleSheet(
         "QPlainTextEdit { font-family:'Courier New',monospace; border:none; border-radius:0; }"
     )
     editor._frage_feld.setPlaceholderText("Frage oder Aufgabe … (optional, überschreibt Preset)")
     theme.apply_input_bg_suche(editor._frage_feld)
-    _feld_rahmen_l.addWidget(editor._frage_feld)
+    _feld_rahmen_l.addWidget(editor._frage_feld, stretch=1)
 
     editor._ki_trenner_lbl = QtWidgets.QLabel("  Code-Block:")
     editor._ki_trenner_lbl.setFixedHeight(16)
