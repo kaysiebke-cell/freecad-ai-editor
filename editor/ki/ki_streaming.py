@@ -129,15 +129,27 @@ class KIStreaming:
     def _stream_ollama_tools(self, model, user_prompt, temperature) -> str:
         """POST /api/chat mit tools-Array — gibt FreeCAD-Python-Code zurück."""
         import os as _os
-        from editor.ki.fc14_tool_calling import FC14_TOOLS, tool_calls_zu_code
+        from editor.ki.fc14_tool_calling import FC14_TOOLS, tool_calls_zu_code, parse_content_json_calls
+
+        _SYSTEM = (
+            "You are a FreeCAD assistant. Output ONLY tool calls as JSON objects — no text, no explanation, no numbering. "
+            "Rules: "
+            "1) Create every object BEFORE referencing it in fuse() or cut(). "
+            "2) Use x, y, z parameters for positioning — never use translate. "
+            "3) For holes: cylinder() first (with correct x,y,z), then cut(). "
+            "4) For L/T/U profiles: box() for each leg (with correct z offset), then fuse()."
+        )
 
         r = self._c._session.post(
             "http://localhost:11434/api/chat",
             json={
-                "model":    model,
-                "messages": [{"role": "user", "content": user_prompt}],
-                "tools":    FC14_TOOLS,
-                "stream":   False,
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": _SYSTEM},
+                    {"role": "user",   "content": user_prompt},
+                ],
+                "tools":  FC14_TOOLS,
+                "stream": False,
                 "options": {
                     "temperature": temperature,
                     "num_ctx":    2048,
@@ -149,17 +161,22 @@ class KIStreaming:
         r.raise_for_status()
         data       = r.json()
         tool_calls = data.get("message", {}).get("tool_calls", [])
+        content    = data.get("message", {}).get("content", "")
+
+        # qwen2.5-coder gibt tool_calls als JSON-Objekte im content-Feld zurück
+        if not tool_calls and content.strip():
+            tool_calls = parse_content_json_calls(content)
 
         if not tool_calls:
-            content = data.get("message", {}).get("content", "(keine Antwort)")
             return (
                 "# ⚠ Modell hat keine Tool-Calls zurückgegeben.\n"
-                "# Tipp: qwen2.5-coder unterstützt Tool-Calling — prüfe ob das Modell\n"
-                "# korrekt geladen ist (ollama pull qwen2.5-coder:7b).\n"
+                "# Tipp: Verwende qwen2.5-coder:7b (ollama pull qwen2.5-coder:7b)\n"
+                "# oder beschreibe das Objekt einfacher (z.B. 'Create a box 50x30x10').\n"
                 f"# Modell-Antwort: {content[:200]}\n"
             )
 
-        return tool_calls_zu_code(tool_calls) or "# ❌ Tool-Calls konnten nicht konvertiert werden"
+        python_code = tool_calls_zu_code(tool_calls)
+        return python_code or "# ❌ Tool-Calls konnten nicht konvertiert werden"
 
     # ── Streaming: Ollama ─────────────────────────────────────────────────
 

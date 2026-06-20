@@ -251,6 +251,82 @@ def parse_und_generiere_code(text: str) -> str:
 
 # ── Hilfsfunktionen ────────────────────────────────────────────────────────────
 
+_VALID_TOOLS = frozenset(("box", "cylinder", "sphere", "cone", "fuse", "cut", "common"))
+
+# Arithmetik in JSON-Werten (z.B. "radius": 3.3/2, "x": 60-40)
+_RE_ARITH = _re.compile(r':\s*([\d.]+)\s*([+\-*/])\s*([\d.]+)')
+
+
+def _fix_arith(text: str) -> str:
+    def _eval(m):
+        a, op, b = float(m.group(1)), m.group(2), float(m.group(3))
+        if op == "+":   result = a + b
+        elif op == "-": result = a - b
+        elif op == "*": result = a * b
+        else:           result = a / b if b else 0.0
+        return f": {int(result) if result == int(result) else round(result, 4)}"
+    return _RE_ARITH.sub(_eval, text)
+
+
+def parse_content_json_calls(content: str) -> list:
+    """Parst JSON-Tool-Calls aus content-Feld (qwen2.5-coder Format).
+
+    Versteht zwei Formate:
+    - Nackte JSON-Objekte getrennt durch Leerzeilen
+    - JSON in ```json```-Fences (mit optional nummerierten Schritten)
+    Unbekannte Funktionen (z.B. 'translate') werden still ignoriert.
+    """
+    import json as _json
+    objects: list = []
+
+    # Strategie 1: JSON aus ```json```-Fences extrahieren
+    fence_blöcke = _re.findall(r'```json\s*(\{.*?\})\s*```', content, _re.DOTALL)
+    if fence_blöcke:
+        for block in fence_blöcke:
+            block = _fix_arith(block)
+            try:
+                obj = _json.loads(block)
+                if (isinstance(obj, dict) and "name" in obj
+                        and "arguments" in obj
+                        and obj["name"] in _VALID_TOOLS):
+                    objects.append({
+                        "function": {
+                            "name":      obj["name"],
+                            "arguments": obj["arguments"],
+                        }
+                    })
+            except _json.JSONDecodeError:
+                continue
+        if objects:
+            return objects
+
+    # Strategie 2: nackte JSON-Objekte (älteres qwen2.5-coder Format)
+    decoder = _json.JSONDecoder()
+    idx = 0
+    text = _fix_arith(content.strip())  # z.B. 3.3/2 → 1.65
+    while idx < len(text):
+        while idx < len(text) and text[idx] in " \n\r\t":
+            idx += 1
+        if idx >= len(text):
+            break
+        try:
+            obj, end = decoder.raw_decode(text, idx)
+            if (isinstance(obj, dict) and "name" in obj
+                    and "arguments" in obj
+                    and obj["name"] in _VALID_TOOLS):
+                objects.append({
+                    "function": {
+                        "name":      obj["name"],
+                        "arguments": obj["arguments"],
+                    }
+                })
+            idx = end
+        except (_json.JSONDecodeError, KeyError):
+            break
+
+    return objects
+
+
 def _wrap_code(body: str) -> str:
     return (
         "# -*- coding: utf-8 -*-\n"
@@ -326,9 +402,10 @@ def _konvertiere_json(func: str, args: dict) -> list[str] | None:
             zeilen.append(f"{n}.Placement.Base = App.Vector({x}, {y}, {z})")
 
     elif func in ("fuse", "cut", "common"):
-        n    = _sanitize(args.get("name", "Result"))
         base = _sanitize(args.get("base", ""))
         tool = _sanitize(args.get("tool", ""))
+        default_name = f"{base}_{func}" if base else func.capitalize()
+        n = _sanitize(args.get("name", default_name))
         if not base or not tool:
             return None
         typ = {"fuse": "Part::Fuse", "cut": "Part::Cut", "common": "Part::Common"}[func]
