@@ -60,7 +60,11 @@ def init_toolbar(editor) -> None:
                 d.hide()
 
         btn.toggled.connect(_on_click)
-        dock.visibilityChanged.connect(lambda vis, b=btn: b.setChecked(vis))
+        def _sync_btn(vis, b=btn):
+            b.blockSignals(True)
+            b.setChecked(vis)
+            b.blockSignals(False)
+        dock.visibilityChanged.connect(_sync_btn)
         _tb.addWidget(btn)
         return btn
 
