@@ -11,7 +11,9 @@ from core.qt_compat import QtWidgets, QtCore, QtGui
 from core import theme
 from core import schrift
 from core.highlighter import PythonHighlighter
-from core.params import lade_kontext, speichere_kontext
+from core.params import (lade_kontext, speichere_kontext,
+                         lade_system_prompt_extra, speichere_system_prompt_extra,
+                         lade_max_sitzungen, speichere_max_sitzungen)
 from ui.barrierefreiheit import BarrierefreiheitPanel
 from editor.panel import FreecadHelferPanel
 from data.hilfe import HilfeTab
@@ -176,7 +178,44 @@ def init_docks(editor) -> None:
     # ── API-Schlüssel ──
     _cfg_l.addSpacing(4)
     _cfg_l.addWidget(_cfg_lbl("API-SCHLÜSSEL"))
+    editor._key_feld.setToolTip(
+        "API-Schlüssel für den gewählten Anbieter.\n"
+        "Alternativ: file:/pfad/zur/schluessel-datei\n"
+        "→ Key wird zur Laufzeit aus der Datei gelesen.")
     _cfg_l.addWidget(editor._key_feld)
+
+    # ── System-Prompt-Zusatz ──
+    _cfg_l.addSpacing(4)
+    _cfg_l.addWidget(_cfg_lbl("SYSTEM-PROMPT-ZUSATZ"))
+    editor._system_prompt_extra = QtWidgets.QPlainTextEdit()
+    editor._system_prompt_extra.setPlaceholderText(
+        "Optionaler Zusatz zum System-Prompt ...\n"
+        "z. B. 'Antworte immer auf Deutsch' oder eigene Regeln.")
+    editor._system_prompt_extra.setMinimumHeight(0)
+    editor._system_prompt_extra.setMaximumHeight(80)
+    editor._system_prompt_extra.setPlainText(lade_system_prompt_extra())
+    editor._system_prompt_extra.textChanged.connect(
+        lambda: speichere_system_prompt_extra(
+            editor._system_prompt_extra.toPlainText()))
+    _cfg_l.addWidget(editor._system_prompt_extra)
+
+    # ── Aufbewahrung ──
+    _cfg_l.addSpacing(4)
+    _cfg_l.addWidget(_cfg_lbl("AUFBEWAHRUNG"))
+    _aufb_zeile = QtWidgets.QHBoxLayout()
+    _aufb_zeile.setSpacing(theme.DOCK_CFG_ZEILEN_ABST)
+    _aufb_zeile.addWidget(QtWidgets.QLabel("Max. Sitzungen:"))
+    editor._max_sitzungen_box = QtWidgets.QSpinBox()
+    editor._max_sitzungen_box.setRange(1, 500)
+    editor._max_sitzungen_box.setValue(lade_max_sitzungen())
+    editor._max_sitzungen_box.setToolTip(
+        "Maximale Anzahl gespeicherter Chat-Sitzungen\n"
+        "(gilt für automatische Sitzungs-Rotation)")
+    editor._max_sitzungen_box.valueChanged.connect(speichere_max_sitzungen)
+    _aufb_zeile.addWidget(editor._max_sitzungen_box)
+    _aufb_zeile.addStretch()
+    _cfg_l.addLayout(_aufb_zeile)
+
     _cfg_l.addStretch()
     editor._dock_cfg = editor._make_dock(
         "⚙  Einstellungen", "dock_einstellungen", _L, _cfg_widget)

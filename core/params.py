@@ -54,121 +54,121 @@ KI_PRESET_KATEGORIEN: dict[str, dict[str, str]] = {
 
     "★ Schnell": {
         "Was macht dieser Code?":
-            "Analysiere diesen Python-Code und erkläre auf Deutsch in einfachen Worten: "
-            "Was macht der Code? Welche Funktionen gibt es? Wie ist er aufgebaut? "
-            "Erkläre es so, dass auch ein Anfänger es versteht.",
+            "Analyse this Python code and explain in simple English: "
+            "What does the code do? What functions are there? How is it structured? "
+            "Explain it so that a beginner can understand it.",
 
         "Fehler finden & erklären":
-            "Suche in diesem Code nach Fehlern, Bugs und Problemen. "
-            "Erkläre jeden Fehler auf Deutsch in einfachen Worten und zeige den korrigierten Code.",
+            "Search this code for errors, bugs and problems. "
+            "Explain each error in simple English and show the corrected code.",
 
         "Code verbessern":
-            "Verbessere diesen Code vollständig: Fehlerbehandlung, Lesbarkeit, Struktur. "
-            "Kommentiere alle wichtigen Stellen auf Deutsch. Gib nur den fertigen Code zurück.",
+            "Improve this code completely: error handling, readability, structure. "
+            "Comment all important sections in English. Return only the finished code.",
 
         "Zusammenfassung":
-            "Fasse in 3-5 deutschen Sätzen zusammen was dieser Code macht. "
-            "Dann liste die wichtigsten Funktionen als kurze Stichpunkte auf.",
+            "Summarize in 3-5 English sentences what this code does. "
+            "Then list the most important functions as short bullet points.",
 
         "Einfach erklären":
-            "Erkläre diesen Code Schritt für Schritt auf Deutsch in einfacher Sprache. "
-            "Verwende keine Fachbegriffe ohne sie zu erklären.",
+            "Explain this code step by step in simple English. "
+            "Do not use technical terms without explaining them.",
     },
 
     "🔧 Code": {
         "Refactoring":
-            "Refaktoriere den Code nach modernen Python-Standards und "
-            "verbessere Lesbarkeit, Struktur und Fehlerbehandlung.",
+            "Refactor the code to modern Python standards and "
+            "improve readability, structure and error handling.",
         "Kommentieren":
-            "Kommentiere den gesamten Code ausführlich auf Deutsch und "
-            "erkläre jede wichtige Funktion.",
+            "Comment the entire code thoroughly in English and "
+            "explain every important function.",
         "Performance":
-            "Optimiere den Code für bessere Performance und reduziere "
-            "unnötige Schleifen oder doppelte Berechnungen.",
+            "Optimise the code for better performance and reduce "
+            "unnecessary loops or duplicate calculations.",
         "Bug-Hunt":
-            "Finde alle versteckten Bugs, Logikfehler und potenziellen "
-            "Absturzursachen im Code und behebe sie vollständig.",
+            "Find all hidden bugs, logic errors and potential "
+            "crash causes in the code and fix them completely.",
         "SOLID-Refactoring":
-            "Wandle den Code in eine modulare Klassenstruktur "
-            "nach SOLID-Prinzipien um.",
+            "Convert the code into a modular class structure "
+            "following SOLID principles.",
         "Sicherheit":
-            "Prüfe den Code auf Sicherheitsprobleme, API-Risiken und "
-            "mögliche Abstürze und behebe diese.",
+            "Check the code for security issues, API risks and "
+            "possible crashes and fix them.",
         "Threading":
-            "Analysiere den gesamten Code und finde mögliche Race Conditions, "
-            "Speicherprobleme oder Threading-Fehler.",
+            "Analyse the entire code and find possible race conditions, "
+            "memory issues or threading errors.",
         "Produktionsreife":
-            "Überarbeite das komplette Tool professionell für produktiven "
-            "Einsatz in FreeCAD. Verbessere Architektur, Stabilität, "
-            "Fehlerbehandlung, UI, Performance und Wartbarkeit.",
+            "Professionally revise the complete tool for productive "
+            "use in FreeCAD. Improve architecture, stability, "
+            "error handling, UI, performance and maintainability.",
     },
 
     "⚡ FC: Performance": {
         "Performance-Analyse":
-            "Du bist ein FreeCAD-Python-Performance-Experte. "
-            "Analysiere diesen FreeCAD-Code auf typische Performance-Bremsen und liefere "
-            "den optimierten Code mit einem # PERF: Kommentar an jeder geänderten Stelle.\n\n"
-            "Suche gezielt nach: recompute() in Schleifen, fehlende Transaktionen, "
-            "Shape-Ops in Schleifen, wiederholtes getObject(), GUI-Updates in Schleifen.\n\n"
-            "Gib NUR den fertigen optimierten Python-Code zurück.",
+            "You are a FreeCAD Python performance expert. "
+            "Analyse this FreeCAD code for typical performance bottlenecks and deliver "
+            "the optimised code with a # PERF: comment at every changed location.\n\n"
+            "Look specifically for: recompute() in loops, missing transactions, "
+            "shape ops in loops, repeated getObject(), GUI updates in loops.\n\n"
+            "Return ONLY the finished optimised Python code.",
         "Transaktionen prüfen":
-            "Prüfe diesen FreeCAD-Python-Code ob alle Dokumentänderungen korrekt in "
-            "openTransaction() / commitTransaction() eingebettet sind. "
-            "Zeige den korrigierten Code mit # TRANSAKTION: Kommentaren.",
+            "Check this FreeCAD Python code whether all document changes are correctly "
+            "wrapped in openTransaction() / commitTransaction(). "
+            "Show the corrected code with # TRANSACTION: comments.",
         "Schleifen optimieren":
-            "Analysiere alle Schleifen in diesem FreeCAD-Python-Code. "
-            "Finde alles was unnötigerweise bei jedem Durchlauf ausgeführt wird. "
-            "Markiere jede Änderung mit # SCHLEIFE: <Grund>. Gib nur den fertigen Code zurück.",
+            "Analyse all loops in this FreeCAD Python code. "
+            "Find everything that is unnecessarily executed on every iteration. "
+            "Mark every change with # LOOP: <reason>. Return only the finished code.",
     },
 
     "🧱 FreeCAD: Erstellen": {
         "Makro erstellen":
-            "Schreibe ein vollständiges FreeCAD-Python-Makro für folgende Aufgabe. "
-            "Importiere App, Part und FreeCADGui korrekt. Füge am Ende doc.recompute() ein. "
-            "Behandle den Fall, dass kein aktives Dokument geöffnet ist. "
-            "Kommentiere alle wichtigen Schritte auf Deutsch.",
+            "Write a complete FreeCAD Python macro for the following task. "
+            "Import App, Part and FreeCADGui correctly. Add doc.recompute() at the end. "
+            "Handle the case where no active document is open. "
+            "Comment all important steps in English.",
         "Parametrisches Modell":
-            "Wandle das Skript in ein parametrisches FreeCAD-Modell um. "
-            "Alle Maße als benannte Konstanten am Anfang der Datei. "
-            "Nutze App.ActiveDocument korrekt und rufe am Ende recompute() auf.",
+            "Convert the script into a parametric FreeCAD model. "
+            "All dimensions as named constants at the top of the file. "
+            "Use App.ActiveDocument correctly and call recompute() at the end.",
         "PartDesign Script":
-            "Erstelle ein sauberes PartDesign-Script mit Body, Sketch-Geometrie "
-            "und mindestens einem Pad oder Pocket. Nutze die PartDesign-API korrekt.",
+            "Create a clean PartDesign script with Body, Sketch geometry "
+            "and at least one Pad or Pocket. Use the PartDesign API correctly.",
         "GUI-Dialog hinzufügen":
-            "Erweitere das Makro um einen PySide6-kompatiblen QDialog "
-            "für Benutzereingaben mit OK/Abbrechen, Validierung und sicherer Wertübergabe.",
+            "Extend the macro with a PySide6-compatible QDialog "
+            "for user input with OK/Cancel, validation and safe value passing.",
     },
 
     "🔍 FreeCAD: Analysieren": {
         "Fehlersuche":
-            "Analysiere dieses FreeCAD-Makro auf typische Fehler: "
-            "fehlende recompute()-Aufrufe, fehlendes None-Handling für ActiveDocument, "
-            "falsche TypeId-Nutzung, PySide2/6-Inkompatibilitäten, Placement-Fehler. "
-            "Liste jeden Fehler mit Zeilennummer und Korrektur.",
+            "Analyse this FreeCAD macro for typical errors: "
+            "missing recompute() calls, missing None-handling for ActiveDocument, "
+            "wrong TypeId usage, PySide2/6 incompatibilities, Placement errors. "
+            "List each error with line number and correction.",
         "Selektions-Makro":
-            "Überarbeite das Skript so, dass es auf der aktuellen FreeCAD-Selektion "
-            "operiert. Prüfe ob geeignete Objekte selektiert sind, "
-            "gib klare deutsche Fehlermeldungen per QMessageBox aus.",
+            "Revise the script so that it operates on the current FreeCAD selection. "
+            "Check whether suitable objects are selected and "
+            "output clear error messages via QMessageBox.",
         "Mesh-Verarbeitung":
-            "Optimiere das Skript für Mesh-Import, -Analyse und -Export in FreeCAD. "
-            "Prüfe ob die Datei existiert und gib Mesh-Statistiken aus.",
+            "Optimise the script for mesh import, analysis and export in FreeCAD. "
+            "Check whether the file exists and output mesh statistics.",
     },
 
     "📦 FreeCAD: Erweitern": {
         "Workbench-Klasse":
-            "Refaktoriere das Makro in eine wiederverwendbare FreeCAD-Workbench. "
-            "Erstelle __init__.py mit InitGui, Command-Klassen mit GetResources, "
-            "IsActive und Activated, sowie korrekter Gui.addCommand()-Registrierung.",
+            "Refactor the macro into a reusable FreeCAD workbench. "
+            "Create __init__.py with InitGui, Command classes with GetResources, "
+            "IsActive and Activated, plus correct Gui.addCommand() registration.",
         "STEP/IGES Export":
-            "Erweitere das Skript um einen robusten STEP- und IGES-Export. "
-            "Prüfe ob der Zielordner existiert und gib Dateigröße und Pfad aus.",
+            "Extend the script with a robust STEP and IGES export. "
+            "Check whether the target folder exists and output file size and path.",
         "Batch-Verarbeitung":
-            "Wandle das Skript in ein Batch-Makro um, das alle .FCStd-Dateien "
-            "in einem Verzeichnis nacheinander öffnet, verarbeitet und speichert. "
-            "Zeige einen Fortschrittsbalken und protokolliere Fehler je Datei.",
+            "Convert the script into a batch macro that opens, processes and saves "
+            "all .FCStd files in a directory one by one. "
+            "Show a progress bar and log errors per file.",
         "Backup-Erweiterung":
-            "Erweitere das Tool um eine automatische Backup-Funktion "
-            "vor jedem Ersetzen von Code.",
+            "Extend the tool with an automatic backup function "
+            "before every code replacement.",
     },
 }
 
@@ -230,3 +230,70 @@ def farbschema_dunkel() -> bool:
 
 def set_farbschema_dunkel(dunkel: bool) -> None:
     App.ParamGet(PREF_KEY).SetBool("FarbschemaDunkel", dunkel)
+
+
+# ── Modell-Parameter-Persistenz ────────────────────────────────────────────
+
+import json as _json
+
+_MODELL_PARAMS_KEY = "ModellParamsV1"
+_MODELL_PARAMS_STANDARD = {
+    "temp": 0.2, "top_p": 0.9, "top_k": 40, "max_tokens": 4096, "num_ctx": 8192
+}
+
+def lade_alle_modell_params() -> dict:
+    """Gibt das gespeicherte Params-Dict aller Modelle zurück."""
+    raw = App.ParamGet(PREF_KEY).GetString(_MODELL_PARAMS_KEY, "{}")
+    try:
+        return _json.loads(raw)
+    except Exception:
+        return {}
+
+def lade_modell_params(modell: str) -> dict:
+    """Gibt die gespeicherten Parameter für ein konkretes Modell zurück."""
+    alle = lade_alle_modell_params()
+    gespeichert = alle.get(modell, {})
+    result = dict(_MODELL_PARAMS_STANDARD)
+    result.update(gespeichert)
+    return result
+
+def speichere_modell_params(modell: str, params: dict) -> None:
+    """Speichert Parameter für ein konkretes Modell."""
+    if not modell:
+        return
+    alle = lade_alle_modell_params()
+    alle[modell] = params
+    App.ParamGet(PREF_KEY).SetString(_MODELL_PARAMS_KEY, _json.dumps(alle))
+
+
+# ── System-Prompt-Zusatz ───────────────────────────────────────────────────
+
+def lade_system_prompt_extra() -> str:
+    return App.ParamGet(PREF_KEY).GetString("SystemPromptExtra", "")
+
+def speichere_system_prompt_extra(text: str) -> None:
+    App.ParamGet(PREF_KEY).SetString("SystemPromptExtra", text)
+
+
+# ── API-Key-Auflösung (file:-Präfix) ─────────────────────────────────────
+
+def api_key_resolved(anbieter: str) -> str:
+    """Wie lade_api_key, aber löst file:/path-Präfixe auf."""
+    raw = lade_api_key(anbieter)
+    if raw.startswith("file:"):
+        pfad = raw[5:].strip()
+        try:
+            with open(pfad, "r", encoding="utf-8") as f:
+                return f.read().strip()
+        except Exception:
+            return raw
+    return raw
+
+
+# ── Aufbewahrung ──────────────────────────────────────────────────────────
+
+def lade_max_sitzungen() -> int:
+    return App.ParamGet(PREF_KEY).GetInt("MaxSitzungen", 20)
+
+def speichere_max_sitzungen(n: int) -> None:
+    App.ParamGet(PREF_KEY).SetInt("MaxSitzungen", max(1, int(n)))

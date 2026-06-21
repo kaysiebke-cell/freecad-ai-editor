@@ -10,7 +10,7 @@ dessen Signale und Session-Objekt.
 
 import json
 
-from core.params import lade_api_key
+from core.params import lade_api_key, api_key_resolved, lade_system_prompt_extra
 from editor.ki.provider_daten import lade_anbieter_url
 
 
@@ -30,6 +30,14 @@ class KIStreaming:
             "num_ctx":    getattr(c, "_ctx_box",         None) and c._ctx_box.value()        or 8192,
         }
 
+    @staticmethod
+    def _system_mit_extra(basis: str) -> str:
+        """Hängt den nutzerdefinierten System-Prompt-Zusatz an."""
+        extra = lade_system_prompt_extra().strip()
+        if extra:
+            return f"{basis}\n\n{extra}"
+        return basis
+
     # ── Zentrale Anbieter-Weiche ──────────────────────────────────────────
 
     def stream_fuer_anbieter(self, source, model, prompt, temperature):
@@ -38,10 +46,10 @@ class KIStreaming:
             self.stream_ollama(model, prompt, temperature)
         elif source.startswith("Anthropic"):
             self.stream_anthropic(
-                lade_api_key("anthropic"), model, prompt, temperature)
+                api_key_resolved("anthropic"), model, prompt, temperature)
         else:
             base, kid = lade_anbieter_url(source)
-            self.stream_openai_compat(base, lade_api_key(kid), model, prompt, temperature)
+            self.stream_openai_compat(base, api_key_resolved(kid), model, prompt, temperature)
 
     # ── Worker-Threads ────────────────────────────────────────────────────
 
@@ -71,11 +79,11 @@ class KIStreaming:
             NL_PRESET_SCHLUESSEL, NL_PRESET_SCHLUESSEL_PD, NL_PRESET_SCHLUESSEL_SW)
         if ist_nl and ki_modus == MODUS_ANFAENGER:
             system_prompt = system_prompt.replace(
-                "Nur reinen Python-Code ausgeben. Kein Erklärungstext nach dem Code.",
-                "Nach dem Code: Genau 3 kurze deutsche Saetze als #-Kommentare:\n"
-                "# 1. Was wurde erstellt\n"
-                "# 2. Welche Standardwerte gewaehlt wurden\n"
-                "# 3. Welche Konstante der Nutzer anpassen muss"
+                "Reply ONLY with Python code, no text before or after.",
+                "After the code: Exactly 3 short German sentences as # comments:\n"
+                "# 1. What was created\n"
+                "# 2. Which default values were chosen\n"
+                "# 3. Which constant the user should adjust"
             )
         from editor.ki.nl_generator import NL_PRESET_SCHLUESSEL, NL_PRESET_SCHLUESSEL_SW
         if preset_name == NL_PRESET_SCHLUESSEL:
@@ -110,11 +118,11 @@ class KIStreaming:
                 self.stream_ollama(model, kompakt, temperature)
             elif source.startswith("Anthropic"):
                 self.stream_anthropic_verlauf(
-                    lade_api_key("anthropic"), model, verlauf, temperature)
+                    api_key_resolved("anthropic"), model, verlauf, temperature)
             else:
                 base, kid = lade_anbieter_url(source)
                 self.stream_openai_verlauf(
-                    base, lade_api_key(kid), model, verlauf, temperature)
+                    base, api_key_resolved(kid), model, verlauf, temperature)
             if self._c._alive:
                 self._c._ki_stream_done.emit()
         except Exception as e:
@@ -231,7 +239,8 @@ class KIStreaming:
             json={"model": model, "max_tokens": self._params()["max_tokens"],
                   "temperature": temperature, "stream": True,
                   "top_p": self._params()["top_p"],
-                  "system": "Du bist ein Python-Experte. Antworte nur mit Python-Code.",
+                  "system": self._system_mit_extra(
+                      "You are a Python expert. Reply only with Python code. Explanations always in German."),
                   "messages": [{"role": "user", "content": prompt}]},
             stream=True, timeout=120)
         r.raise_for_status()
@@ -261,8 +270,9 @@ class KIStreaming:
             json={"model": model, "max_tokens": self._params()["max_tokens"],
                   "temperature": temperature, "stream": True,
                   "top_p": self._params()["top_p"],
-                  "system": "Du bist ein Python-Experte für FreeCAD-Makros. "
-                             "Antworte nur mit Python-Code ohne Markdown-Fences.",
+                  "system": self._system_mit_extra(
+                      "You are a Python expert for FreeCAD macros. "
+                      "Reply only with Python code, no Markdown fences. Explanations always in German."),
                   "messages": verlauf},
             stream=True, timeout=120)
         r.raise_for_status()
@@ -300,7 +310,8 @@ class KIStreaming:
                   "top_p":      self._params()["top_p"],
                   "messages": [
                       {"role": "system",
-                       "content": "Du bist ein Python-Experte. Antworte nur mit Python-Code."},
+                       "content": self._system_mit_extra(
+                           "You are a Python expert. Reply only with Python code. Explanations always in German.")},
                       {"role": "user", "content": prompt}]},
             stream=True, timeout=120)
         r.raise_for_status()
@@ -324,8 +335,9 @@ class KIStreaming:
             raise RuntimeError(f"Kein API-Schlüssel für {base_url} hinterlegt.")
         nachrichten = [
             {"role": "system",
-             "content": "Du bist ein Python-Experte für FreeCAD-Makros. "
-                        "Antworte nur mit Python-Code ohne Markdown-Fences."},
+             "content": self._system_mit_extra(
+                 "You are a Python expert for FreeCAD macros. "
+                 "Reply only with Python code, no Markdown fences. Explanations always in German.")},
             *verlauf
         ]
         r = self._c._session.post(
@@ -364,7 +376,7 @@ class KIStreaming:
         import urllib.request as _urllib
         headers = {"Content-Type": "application/json"}
         if source.startswith("Anthropic"):
-            key = lade_api_key("anthropic")
+            key = api_key_resolved("anthropic")
             url = "https://api.anthropic.com/v1/messages"
             headers.update({"x-api-key": key, "anthropic-version": "2023-06-01"})
             body = json.dumps({
@@ -390,12 +402,12 @@ class KIStreaming:
                 return json.loads(resp.read()).get("response", "").strip()
         else:
             base, kid = lade_anbieter_url(source)
-            key = lade_api_key(kid)
+            key = api_key_resolved(kid)
             headers["Authorization"] = f"Bearer {key}"
             body = json.dumps({
                 "model": model, "temperature": temperature, "stream": False,
                 "messages": [
-                    {"role": "system", "content": "Du bist ein hilfreicher Assistent."},
+                    {"role": "system", "content": "You are a helpful assistant. Always reply in German."},
                     {"role": "user", "content": prompt}
                 ]
             }).encode()

@@ -13,11 +13,47 @@ from core.qt_compat import QtWidgets, QtCore, QtGui
 
 from core.params import (KI_PRESETS, KI_PRESET_KATEGORIEN,
                          lade_api_key, speichere_api_key, speichere_quelle, lade_quelle,
-                         speichere_modell)
+                         speichere_modell, lade_modell_params, speichere_modell_params)
 from core.theme_styles import PARAM_SPINBOX_BREITE_SCHMAL, PARAM_SPINBOX_BREITE_BREIT
 
 
 # ── Interne Event-Handler (nur hier verbunden) ────────────────────────────
+
+def _aktueller_params_dict(editor) -> dict:
+    """Liest aktuelle Spinbox-Werte als params-Dict."""
+    return {
+        "temp":       editor._temp_box.value(),
+        "top_p":      editor._top_p_box.value(),
+        "top_k":      editor._top_k_box.value(),
+        "max_tokens": editor._max_tokens_box.value(),
+        "num_ctx":    editor._ctx_box.value(),
+    }
+
+
+def _lade_params_in_widgets(editor, modell: str) -> None:
+    """Lädt gespeicherte Params für modell in die Spinboxen."""
+    p = lade_modell_params(modell)
+    for box, key in [
+        (editor._temp_box,       "temp"),
+        (editor._top_p_box,      "top_p"),
+        (editor._top_k_box,      "top_k"),
+        (editor._max_tokens_box, "max_tokens"),
+        (editor._ctx_box,        "num_ctx"),
+    ]:
+        box.blockSignals(True)
+        box.setValue(p[key])
+        box.blockSignals(False)
+
+
+def _on_modell_gewechselt(editor, neuer_name: str) -> None:
+    """Speichert Params des alten Modells und lädt die des neuen."""
+    alter = getattr(editor, "_prev_modell", "")
+    if alter and alter != neuer_name:
+        speichere_modell_params(alter, _aktueller_params_dict(editor))
+    if neuer_name:
+        _lade_params_in_widgets(editor, neuer_name)
+    editor._prev_modell = neuer_name
+
 
 def _on_modus_geaendert(editor):
     from editor.ki.ki_modi import MODUS_EXPERTE, MODUS_ANFAENGER, MODUS_LABELS
@@ -114,6 +150,8 @@ def init_ki_widgets(editor, icons_dir: str) -> None:
     editor._src_box.currentTextChanged.connect(speichere_quelle)
     editor._src_box.currentIndexChanged.connect(lambda _: _on_anbieter_gewechselt(editor))
     editor._model_box.currentTextChanged.connect(speichere_modell)
+    editor._prev_modell = ""
+    editor._model_box.currentTextChanged.connect(lambda name: _on_modell_gewechselt(editor, name))
 
     editor._preset_btn = QtWidgets.QToolButton()
     editor._preset_btn.setText("── Preset wählen ──")
@@ -197,6 +235,16 @@ def init_ki_widgets(editor, icons_dir: str) -> None:
     editor._key_feld.editingFinished.connect(
         lambda: speichere_api_key(editor._key_anbieter_id(), editor._key_feld.text().strip()))
     _on_anbieter_gewechselt(editor)
+
+    # Params-Spinboxen: beim Ändern immer für das aktuelle Modell speichern
+    def _param_geaendert():
+        modell = editor._model_box.currentText()
+        if modell:
+            speichere_modell_params(modell, _aktueller_params_dict(editor))
+
+    for _box in (editor._temp_box, editor._top_p_box, editor._top_k_box,
+                 editor._max_tokens_box, editor._ctx_box):
+        _box.valueChanged.connect(lambda *_: _param_geaendert())
 
 
 # ── Hilfsfunktionen (extern aufrufbar via editor-Methoden-Wrapper) ────────
