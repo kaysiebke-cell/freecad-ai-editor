@@ -121,7 +121,7 @@ def init_docks(editor) -> None:
     _cfg_l.addWidget(editor._model_box)
 
     # ── Modell-Parameter (FormLayout: Label | Widget) ──
-    _cfg_l.addSpacing(4)
+    _cfg_l.addSpacing(theme.DOCK_CFG_SEK_SPACING)
     _cfg_l.addWidget(_cfg_lbl("MODELL-PARAMETER"))
 
     def _flbl(text):
@@ -143,7 +143,7 @@ def init_docks(editor) -> None:
     _cfg_l.addLayout(_param_form)
 
     # ── Modus ──
-    _cfg_l.addSpacing(4)
+    _cfg_l.addSpacing(theme.DOCK_CFG_SEK_SPACING)
     _cfg_l.addWidget(_cfg_lbl("MODUS"))
     _r3 = QtWidgets.QHBoxLayout()
     _r3.setSpacing(theme.DOCK_CFG_ABSCHN_ABST)
@@ -153,7 +153,7 @@ def init_docks(editor) -> None:
     _cfg_l.addLayout(_r3)
 
     # ── Farbschema ──
-    _cfg_l.addSpacing(4)
+    _cfg_l.addSpacing(theme.DOCK_CFG_SEK_SPACING)
     _cfg_l.addWidget(_cfg_lbl("FARBSCHEMA"))
     editor._btn_farbe_dunkel = QtWidgets.QPushButton("🌙 Dunkel")
     editor._btn_farbe_hell   = QtWidgets.QPushButton("☀ Hell")
@@ -176,7 +176,7 @@ def init_docks(editor) -> None:
     _cfg_l.addLayout(_r_farbe)
 
     # ── API-Schlüssel ──
-    _cfg_l.addSpacing(4)
+    _cfg_l.addSpacing(theme.DOCK_CFG_SEK_SPACING)
     _cfg_l.addWidget(_cfg_lbl("API-SCHLÜSSEL"))
     editor._key_feld.setToolTip(
         "API-Schlüssel für den gewählten Anbieter.\n"
@@ -185,9 +185,10 @@ def init_docks(editor) -> None:
     _cfg_l.addWidget(editor._key_feld)
 
     # ── System-Prompt-Zusatz ──
-    _cfg_l.addSpacing(4)
+    _cfg_l.addSpacing(theme.DOCK_CFG_SEK_SPACING)
     _cfg_l.addWidget(_cfg_lbl("SYSTEM-PROMPT-ZUSATZ"))
     editor._system_prompt_extra = QtWidgets.QPlainTextEdit()
+    editor._system_prompt_extra.setFont(schrift.ui_font())
     editor._system_prompt_extra.setPlaceholderText(
         "Optionaler Zusatz zum System-Prompt ...\n"
         "z. B. 'Antworte immer auf Deutsch' oder eigene Regeln.")
@@ -200,7 +201,7 @@ def init_docks(editor) -> None:
     _cfg_l.addWidget(editor._system_prompt_extra)
 
     # ── Aufbewahrung ──
-    _cfg_l.addSpacing(4)
+    _cfg_l.addSpacing(theme.DOCK_CFG_SEK_SPACING)
     _cfg_l.addWidget(_cfg_lbl("AUFBEWAHRUNG"))
     _aufb_zeile = QtWidgets.QHBoxLayout()
     _aufb_zeile.setSpacing(theme.DOCK_CFG_ZEILEN_ABST)
@@ -275,7 +276,7 @@ def init_docks(editor) -> None:
     _feld_rahmen_l.setSpacing(theme.DOCK_KI_RAHMEN_ABST)
 
     editor._frage_feld = QtWidgets.QPlainTextEdit()
-    editor._frage_feld.setFont(QtGui.QFont("Courier New", 10))
+    editor._frage_feld.setFont(schrift.mono_font())
     editor._frage_feld.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
     editor._frage_feld.setMinimumHeight(30)
     editor._frage_feld.setStyleSheet(theme.STY_KI_EINGABE_FELD())
@@ -290,7 +291,7 @@ def init_docks(editor) -> None:
 
     editor.find_area = SnipCommandEdit(_alle_snippets)
     editor.find_area.snip_gewaehlt.connect(editor._on_snip_slash_cmd)
-    editor.find_area.setFont(QtGui.QFont("Courier New", 10))
+    editor.find_area.setFont(schrift.mono_font())
     editor.find_area.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
     _opt = editor.find_area.document().defaultTextOption()
     _opt.setAlignment(QtCore.Qt.AlignLeft)
@@ -314,7 +315,7 @@ def init_docks(editor) -> None:
     _output_l.setSpacing(theme.DOCK_KI_OUTPUT_ABST)
     _output_l.addWidget(QtWidgets.QLabel("🤖 KI-Antwort"))
     editor._ki_area = QtWidgets.QPlainTextEdit()
-    editor._ki_area.setFont(QtGui.QFont("Courier New", 10))
+    editor._ki_area.setFont(schrift.mono_font())
     editor._ki_area.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
     _opt2 = editor._ki_area.document().defaultTextOption()
     _opt2.setAlignment(QtCore.Qt.AlignLeft)
@@ -335,7 +336,7 @@ def init_docks(editor) -> None:
     _kontext_l.setSpacing(theme.DOCK_KI_KONTEXT_ABST)
     _kontext_l.addWidget(QtWidgets.QLabel("📌 Projekt-Kontext"))
     editor._kontext = QtWidgets.QPlainTextEdit()
-    editor._kontext.setFont(QtGui.QFont("Courier New", 10))
+    editor._kontext.setFont(schrift.mono_font())
     editor._kontext.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
     _opt3 = editor._kontext.document().defaultTextOption()
     _opt3.setAlignment(QtCore.Qt.AlignLeft)
