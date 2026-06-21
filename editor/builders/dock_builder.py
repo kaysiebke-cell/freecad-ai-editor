@@ -191,8 +191,8 @@ def init_docks(editor) -> None:
     editor._system_prompt_extra.setPlaceholderText(
         "Optionaler Zusatz zum System-Prompt ...\n"
         "z. B. 'Antworte immer auf Deutsch' oder eigene Regeln.")
-    editor._system_prompt_extra.setMinimumHeight(0)
-    editor._system_prompt_extra.setMaximumHeight(80)
+    editor._system_prompt_extra.setMinimumHeight(theme.CFG_SYSPROMPT_MIN_H)
+    editor._system_prompt_extra.setMaximumHeight(theme.CFG_SYSPROMPT_MAX_H)
     editor._system_prompt_extra.setPlainText(lade_system_prompt_extra())
     editor._system_prompt_extra.textChanged.connect(
         lambda: speichere_system_prompt_extra(

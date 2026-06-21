@@ -199,10 +199,12 @@ def STY_FORM_LABEL() -> str:
 # ── Dock-Layout-Konstanten ────────────────────────────────────────────────
 
 # Einstellungs-Dock
-DOCK_CFG_RAND        = 6   # äußerer Rand des Einstellungs-Dock
-DOCK_CFG_ABSTAND     = 5   # Abstand zwischen Abschnitten
-DOCK_CFG_ZEILEN_ABST = 3   # Abstand innerhalb einer Zeile (z.B. Quelle+Button)
-DOCK_CFG_ABSCHN_ABST = 6   # Abstand zwischen Modus/Farbschema-Buttons
+DOCK_CFG_RAND              = 6    # äußerer Rand des Einstellungs-Dock
+DOCK_CFG_ABSTAND           = 5    # Abstand zwischen Abschnitten
+DOCK_CFG_ZEILEN_ABST       = 3    # Abstand innerhalb einer Zeile (z.B. Quelle+Button)
+DOCK_CFG_ABSCHN_ABST       = 6    # Abstand zwischen Modus/Farbschema-Buttons
+CFG_SYSPROMPT_MIN_H        = 0    # System-Prompt-Textfeld Mindesthöhe
+CFG_SYSPROMPT_MAX_H        = 80   # System-Prompt-Textfeld Maximalhöhe
 
 # Parameterwidget-Breiten
 PARAM_SPINBOX_BREITE_SCHMAL = 58   # Temperatur, Top-P, Top-K
