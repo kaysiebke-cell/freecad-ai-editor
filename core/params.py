@@ -297,3 +297,21 @@ def lade_max_sitzungen() -> int:
 
 def speichere_max_sitzungen(n: int) -> None:
     App.ParamGet(PREF_KEY).SetInt("MaxSitzungen", max(1, int(n)))
+
+
+# ── Auto-Einfügen nach KI-Antwort ────────────────────────────────────────
+
+def lade_auto_einfuegen() -> bool:
+    return App.ParamGet(PREF_KEY).GetBool("AutoEinfuegen", False)
+
+def speichere_auto_einfuegen(v: bool) -> None:
+    App.ParamGet(PREF_KEY).SetBool("AutoEinfuegen", bool(v))
+
+
+# ── Thinking-Modus für Anthropic ─────────────────────────────────────────
+
+def lade_thinking_modus() -> str:
+    return App.ParamGet(PREF_KEY).GetString("ThinkingModus", "aus")
+
+def speichere_thinking_modus(s: str) -> None:
+    App.ParamGet(PREF_KEY).SetString("ThinkingModus", s)

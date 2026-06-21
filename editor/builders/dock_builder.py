@@ -13,7 +13,10 @@ from core import schrift
 from core.highlighter import PythonHighlighter
 from core.params import (lade_kontext, speichere_kontext,
                          lade_system_prompt_extra, speichere_system_prompt_extra,
-                         lade_max_sitzungen, speichere_max_sitzungen)
+                         lade_max_sitzungen, speichere_max_sitzungen,
+                         lade_auto_einfuegen, speichere_auto_einfuegen,
+                         lade_thinking_modus, speichere_thinking_modus,
+                         lade_api_key)
 from ui.barrierefreiheit import BarrierefreiheitPanel
 from editor.panel import FreecadHelferPanel
 from data.hilfe import HilfeTab
@@ -117,8 +120,33 @@ def init_docks(editor) -> None:
     _rl_btn.setToolTip("Modelle neu laden")
     _rl_btn.clicked.connect(editor._refresh_models)
     _r1.addWidget(_rl_btn)
+    _vt_btn = QtWidgets.QPushButton("🔌")
+    _vt_btn.setFixedSize(theme.VERBTEST_BTN_BREITE, theme.VERBTEST_BTN_HOEHE)
+    _vt_btn.setToolTip("Verbindung testen")
+    _r1.addWidget(_vt_btn)
     _cfg_l.addLayout(_r1)
     _cfg_l.addWidget(editor._model_box)
+
+    editor._verbtest_label = QtWidgets.QLabel("")
+    editor._verbtest_label.setFont(schrift.ui_font(schrift.STUFE_XS))
+    editor._verbtest_label.setMinimumHeight(theme.VERBTEST_LABEL_MIN_H)
+    _cfg_l.addWidget(editor._verbtest_label)
+
+    def _on_verbtest_ergebnis(text: str):
+        editor._verbtest_label.setText(text)
+
+    def _starte_verbtest():
+        from editor.ki.verbindungstest import VerbindungsTest
+        quelle = editor._src_box.currentText() if hasattr(editor._src_box, "currentText") else ""
+        anbieter = quelle.split("(")[0].strip().lower().replace(" ", "")
+        key = lade_api_key(anbieter)
+        editor._verbtest_label.setText("🔄 Teste …")
+        vt = VerbindungsTest(quelle, key, parent=editor)
+        vt.ergebnis.connect(_on_verbtest_ergebnis)
+        vt.finished.connect(vt.deleteLater)
+        vt.start()
+
+    _vt_btn.clicked.connect(_starte_verbtest)
 
     # ── Modell-Parameter (FormLayout: Label | Widget) ──
     _cfg_l.addSpacing(theme.DOCK_CFG_SEK_SPACING)
@@ -216,6 +244,26 @@ def init_docks(editor) -> None:
     _aufb_zeile.addWidget(editor._max_sitzungen_box)
     _aufb_zeile.addStretch()
     _cfg_l.addLayout(_aufb_zeile)
+
+    # ── Auto-Einfügen ──
+    _cfg_l.addSpacing(theme.DOCK_CFG_SEK_SPACING)
+    _cfg_l.addWidget(_cfg_lbl("AUTO-EINFÜGEN"))
+    editor._chk_auto_einfuegen = QtWidgets.QCheckBox("Nach KI-Antwort automatisch einfügen")
+    editor._chk_auto_einfuegen.setFont(schrift.ui_font())
+    editor._chk_auto_einfuegen.setChecked(lade_auto_einfuegen())
+    editor._chk_auto_einfuegen.toggled.connect(speichere_auto_einfuegen)
+    _cfg_l.addWidget(editor._chk_auto_einfuegen)
+
+    # ── Thinking (Anthropic) ──
+    _cfg_l.addSpacing(theme.DOCK_CFG_SEK_SPACING)
+    _cfg_l.addWidget(_cfg_lbl("THINKING (ANTHROPIC)"))
+    editor._thinking_box = QtWidgets.QComboBox()
+    editor._thinking_box.setFont(schrift.ui_font())
+    editor._thinking_box.addItems(["Aus", "An"])
+    editor._thinking_box.setCurrentIndex(1 if lade_thinking_modus() == "an" else 0)
+    editor._thinking_box.currentIndexChanged.connect(
+        lambda idx: speichere_thinking_modus("an" if idx == 1 else "aus"))
+    _cfg_l.addWidget(editor._thinking_box)
 
     _cfg_l.addStretch()
     editor._dock_cfg = editor._make_dock(

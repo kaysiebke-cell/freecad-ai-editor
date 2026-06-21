@@ -149,6 +149,11 @@ class Ki:
     def _on_ki_stream_done(self):
         self._ki_bereit()
         self._e._chunk.on_stream_done()
+        from core.params import lade_auto_einfuegen
+        if (lade_auto_einfuegen()
+                and getattr(self._e, "_btn_einfuegen", None)
+                and self._e._btn_einfuegen.isEnabled()):
+            self._e._einfuegen_nach_fundstelle()
 
     # ── Fehler-Anzeige (Signal-Slots + öffentliche API) ───────────────────
 

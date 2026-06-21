@@ -10,7 +10,7 @@ dessen Signale und Session-Objekt.
 
 import json
 
-from core.params import lade_api_key, api_key_resolved, lade_system_prompt_extra
+from core.params import lade_api_key, api_key_resolved, lade_system_prompt_extra, lade_thinking_modus
 from editor.ki.provider_daten import lade_anbieter_url
 
 
@@ -232,16 +232,24 @@ class KIStreaming:
             raise RuntimeError(
                 "Kein Anthropic API-Schlüssel hinterlegt.\n"
                 "Bitte unten rechts 'Anthropic (Claude)' wählen und sk-ant-… eintragen.")
+        _p = self._params()
+        _thinking = lade_thinking_modus() == "an"
+        _body = {
+            "model": model, "max_tokens": _p["max_tokens"], "stream": True,
+            "system": self._system_mit_extra(
+                "You are a Python expert. Reply only with Python code. Explanations always in German."),
+            "messages": [{"role": "user", "content": prompt}],
+        }
+        if _thinking:
+            _body["thinking"] = {"type": "enabled", "budget_tokens": 8000}
+        else:
+            _body["temperature"] = temperature
+            _body["top_p"] = _p["top_p"]
         r = self._c._session.post(
             "https://api.anthropic.com/v1/messages",
             headers={"x-api-key": key, "anthropic-version": "2023-06-01",
                      "Content-Type": "application/json"},
-            json={"model": model, "max_tokens": self._params()["max_tokens"],
-                  "temperature": temperature, "stream": True,
-                  "top_p": self._params()["top_p"],
-                  "system": self._system_mit_extra(
-                      "You are a Python expert. Reply only with Python code. Explanations always in German."),
-                  "messages": [{"role": "user", "content": prompt}]},
+            json=_body,
             stream=True, timeout=120)
         r.raise_for_status()
         for line in r.iter_lines():
@@ -263,17 +271,25 @@ class KIStreaming:
             raise RuntimeError(
                 "Kein Anthropic API-Schlüssel hinterlegt.\n"
                 "Bitte unten rechts 'Anthropic (Claude)' wählen und sk-ant-… eintragen.")
+        _p = self._params()
+        _thinking = lade_thinking_modus() == "an"
+        _body = {
+            "model": model, "max_tokens": _p["max_tokens"], "stream": True,
+            "system": self._system_mit_extra(
+                "You are a Python expert for FreeCAD macros. "
+                "Reply only with Python code, no Markdown fences. Explanations always in German."),
+            "messages": verlauf,
+        }
+        if _thinking:
+            _body["thinking"] = {"type": "enabled", "budget_tokens": 8000}
+        else:
+            _body["temperature"] = temperature
+            _body["top_p"] = _p["top_p"]
         r = self._c._session.post(
             "https://api.anthropic.com/v1/messages",
             headers={"x-api-key": key, "anthropic-version": "2023-06-01",
                      "Content-Type": "application/json"},
-            json={"model": model, "max_tokens": self._params()["max_tokens"],
-                  "temperature": temperature, "stream": True,
-                  "top_p": self._params()["top_p"],
-                  "system": self._system_mit_extra(
-                      "You are a Python expert for FreeCAD macros. "
-                      "Reply only with Python code, no Markdown fences. Explanations always in German."),
-                  "messages": verlauf},
+            json=_body,
             stream=True, timeout=120)
         r.raise_for_status()
         antwort_teile = []
