@@ -3,14 +3,53 @@
 # Panels im Detail
 
 ## ⚙ Einstellungen-Panel
+
+Das Panel ist scrollbar — alle Abschnitte sind auch bei kleinem Dock-Fenster erreichbar.
+
+### KI-QUELLE
 - **KI-Quelle** wählen (Dropdown mit allen 19 Anbietern)
 - **🔄 Modelle neu laden** – frische Modellliste vom Anbieter abrufen
-- **Modell** auswählen
-- **Preset** wählen (40+ vordefinierte Aufgabenstellungen)
+- **🔌 Verbindungstest** – prüft ohne KI-Anfrage ob Ollama erreichbar ist oder ob ein API-Key hinterlegt ist; Ergebnis erscheint als Label unter der Modell-Box
+
+### MODELL-PARAMETER
 - **Temperatur** 0.0–2.0 (empfohlen: 0.0–0.3 für Code, 0.5–0.8 für Dokumentation)
-- **Modus:** 🟢 Anfänger (ausführlich auf Deutsch) / 🔵 Experte (knapp & technisch)
-- **Farbschema:** 🌙 Dunkel / ☀ Hell – umschaltet alle Farben sofort (Syntax-Highlighting, Eingabefelder, Editor), Auswahl wird dauerhaft gespeichert
-- **API-Schlüssel** pro Anbieter eingeben & automatisch speichern
+- **Top-P · Top-K · Max-Token · Kontext** — alle Werte werden **pro Modell** gespeichert und beim Wechsel automatisch geladen
+
+### MODUS
+- 🟢 **Anfänger** – ausführliche Erklärungen auf Deutsch
+- 🔵 **Experte** – knappe, technische Antworten
+- Auswahl wird beim nächsten Start **automatisch wiederhergestellt**
+
+### FARBSCHEMA
+- 🌙 Dunkel / ☀ Hell – umschaltet alle Farben sofort, Auswahl wird gespeichert
+
+### API-SCHLÜSSEL
+- API-Schlüssel pro Anbieter eingeben & automatisch speichern
+- Alternativ: `file:/pfad/zur/schluessel-datei` eingeben → Key wird zur Laufzeit aus der Datei gelesen
+
+### SYSTEM-PROMPT-ZUSATZ
+- Freies Textfeld für eigene Anweisungen an die KI
+- **📋-Button** öffnet ein Vorlagen-Menü mit vordefinierten Prompts:
+  - 🧱 FreeCAD Part-Script (erzwingt `Part.makeBox + .cut()`, kein `Part::Cut`)
+  - 🤖 FreeCAD-KI FC14 JSON-Tools (für JSON-Tool-Calling mit FC14)
+  - 🐍 Python-Experte (Standard)
+  - 🔍 Code-Analyse auf Deutsch
+  - 📐 Parametrisches Modell
+  - 🛡 Sicherheits-Review
+- Die Vorlage kann nach dem Laden direkt im Feld angepasst werden
+- Beginnt der Text mit **„You are"** → ersetzt den Basis-Prompt vollständig
+- Sonst → wird als Zusatz an den Basis-Prompt angehängt
+
+### AUFBEWAHRUNG
+- **Max. Sitzungen** – maximale Anzahl gespeicherter Chat-Sitzungen
+
+### AUTO-EINFÜGEN
+- Wenn aktiv: KI-Antwort wird nach Stream-Ende **automatisch** an der Fundstelle eingefügt (entspricht manuellem Klick auf ➕ Einfügen)
+
+### THINKING (ANTHROPIC)
+- **Aus** (Standard) – normaler Modus
+- **An** – Extended Thinking mit 8 000 Budget-Tokens; `temperature` und `top_p` werden automatisch weggelassen (API-Vorgabe)
+- Nur wirksam bei Anthropic-Modellen
 
 ## 🤖 KI-Panel
 - **KI-Eingabefeld** (grün hinterlegt) – ein einziges Feld, innen durch das Label unterteilt:

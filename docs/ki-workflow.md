@@ -23,6 +23,14 @@ Block markieren → 📥 Laden → 🤖 Fragen → ➕ Einfügen
 →  KI-Antwort wird NACH dem Block angehängt (kein Überschreiben)
 ```
 
+## Auto-Einfügen (automatisch nach KI-Antwort)
+```
+⚙ Einstellungen → AUTO-EINFÜGEN ✓ aktivieren
+→ Nach jedem Stream-Ende wird die KI-Antwort automatisch eingefügt
+→  (kein manueller Klick auf ➕ Einfügen nötig)
+```
+Deaktivieren wenn du die Antwort erst prüfen möchtest, bevor sie eingefügt wird.
+
 ## Plan-Modus (Code vor dem Einfügen prüfen)
 ```
 🔍 Plan  aktivieren (Button im Aktionen-Panel)
@@ -45,6 +53,25 @@ Beim nächsten FreeCAD-Start einfach die `.json`-Datei laden und nahtlos weitera
 ## Chat-Verlauf nutzen
 Der Chat-Verlauf bleibt zwischen Fragen erhalten. Folgefragen bauen auf vorherigen Antworten auf.
 Ab 5 000 Zeichen wird der älteste Teil automatisch komprimiert (Zusammenfassung).
+
+## System-Prompt-Vorlagen
+```
+⚙ Einstellungen → SYSTEM-PROMPT-ZUSATZ → 📋-Button klicken
+→ Vorlage auswählen → Text erscheint im Feld
+→ Optional: direkt im Feld anpassen
+→ Wird automatisch gespeichert
+```
+
+| Vorlage | Verwendung |
+|---------|-----------|
+| 🧱 FreeCAD Part-Script | Erzwingt `Part.makeBox + .cut()`, verhindert fehleranfälligen `Part::Cut`-Feature-Ansatz |
+| 🤖 FreeCAD-KI FC14 JSON | Für JSON-Tool-Calling mit dem FC14-Preset |
+| 🐍 Python-Experte | Standard-Prompt für allgemeine Code-Aufgaben |
+| 🔍 Code-Analyse | Strukturierte Fehleranalyse mit Zeilennummern auf Deutsch |
+| 📐 Parametrisches Modell | Alle Maße als Konstanten, vollständiges FreeCAD-Script |
+| 🛡 Sicherheits-Review | Kritisch/Mittel/Gering-Einstufung von Sicherheitsproblemen |
+
+**Tipp:** Beginnt der eigene Text mit „You are …" → ersetzt er den Basis-Prompt vollständig. Sonst wird er als Zusatz angehängt.
 
 ---
 

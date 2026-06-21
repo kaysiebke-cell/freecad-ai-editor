@@ -63,13 +63,19 @@ FreeCAD-Automatisierung.
 - **40+ Presets** für alle gängigen Code-Aufgaben
 - Streaming-Antworten in Echtzeit (50 ms Chunk-Batching)
 - Chat-Verlauf mit Auto-Kompacting ab 5 000 Zeichen
-- Zwei Modi: 🟢 Anfänger (ausführlich, Deutsch) / 🔵 Experte (knapp, technisch)
+- Zwei Modi: 🟢 Anfänger (ausführlich, Deutsch) / 🔵 Experte (knapp, technisch) — **Auswahl wird gespeichert**
 - Makro aus natürlichsprachlicher Beschreibung generieren (FC11 / FC12 / FC13)
-- KI-Tool-Calling für strukturierte FreeCAD-Operationen
+- KI-Tool-Calling für strukturierte FreeCAD-Operationen (FC14 JSON)
 - KI-Frage auch ohne Code im Editor stellen (reines Frage-Antwort-Modus)
 - **FreeCAD-Dokumentzustand** automatisch im Prompt — kompakt für Ollama, vollständig für Cloud-Modelle
 - **AGENTS.md-Support** — projektspezifische Anweisungen neben der geöffneten Datei oder im Home-Verzeichnis werden automatisch geladen
 - **Vorschau-Fehler → KI-Sandbox** — Laufzeitfehler aus der Vorschau direkt mit „⚠ Fehler erklären" oder „🔧 KI korrigieren" beheben
+- **🔌 Verbindungstest** — prüft Ollama-Erreichbarkeit oder API-Key-Status ohne KI-Anfrage
+- **Auto-Einfügen** — KI-Antwort wird nach Stream-Ende automatisch in den Editor eingefügt (optional)
+- **Thinking-Modus** (Anthropic) — Extended Thinking mit 8 000 Budget-Tokens aktivierbar
+- **System-Prompt-Vorlagen** — 📋-Menü mit vordefinierten Prompts (FreeCAD Part-Script, FC14 JSON, Code-Analyse u. a.), direkt editierbar; Prompt der mit „You are" beginnt ersetzt den Basis-Prompt vollständig
+- **Pro-Modell-Parameter** — Temperatur, Top-P, Top-K, Max-Token und Kontext werden pro Modell gespeichert und beim Wechsel automatisch geladen
+- **API-Key aus Datei** — `file:/pfad/zur/key-datei` als API-Schlüssel eingeben → Key wird zur Laufzeit gelesen
 
 ### Benutzeroberfläche
 - 11 frei anordnbare Dock-Panels (verschieben, abdocken, zu Tabs zusammenfassen)
