@@ -2,90 +2,103 @@
 """FreeCAD-spezifische KI-Presets."""
 
 FC_KI_PRESETS: dict[str, str] = {
-    "── FreeCAD-Presets ──": "",
+
+    # ── FreeCAD Code erstellen ────────────────────────────────────────────────
+    "── FreeCAD: Code erstellen ──": "",
 
     "FC1 · FreeCAD-Makro erstellen":
         "Schreibe ein vollständiges FreeCAD-Python-Makro für folgende Aufgabe. "
-        "Importiere App, Part und FreeCADGui korrekt. Füge am Ende doc.recompute() ein. "
-        "Behandle den Fall, dass kein aktives Dokument geöffnet ist. "
-        "Kommentiere alle wichtigen Schritte auf Deutsch.",
+        "Importiere App und Part korrekt. Füge am Ende doc.recompute() ein. "
+        "Behandle den Fall dass kein aktives Dokument geöffnet ist. "
+        "Alle Maße als Konstanten am Anfang. Antworte nur mit Python-Code.",
 
     "FC2 · Parametrisches Modell":
         "Wandle das Skript in ein parametrisches FreeCAD-Modell um. "
-        "Alle Maße (Längen, Radien, Abstände) sollen als benannte Konstanten "
+        "Alle Maße (Längen, Radien, Abstände, Winkel) sollen als benannte Konstanten "
         "am Anfang der Datei stehen. Nutze App.ActiveDocument korrekt "
-        "und rufe am Ende recompute() auf.",
+        "und rufe am Ende recompute() auf. Antworte nur mit Python-Code.",
 
-    "FC3 · Part-Design Script":
-        "Erstelle ein sauberes PartDesign-Script mit Body, Sketch-Geometrie "
-        "und mindestens einem Pad oder Pocket. Nutze die PartDesign-API korrekt "
-        "(body.newObject), vermeide veraltete Methoden und füge deutsche Kommentare ein.",
+    "FC3 · Part-Modell (Grundkörper)":
+        "Erstelle ein sauberes FreeCAD-Makro mit dem Part-Modul (nicht PartDesign). "
+        "Nutze Part::Box, Part::Cylinder, Part::Sphere, Part::Cut und Part::Fuse. "
+        "Setze Placement.Base korrekt für jedes Objekt. "
+        "Alle Maße als Konstanten am Anfang. Kein PartDesign, kein Body, kein Sketch. "
+        "Antworte nur mit Python-Code.",
 
     "FC4 · Mesh-Verarbeitung":
-        "Optimiere das Skript für Mesh-Import, -Analyse und -Export in FreeCAD. "
-        "Prüfe ob die Datei existiert, behandle UnicodeDecodeError beim Lesen "
-        "und gib Mesh-Statistiken (Facets, Volume, Area) aus.",
+        "Optimiere das Skript für Mesh-Import und -Export in FreeCAD. "
+        "Prüfe ob die Datei existiert bevor du sie öffnest. "
+        "Gib nach dem Export Dateipfad und Erfolgsmeldung aus. "
+        "Antworte nur mit Python-Code.",
 
-    "FC5 · GUI-Dialog hinzufügen":
-        "Erweitere das Makro um einen PySide2/PySide6-kompatiblen QDialog "
-        "für Benutzereingaben. Der Dialog soll OK/Abbrechen haben, "
-        "alle Eingaben validieren und die Werte sicher an das Makro übergeben.",
+    "FC6 · Selektions-Makro":
+        "Überarbeite das Skript so dass es auf der aktuellen FreeCAD-Selektion arbeitet. "
+        "Prüfe ob mindestens ein Objekt selektiert ist und gib sonst eine klare "
+        "deutsche Fehlermeldung aus. Antworte nur mit Python-Code.",
 
-    "FC6 · Selektions-basiertes Makro":
-        "Überarbeite das Skript so, dass es auf der aktuellen FreeCAD-Selektion "
-        "operiert. Prüfe explizit ob geeignete Objekte selektiert sind, "
-        "gib klare deutsche Fehlermeldungen per QMessageBox aus "
-        "und verarbeite nur Objekte des erwarteten TypeId.",
+    "FC9 · STEP-Export":
+        "Erweitere das Skript um einen STEP-Export. "
+        "Speichere die Datei im gleichen Ordner wie das FCStd-Dokument. "
+        "Prüfe ob das Dokument einen Speicherpfad hat. "
+        "Gib nach dem Export Dateipfad und Dateigröße aus. "
+        "Antworte nur mit Python-Code.",
+
+    "FC10 · Batch-Verarbeitung":
+        "Wandle das Skript in ein Batch-Makro um das alle FreeCAD-Dateien "
+        "(.FCStd) in einem Verzeichnis nacheinander öffnet, verarbeitet und speichert. "
+        "Protokolliere Fehler je Datei ohne den Gesamtdurchlauf abzubrechen. "
+        "Antworte nur mit Python-Code.",
+
+    # ── Analyse & Erklärung ───────────────────────────────────────────────────
+    "── Analyse & Erklärung ──": "",
 
     "FC7 · FreeCAD-Fehlersuche":
         "Analysiere dieses FreeCAD-Makro auf typische Fehler: "
         "fehlende recompute()-Aufrufe, fehlendes None-Handling für ActiveDocument, "
-        "falsche TypeId-Nutzung, PySide2/6-Inkompatibilitäten, "
-        "Placement-Fehler und Race Conditions im GUI-Thread. "
-        "Liste jeden Fehler mit Zeilennummer und Korrektur.",
+        "falsche Placement-Werte, falsche TypeId-Nutzung. "
+        "Liste jeden Fehler mit Zeilennummer und zeige die Korrektur. "
+        "Antworte auf Deutsch.",
 
-    "FC8 · Workbench-Klasse":
-        "Refaktoriere das Makro in eine wiederverwendbare FreeCAD-Workbench. "
-        "Erstelle __init__.py mit InitGui, Command-Klassen mit GetResources, "
-        "IsActive und Activated, sowie korrekter Gui.addCommand()-Registrierung.",
+    "LOK1 · Code erklären":
+        "Erkläre diesen FreeCAD-Python-Code auf einfachem Deutsch. "
+        "Was macht jeder Abschnitt? Welche Objekte werden erstellt? "
+        "Welche Maße sind wichtig und wie kann ich sie anpassen? "
+        "Erkläre so dass auch Anfänger es verstehen. Antworte auf Deutsch.",
 
-    "FC9 · STEP/IGES Export-Pipeline":
-        "Erweitere das Skript um einen robusten STEP- und IGES-Export. "
-        "Prüfe ob der Zielordner existiert, handle Import-Fehler bei fehlendem "
-        "Import-Modul, und gib nach dem Export Dateigröße und Pfad aus.",
+    "LOK2 · Fehler erklären":
+        "Ich habe folgenden FreeCAD-Python-Fehler. "
+        "Erkläre auf einfachem Deutsch was dieser Fehler bedeutet "
+        "und wie ich ihn behebe. Zeige wenn möglich den korrigierten Code. "
+        "Antworte auf Deutsch. Mein Fehler: ",
 
-    "FC10 · Batch-Verarbeitung":
-        "Wandle das Skript in ein Batch-Makro um, das alle FreeCAD-Dateien "
-        "(.FCStd) in einem Verzeichnis nacheinander öffnet, verarbeitet und "
-        "speichert. Zeige einen Fortschrittsbalken und protokolliere Fehler "
-        "je Datei ohne den Gesamtdurchlauf abzubrechen.",
+    # ── Lokal / Ollama optimiert ──────────────────────────────────────────────
+    "── Lokal (Ollama optimiert) ──": "",
 
     "FC11 · Makro aus Beschreibung":
-        "Beschreibe dein Objekt in normalen deutschen Worten – "
-        "du musst kein FreeCAD-Experte sein. Beispiele: "
-        "'Eine Halterung für ein 20mm Rohr', "
-        "'Ein Deckel mit vier Schraubenlöchern', "
-        "'Eine Schraube M8 50mm lang'. "
-        "Die KI erstellt daraus ein fertiges Makro mit allen Maßen als "
-        "Konstanten die du leicht anpassen kannst. "
-        "Deine Beschreibung: ",
-
-    "FC12 · PartDesign aus Beschreibung":
-        "Beschreibe dein Objekt in normalen deutschen Worten. "
-        "Die KI erstellt daraus ein PartDesign-Makro mit Body, Sketch und "
-        "Pad/Pocket – so wie FreeCAD es für parametrische Modelle empfiehlt. "
-        "Empfohlen: Claude oder GPT-4o als KI-Backend. "
-        "Deine Beschreibung: ",
+        "Erstelle ein FreeCAD-Python-Makro. "
+        "Nutze nur das Part-Modul (Part::Box, Part::Cylinder, Part::Cut, Part::Fuse). "
+        "Alle Maße als Konstanten am Anfang. Kein PartDesign. "
+        "Am Ende: doc.recompute() und fitAll(). "
+        "Antworte nur mit Python-Code ohne Erklärung. "
+        "Meine Beschreibung: ",
 
     "FC13 · Schrittweise aufbauen":
-        "Beschreibe den nächsten Schritt für dein Bauteil. Der vorhandene Code im "
-        "Editor wird als Kontext mitgeschickt – die KI hängt nur den neuen Block ans "
-        "Ende, keine Dopplungen, kein Neustart. Dein nächster Schritt: ",
+        "Der vorhandene Code im Editor ist mein aktuelles Bauteil. "
+        "Schreibe NUR den neuen Python-Code-Block für den nächsten Schritt, "
+        "keine Wiederholung des bestehenden Codes, kein kompletter Neustart. "
+        "Nutze die gleichen Variablennamen wie im bestehenden Code. "
+        "Antworte nur mit dem neuen Code-Block. Mein nächster Schritt: ",
 
     "FC14 · Objekt-Befehle (lokal)":
-        "Describe your object in plain English. "
-        "Best for local Ollama models (qwen2.5-coder). "
-        "The AI outputs simple commands (box, cylinder, fuse, cut …) "
-        "which are automatically converted to FreeCAD Python code. "
-        "Your description: ",
+        "Erstelle ein FreeCAD-Python-Makro für folgendes Objekt. "
+        "Benutze nur einfache Part-Befehle: Box, Cylinder, Sphere, Cut, Fuse. "
+        "Kein PartDesign, kein Sketch, keine GUI-Dialoge. "
+        "Alle Maße als Konstanten am Anfang der Datei. "
+        "Antworte nur mit Python-Code. Mein Objekt: ",
+
+    "FC12 · PartDesign aus Beschreibung":
+        "Erstelle ein FreeCAD-PartDesign-Makro mit Body, Sketch und Pad oder Pocket. "
+        "Nutze FreeCAD.ActiveDocument.addObject('PartDesign::Body', ...) korrekt. "
+        "Alle Maße als Konstanten. Am Ende recompute(). "
+        "Antworte nur mit Python-Code. Meine Beschreibung: ",
 }

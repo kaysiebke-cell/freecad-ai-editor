@@ -96,46 +96,63 @@ def init_docks(editor) -> None:
     # ── Einstellungs-Dock ──────────────────────────────────────────────────
     _cfg_widget = QtWidgets.QWidget()
     _cfg_l = QtWidgets.QVBoxLayout(_cfg_widget)
-    _cfg_l.setContentsMargins(6, 6, 6, 6)
-    _cfg_l.setSpacing(5)
+    _cfg_l.setContentsMargins(theme.DOCK_CFG_RAND, theme.DOCK_CFG_RAND,
+                              theme.DOCK_CFG_RAND, theme.DOCK_CFG_RAND)
+    _cfg_l.setSpacing(theme.DOCK_CFG_ABSTAND)
 
     def _cfg_lbl(text):
         l = QtWidgets.QLabel(text)
         l.setStyleSheet(theme.STY_ABSCHNITT_LABEL(schrift.pt(schrift.STUFE_XS)))
         return l
 
+    # ── KI-Quelle ──
     _cfg_l.addWidget(_cfg_lbl("KI-QUELLE"))
     _r1 = QtWidgets.QHBoxLayout()
-    _r1.setSpacing(3)
+    _r1.setSpacing(theme.DOCK_CFG_ZEILEN_ABST)
     _r1.addWidget(editor._src_box, stretch=1)
     _rl_btn = QtWidgets.QPushButton("🔄")
-    _rl_btn.setFixedSize(26, 24)
+    _rl_btn.setFixedSize(theme.DOCK_RELOAD_BTN_BREITE, theme.DOCK_RELOAD_BTN_HOEHE)
     _rl_btn.setToolTip("Modelle neu laden")
     _rl_btn.clicked.connect(editor._refresh_models)
     _r1.addWidget(_rl_btn)
     _cfg_l.addLayout(_r1)
-    _r1b = QtWidgets.QHBoxLayout()
-    _r1b.setSpacing(3)
-    _r1b.addWidget(QtWidgets.QLabel("Modell:"))
-    _r1b.addWidget(editor._model_box, stretch=1)
-    _cfg_l.addLayout(_r1b)
-    _cfg_l.addWidget(_cfg_lbl("TEMPERATUR"))
-    _r2 = QtWidgets.QHBoxLayout()
-    _r2.setSpacing(3)
-    _r2.addWidget(QtWidgets.QLabel("T:"))
-    _r2.addWidget(editor._temp_box)
-    _r2.addStretch()
-    _cfg_l.addLayout(_r2)
+    _cfg_l.addWidget(editor._model_box)
+
+    # ── Modell-Parameter (FormLayout: Label | Widget) ──
+    _cfg_l.addSpacing(4)
+    _cfg_l.addWidget(_cfg_lbl("MODELL-PARAMETER"))
+
+    def _flbl(text):
+        l = QtWidgets.QLabel(text)
+        l.setStyleSheet(theme.STY_FORM_LABEL())
+        return l
+
+    _param_form = QtWidgets.QFormLayout()
+    _param_form.setContentsMargins(
+        theme.PARAM_FORM_RAND_REST, theme.PARAM_FORM_RAND_OBEN,
+        theme.PARAM_FORM_RAND_REST, theme.PARAM_FORM_RAND_REST)
+    _param_form.setSpacing(theme.PARAM_FORM_ABSTAND)
+    _param_form.setLabelAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+    _param_form.addRow(_flbl("Temperatur:"), editor._temp_box)
+    _param_form.addRow(_flbl("Top-P:"),      editor._top_p_box)
+    _param_form.addRow(_flbl("Top-K:"),      editor._top_k_box)
+    _param_form.addRow(_flbl("Max-Token:"),  editor._max_tokens_box)
+    _param_form.addRow(_flbl("Kontext:"),    editor._ctx_box)
+    _cfg_l.addLayout(_param_form)
+
+    # ── Modus ──
+    _cfg_l.addSpacing(4)
     _cfg_l.addWidget(_cfg_lbl("MODUS"))
     _r3 = QtWidgets.QHBoxLayout()
-    _r3.setSpacing(6)
+    _r3.setSpacing(theme.DOCK_CFG_ABSCHN_ABST)
     _r3.addWidget(editor._btn_modus_anfaenger)
     _r3.addWidget(editor._btn_modus_experte)
     _r3.addStretch()
     _cfg_l.addLayout(_r3)
+
+    # ── Farbschema ──
+    _cfg_l.addSpacing(4)
     _cfg_l.addWidget(_cfg_lbl("FARBSCHEMA"))
-    _r_farbe = QtWidgets.QHBoxLayout()
-    _r_farbe.setSpacing(6)
     editor._btn_farbe_dunkel = QtWidgets.QPushButton("🌙 Dunkel")
     editor._btn_farbe_hell   = QtWidgets.QPushButton("☀ Hell")
     editor._btn_farbe_dunkel.setCheckable(True)
@@ -143,17 +160,21 @@ def init_docks(editor) -> None:
     _farbe_gruppe = QtWidgets.QButtonGroup(editor)
     _farbe_gruppe.addButton(editor._btn_farbe_dunkel)
     _farbe_gruppe.addButton(editor._btn_farbe_hell)
-
     import core.params as _params
     _ist_dunkel = _params.farbschema_dunkel()
     editor._btn_farbe_dunkel.setChecked(_ist_dunkel)
     editor._btn_farbe_hell.setChecked(not _ist_dunkel)
     editor._btn_farbe_dunkel.clicked.connect(lambda: editor._on_farbschema(True))
     editor._btn_farbe_hell.clicked.connect(lambda: editor._on_farbschema(False))
+    _r_farbe = QtWidgets.QHBoxLayout()
+    _r_farbe.setSpacing(theme.DOCK_CFG_ABSCHN_ABST)
     _r_farbe.addWidget(editor._btn_farbe_dunkel)
     _r_farbe.addWidget(editor._btn_farbe_hell)
     _r_farbe.addStretch()
     _cfg_l.addLayout(_r_farbe)
+
+    # ── API-Schlüssel ──
+    _cfg_l.addSpacing(4)
     _cfg_l.addWidget(_cfg_lbl("API-SCHLÜSSEL"))
     _cfg_l.addWidget(editor._key_feld)
     _cfg_l.addStretch()
@@ -163,8 +184,9 @@ def init_docks(editor) -> None:
     # ── KI-Dock ────────────────────────────────────────────────────────────
     ki_widget = QtWidgets.QWidget()
     ki_layout = QtWidgets.QVBoxLayout(ki_widget)
-    ki_layout.setContentsMargins(4, 4, 4, 4)
-    ki_layout.setSpacing(3)
+    ki_layout.setContentsMargins(theme.DOCK_KI_RAND, theme.DOCK_KI_RAND,
+                                 theme.DOCK_KI_RAND, theme.DOCK_KI_RAND)
+    ki_layout.setSpacing(theme.DOCK_KI_ABSTAND)
     _ki_splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
 
     def _alle_snippets() -> dict:
@@ -176,15 +198,16 @@ def init_docks(editor) -> None:
         return alle
 
     _preset_zeile = QtWidgets.QHBoxLayout()
-    _preset_zeile.setSpacing(3)
+    _preset_zeile.setSpacing(theme.DOCK_KI_PRESET_ABST)
     _preset_zeile.addWidget(QtWidgets.QLabel("Preset:"))
     _preset_zeile.addWidget(editor._preset_btn, stretch=1)
     ki_layout.addLayout(_preset_zeile)
 
     _input_w = QtWidgets.QWidget()
     _input_l = QtWidgets.QVBoxLayout(_input_w)
-    _input_l.setContentsMargins(0, 0, 0, 0)
-    _input_l.setSpacing(2)
+    _input_l.setContentsMargins(theme.DOCK_KI_RAHMEN_RAND, theme.DOCK_KI_RAHMEN_RAND,
+                                theme.DOCK_KI_RAHMEN_RAND, theme.DOCK_KI_RAHMEN_RAND)
+    _input_l.setSpacing(theme.DOCK_KI_INPUT_ABST)
 
     # Header-Zeile über dem kombinierten Feld
     _input_hdr = QtWidgets.QHBoxLayout()
@@ -196,7 +219,7 @@ def init_docks(editor) -> None:
         ("📂", "Sitzung laden\n(gespeicherten Chat-Verlauf wiederherstellen)", editor._sitzung_laden),
     ]:
         _b = QtWidgets.QPushButton(ico)
-        _b.setFixedSize(22, 18)
+        _b.setFixedSize(theme.DOCK_ICON_BTN_BREITE, theme.DOCK_ICON_BTN_HOEHE)
         _b.setToolTip(tip)
         _b.setStyleSheet(theme.STY_ICON_BTN_BORDERLESS(schrift.pt(schrift.STUFE_LG)))
         _b.clicked.connect(slot)
@@ -206,26 +229,23 @@ def init_docks(editor) -> None:
     # Ein Feld, ein Rahmen — Label ist der einzige interne Trenner, keine Linien.
     _feld_rahmen = QtWidgets.QFrame()
     _feld_rahmen.setObjectName("ki_eingabe_rahmen")
-    _feld_rahmen.setStyleSheet(
-        "QFrame#ki_eingabe_rahmen { border:1px solid palette(shadow); border-radius:3px; }"
-    )
+    _feld_rahmen.setStyleSheet(theme.STY_KI_EINGABE_RAHMEN())
     _feld_rahmen_l = QtWidgets.QVBoxLayout(_feld_rahmen)
-    _feld_rahmen_l.setContentsMargins(0, 0, 0, 0)
-    _feld_rahmen_l.setSpacing(0)
+    _feld_rahmen_l.setContentsMargins(theme.DOCK_KI_RAHMEN_RAND, theme.DOCK_KI_RAHMEN_RAND,
+                                      theme.DOCK_KI_RAHMEN_RAND, theme.DOCK_KI_RAHMEN_RAND)
+    _feld_rahmen_l.setSpacing(theme.DOCK_KI_RAHMEN_ABST)
 
     editor._frage_feld = QtWidgets.QPlainTextEdit()
     editor._frage_feld.setFont(QtGui.QFont("Courier New", 10))
     editor._frage_feld.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
     editor._frage_feld.setMinimumHeight(30)
-    editor._frage_feld.setStyleSheet(
-        "QPlainTextEdit { font-family:'Courier New',monospace; border:none; border-radius:0; }"
-    )
+    editor._frage_feld.setStyleSheet(theme.STY_KI_EINGABE_FELD())
     editor._frage_feld.setPlaceholderText("Frage oder Aufgabe … (optional, überschreibt Preset)")
     theme.apply_input_bg_suche(editor._frage_feld)
     _feld_rahmen_l.addWidget(editor._frage_feld, stretch=1)
 
     editor._ki_trenner_lbl = QtWidgets.QLabel("  Code-Block:")
-    editor._ki_trenner_lbl.setFixedHeight(16)
+    editor._ki_trenner_lbl.setFixedHeight(theme.DOCK_TRENNER_LBL_HOEHE)
     theme.apply_input_bg_suche(editor._ki_trenner_lbl)
     _feld_rahmen_l.addWidget(editor._ki_trenner_lbl)
 
@@ -236,9 +256,7 @@ def init_docks(editor) -> None:
     _opt = editor.find_area.document().defaultTextOption()
     _opt.setAlignment(QtCore.Qt.AlignLeft)
     editor.find_area.document().setDefaultTextOption(_opt)
-    editor.find_area.setStyleSheet(
-        "QPlainTextEdit { font-family:'Courier New',monospace; border:none; border-radius:0; }"
-    )
+    editor.find_area.setStyleSheet(theme.STY_KI_EINGABE_FELD())
     theme.apply_input_bg_suche(editor.find_area)
     editor.find_area.setPlaceholderText(
         "Code-Block hier einfügen …\n/ + Snippet-Name → Autocomplete")
@@ -252,8 +270,9 @@ def init_docks(editor) -> None:
 
     _output_w = QtWidgets.QWidget()
     _output_l = QtWidgets.QVBoxLayout(_output_w)
-    _output_l.setContentsMargins(0, 0, 0, 0)
-    _output_l.setSpacing(2)
+    _output_l.setContentsMargins(theme.DOCK_KI_RAHMEN_RAND, theme.DOCK_KI_RAHMEN_RAND,
+                                 theme.DOCK_KI_RAHMEN_RAND, theme.DOCK_KI_RAHMEN_RAND)
+    _output_l.setSpacing(theme.DOCK_KI_OUTPUT_ABST)
     _output_l.addWidget(QtWidgets.QLabel("🤖 KI-Antwort"))
     editor._ki_area = QtWidgets.QPlainTextEdit()
     editor._ki_area.setFont(QtGui.QFont("Courier New", 10))
@@ -272,8 +291,9 @@ def init_docks(editor) -> None:
     _kontext_w = QtWidgets.QWidget()
     _kontext_w.setMinimumHeight(80)
     _kontext_l = QtWidgets.QVBoxLayout(_kontext_w)
-    _kontext_l.setContentsMargins(0, 0, 0, 0)
-    _kontext_l.setSpacing(2)
+    _kontext_l.setContentsMargins(theme.DOCK_KI_RAHMEN_RAND, theme.DOCK_KI_RAHMEN_RAND,
+                                  theme.DOCK_KI_RAHMEN_RAND, theme.DOCK_KI_RAHMEN_RAND)
+    _kontext_l.setSpacing(theme.DOCK_KI_KONTEXT_ABST)
     _kontext_l.addWidget(QtWidgets.QLabel("📌 Projekt-Kontext"))
     editor._kontext = QtWidgets.QPlainTextEdit()
     editor._kontext.setFont(QtGui.QFont("Courier New", 10))
@@ -301,8 +321,9 @@ def init_docks(editor) -> None:
     _akt_scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
     _akt_inner = QtWidgets.QWidget()
     _akt_l = QtWidgets.QVBoxLayout(_akt_inner)
-    _akt_l.setContentsMargins(4, 4, 4, 4)
-    _akt_l.setSpacing(2)
+    _akt_l.setContentsMargins(theme.DOCK_AKT_RAND, theme.DOCK_AKT_RAND,
+                              theme.DOCK_AKT_RAND, theme.DOCK_AKT_RAND)
+    _akt_l.setSpacing(theme.DOCK_AKT_ABSTAND)
     _akt_scroll.setWidget(_akt_inner)
 
     def _abschnitt(text):
@@ -322,8 +343,9 @@ def init_docks(editor) -> None:
 
     def _agrid(*buttons):
         g = QtWidgets.QGridLayout()
-        g.setSpacing(2)
-        g.setContentsMargins(0, 0, 0, 0)
+        g.setSpacing(theme.DOCK_AKT_GRID_ABST)
+        g.setContentsMargins(theme.DOCK_KI_RAHMEN_RAND, theme.DOCK_KI_RAHMEN_RAND,
+                             theme.DOCK_KI_RAHMEN_RAND, theme.DOCK_KI_RAHMEN_RAND)
         for i, b in enumerate(buttons):
             g.addWidget(b, i // 2, i % 2)
         _akt_l.addLayout(g)
@@ -348,7 +370,7 @@ def init_docks(editor) -> None:
     editor._btn_plan.setToolTip(
         "Plan-Modus: Code vor dem Ersetzen prüfen\n"
         "Wenn aktiv → zeigt neuen Code zur Bestätigung bevor er eingefügt wird")
-    editor._btn_plan.setFixedHeight(22)
+    editor._btn_plan.setFixedHeight(theme.DOCK_PLAN_BTN_HOEHE)
     editor._btn_plan.toggled.connect(editor._plan_modus_umschalten)
     editor._btn_ersetzen  = _abtn("✅  Ersetzen", "Block durch KI-Antwort ersetzen",
                                   editor._ersetzen_und_speichern, enabled=False)
@@ -414,12 +436,13 @@ def init_docks(editor) -> None:
     # ── Hilfe + Barrierefreiheit Dock ─────────────────────────────────────
     _bf_gruppe_widget = QtWidgets.QWidget()
     _bg_lay = QtWidgets.QVBoxLayout(_bf_gruppe_widget)
-    _bg_lay.setContentsMargins(0, 0, 0, 0)
-    _bg_lay.setSpacing(0)
+    _bg_lay.setContentsMargins(theme.DOCK_BF_RAND, theme.DOCK_BF_RAND,
+                               theme.DOCK_BF_RAND, theme.DOCK_BF_RAND)
+    _bg_lay.setSpacing(theme.DOCK_BF_ABSTAND)
     _bg_leiste = QtWidgets.QWidget()
     _bg_leiste_lay = QtWidgets.QHBoxLayout(_bg_leiste)
-    _bg_leiste_lay.setContentsMargins(4, 2, 4, 2)
-    _bg_leiste_lay.setSpacing(2)
+    _bg_leiste_lay.setContentsMargins(*theme.DOCK_BF_LEISTE_RAND)
+    _bg_leiste_lay.setSpacing(theme.DOCK_BF_LEISTE_ABST)
     _bg_separator = QtWidgets.QFrame()
     _bg_separator.setFrameShape(QtWidgets.QFrame.Shape.HLine)
     _bg_separator.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
@@ -442,7 +465,7 @@ def init_docks(editor) -> None:
     def _bg_btn(label, index):
         btn = QtWidgets.QPushButton(label)
         btn.setCheckable(True)
-        btn.setFixedHeight(26)
+        btn.setFixedHeight(theme.DOCK_BF_BTN_HOEHE)
         btn.setStyleSheet(theme.STY_MINI_TAB_BTN(_fs_bg))
         btn.clicked.connect(lambda: editor._bf_stack.setCurrentIndex(index))
         _bg_btn_gruppe.addButton(btn)
@@ -464,8 +487,9 @@ def init_docks(editor) -> None:
     # ── Fehler-Dock ────────────────────────────────────────────────────────
     fehler_panel_widget = QtWidgets.QWidget()
     fp = QtWidgets.QVBoxLayout(fehler_panel_widget)
-    fp.setContentsMargins(0, 0, 0, 0)
-    fp.setSpacing(0)
+    fp.setContentsMargins(theme.DOCK_FEHLER_RAND, theme.DOCK_FEHLER_RAND,
+                          theme.DOCK_FEHLER_RAND, theme.DOCK_FEHLER_RAND)
+    fp.setSpacing(theme.DOCK_FEHLER_ABSTAND)
     editor._fehler_inhalt = editor._baue_fehler_panel()
     editor._fehler_inhalt.setVisible(True)
     fp.addWidget(editor._fehler_inhalt)
@@ -473,7 +497,6 @@ def init_docks(editor) -> None:
     editor._btn_fehler_toggle.hide()
     editor._dock_fehler = editor._make_dock(
         "⚠  Fehler-Übersetzer", "dock_fehler", _B, fehler_panel_widget)
-    editor._dock_fehler.setMinimumHeight(160)
     editor._dock_fehler.hide()
 
     def _sandbox_toggle_cb(sandbox_aktiv: bool):

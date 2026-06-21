@@ -97,7 +97,17 @@ class PlanLogik:
         c = e._editor.textCursor()
         if not hat_selektion or not c.hasSelection():
             if not e._find_in_editor():
-                e._set_status("⚠  Kein Block markiert und Suchfeld-Inhalt nicht gefunden")
+                # Kein Block markiert und nichts gefunden → ans Dateiende einfügen
+                c = e._editor.textCursor()
+                c.movePosition(QtGui.QTextCursor.End)
+                c.beginEditBlock()
+                c.insertText("\n\n" + neu_code)
+                c.endEditBlock()
+                e._editor.setTextCursor(c)
+                e.speichern()
+                e._btn_einfuegen.setEnabled(False)
+                e._letzter_editor_cursor = None
+                e._set_status("🎉 Am Dateiende eingefügt und gespeichert")
                 return
             c = e._editor.textCursor()
         ziel_indent = e._erste_einrueckung(

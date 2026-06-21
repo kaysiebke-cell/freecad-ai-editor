@@ -46,8 +46,8 @@ def init_toolbar(editor) -> None:
         btn.setToolTip(label)
         btn.setCheckable(True)
         btn.setChecked(False)
-        btn.setFixedHeight(26)
-        btn.setFixedWidth(32)
+        btn.setFixedHeight(theme.TOOLBAR_PANEL_BTN_HOEHE)
+        btn.setFixedWidth(theme.TOOLBAR_PANEL_BTN_BREITE)
         editor._panel_btns.append((btn, icon_text, label))
         if optional:
             editor._panel_btns_optional.append(btn)

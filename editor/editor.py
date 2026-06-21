@@ -100,7 +100,7 @@ class MakroEditor(QtWidgets.QMainWindow):
             | QtCore.Qt.WindowMaximizeButtonHint
             | QtCore.Qt.WindowCloseButtonHint
         )
-        self.setMinimumSize(800, 500)
+        self.setMinimumSize(600, 400)
         self.setMaximumSize(16777215, 16777215)
         if self.layout():
             self.layout().setContentsMargins(6, 6, 6, 6)
@@ -170,7 +170,7 @@ class MakroEditor(QtWidgets.QMainWindow):
         import json as _json
         _STATE_DATEI    = os.path.join(os.path.expanduser("~"), ".ki_makro_editor_layout.json")
         _GUARD_DATEI    = os.path.join(os.path.expanduser("~"), ".ki_makro_editor_restore_guard")
-        _LAYOUT_VERSION = "v8"
+        _LAYOUT_VERSION = "v10"
         self._layout_state_datei    = _STATE_DATEI
         self._layout_version        = _LAYOUT_VERSION
 

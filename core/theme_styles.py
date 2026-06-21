@@ -135,9 +135,9 @@ def _btn_toggle(fs, pad="2px 4px", r=3):
             "QPushButton:hover{border:1px solid palette(shadow);}")
 
 
-def _lbl(fs, pad="", *, bold=False, italic=False, border="", radius=0,
+def _lbl(fs=0, pad="", *, bold=False, italic=False, border="", radius=0,
          color="", extra="", selector="QLabel"):
-    s = f"font-size:{fs}pt;"
+    s = f"font-size:{fs}pt;" if fs else ""
     if pad:    s += f"padding:{pad};"
     if bold:   s += "font-weight:bold;"
     if italic: s += "font-style:italic;"
@@ -190,6 +190,82 @@ def STY_STATUS_LABEL(fs: int) -> str:
 def STY_ABSCHNITT_LABEL(fs: int) -> str:
     return _lbl(fs, bold=True,
                 extra="padding-top:6px;padding-bottom:2px;border-bottom:1px solid palette(shadow);")
+
+
+def STY_FORM_LABEL() -> str:
+    return _lbl(extra="color:palette(window-text);padding-right:4px;")
+
+
+# ── Dock-Layout-Konstanten ────────────────────────────────────────────────
+
+# Einstellungs-Dock
+DOCK_CFG_RAND        = 6   # äußerer Rand des Einstellungs-Dock
+DOCK_CFG_ABSTAND     = 5   # Abstand zwischen Abschnitten
+DOCK_CFG_ZEILEN_ABST = 3   # Abstand innerhalb einer Zeile (z.B. Quelle+Button)
+DOCK_CFG_ABSCHN_ABST = 6   # Abstand zwischen Modus/Farbschema-Buttons
+
+# Parameterwidget-Breiten
+PARAM_SPINBOX_BREITE_SCHMAL = 58   # Temperatur, Top-P, Top-K
+PARAM_SPINBOX_BREITE_BREIT  = 72   # Max-Token, Kontext
+
+# FormLayout (Modell-Parameter)
+PARAM_FORM_ABSTAND   = 5
+PARAM_FORM_RAND_OBEN = 2
+PARAM_FORM_RAND_REST = 0
+
+# KI-Dock
+DOCK_KI_RAND         = 4
+DOCK_KI_ABSTAND      = 3
+DOCK_KI_PRESET_ABST  = 3
+DOCK_KI_INPUT_ABST   = 2
+DOCK_KI_OUTPUT_ABST  = 2
+DOCK_KI_KONTEXT_ABST = 2
+
+# KI-Eingaberahmen (Frage + Code)
+DOCK_KI_RAHMEN_RAND  = 0
+DOCK_KI_RAHMEN_ABST  = 0
+
+# Aktionen-Dock
+DOCK_AKT_RAND    = 4
+DOCK_AKT_ABSTAND = 2
+DOCK_AKT_GRID_ABST = 2
+
+# Hilfe+Zugang-Dock
+DOCK_BF_RAND         = 0
+DOCK_BF_ABSTAND      = 0
+DOCK_BF_LEISTE_RAND  = (4, 2, 4, 2)   # left, top, right, bottom
+DOCK_BF_LEISTE_ABST  = 2
+DOCK_BF_BTN_HOEHE    = 26
+
+# Fehler-Dock
+DOCK_FEHLER_RAND   = 0
+DOCK_FEHLER_ABSTAND = 0
+
+# Reload-Button im KI-Quelle-Bereich
+DOCK_RELOAD_BTN_BREITE = 26
+DOCK_RELOAD_BTN_HOEHE  = 24
+
+# Plan-Button Höhe
+DOCK_PLAN_BTN_HOEHE = 22
+
+# Icon-Buttons in KI-Header
+DOCK_ICON_BTN_BREITE = 22
+DOCK_ICON_BTN_HOEHE  = 18
+
+# Panel-Toolbar-Buttons
+TOOLBAR_PANEL_BTN_HOEHE  = 26
+TOOLBAR_PANEL_BTN_BREITE = 32
+
+# Trenner-Label Höhe
+DOCK_TRENNER_LBL_HOEHE = 16
+
+# CSS: KI-Eingaberahmen
+def STY_KI_EINGABE_RAHMEN() -> str:
+    return "QFrame#ki_eingabe_rahmen{border:1px solid palette(shadow);border-radius:3px;}"
+
+# CSS: KI-Eingabefelder (ohne eigenen Rahmen, da im Rahmen-Widget)
+def STY_KI_EINGABE_FELD() -> str:
+    return "QPlainTextEdit{font-family:'Courier New',monospace;border:none;border-radius:0;}"
 
 
 def STY_ABSCHNITT_LABEL_LG(fs: int) -> str:

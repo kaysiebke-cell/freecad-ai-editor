@@ -299,6 +299,28 @@ class KIAnfrage:
             except Exception:
                 pass
 
+            # Skills: passende Skill-Dateien anhand von Stichwörtern anhängen
+            try:
+                import re as _re, os as _os
+                _skills_dir = _os.path.join(
+                    _os.path.dirname(_os.path.dirname(_os.path.dirname(__file__))),
+                    "data", "skills"
+                )
+                _fastener_pattern = _re.compile(
+                    r'\b(M\d+(\.\d+)?|Schraube|Gewinde|hole|loch|'
+                    r'counterbore|countersink|Senkung|Kernloch|Durchgangsloch)\b',
+                    _re.IGNORECASE
+                )
+                if _fastener_pattern.search(nl_inhalt):
+                    _skill_pfad = _os.path.join(_skills_dir, "fastener-hole.md")
+                    if _os.path.isfile(_skill_pfad):
+                        with open(_skill_pfad, encoding="utf-8") as _sf:
+                            fc11_prompt = (fc11_prompt
+                                           + "\n━━━ SKILL: SCHRAUBENLÖCHER ━━━\n"
+                                           + _sf.read())
+            except Exception:
+                pass
+
             self._c._nl_antwort_aktiv = True
             threading.Thread(
                 target=self._c._streaming.worker_mit_system,

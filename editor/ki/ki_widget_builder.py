@@ -14,6 +14,7 @@ from core.qt_compat import QtWidgets, QtCore, QtGui
 from core.params import (KI_PRESETS, KI_PRESET_KATEGORIEN,
                          lade_api_key, speichere_api_key, speichere_quelle, lade_quelle,
                          speichere_modell)
+from core.theme_styles import PARAM_SPINBOX_BREITE_SCHMAL, PARAM_SPINBOX_BREITE_BREIT
 
 
 # ── Interne Event-Handler (nur hier verbunden) ────────────────────────────
@@ -131,12 +132,53 @@ def init_ki_widgets(editor, icons_dir: str) -> None:
     editor._temp_box.setRange(0.0, 2.0)
     editor._temp_box.setSingleStep(0.1)
     editor._temp_box.setValue(0.2)
-    editor._temp_box.setFixedWidth(58)
+    editor._temp_box.setFixedWidth(PARAM_SPINBOX_BREITE_SCHMAL)
     editor._temp_box.setToolTip(
         "Temperatur (0.0–2.0)\n"
         "0.0–0.3 = präzise (Code)\n"
         "0.5–0.8 = kreativ\n"
         "1.0+    = sehr kreativ")
+
+    editor._max_tokens_box = QtWidgets.QSpinBox()
+    editor._max_tokens_box.setRange(256, 65536)
+    editor._max_tokens_box.setSingleStep(256)
+    editor._max_tokens_box.setValue(4096)
+    editor._max_tokens_box.setFixedWidth(PARAM_SPINBOX_BREITE_BREIT)
+    editor._max_tokens_box.setToolTip(
+        "Max. Output-Tokens\n"
+        "Wie viel Text/Code das Modell maximal zurückgeben darf.\n"
+        "Ollama: num_predict  |  Cloud: max_tokens")
+
+    editor._ctx_box = QtWidgets.QSpinBox()
+    editor._ctx_box.setRange(512, 131072)
+    editor._ctx_box.setSingleStep(1024)
+    editor._ctx_box.setValue(8192)
+    editor._ctx_box.setFixedWidth(PARAM_SPINBOX_BREITE_BREIT)
+    editor._ctx_box.setToolTip(
+        "Kontext-Fenster (num_ctx)\n"
+        "Wie viele Token das Modell gleichzeitig 'sehen' kann.\n"
+        "Nur wirksam bei Ollama. Größer = mehr RAM.")
+
+    editor._top_p_box = QtWidgets.QDoubleSpinBox()
+    editor._top_p_box.setRange(0.0, 1.0)
+    editor._top_p_box.setSingleStep(0.05)
+    editor._top_p_box.setValue(0.9)
+    editor._top_p_box.setDecimals(2)
+    editor._top_p_box.setFixedWidth(PARAM_SPINBOX_BREITE_SCHMAL)
+    editor._top_p_box.setToolTip(
+        "Top-P (Nucleus Sampling)\n"
+        "Wählt aus den wahrscheinlichsten Tokens die zusammen P % ausmachen.\n"
+        "0.9 = Standard  |  1.0 = deaktiviert")
+
+    editor._top_k_box = QtWidgets.QSpinBox()
+    editor._top_k_box.setRange(0, 200)
+    editor._top_k_box.setSingleStep(5)
+    editor._top_k_box.setValue(40)
+    editor._top_k_box.setFixedWidth(PARAM_SPINBOX_BREITE_SCHMAL)
+    editor._top_k_box.setToolTip(
+        "Top-K\n"
+        "Wählt nur aus den K wahrscheinlichsten nächsten Tokens.\n"
+        "0 = deaktiviert  |  40 = Standard (Ollama)")
 
     editor._btn_modus_anfaenger = QtWidgets.QRadioButton(MODUS_LABELS[MODUS_ANFAENGER])
     editor._btn_modus_anfaenger.setToolTip(MODUS_TOOLTIPS[MODUS_ANFAENGER])

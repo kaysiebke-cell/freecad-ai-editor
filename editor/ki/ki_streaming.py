@@ -20,6 +20,16 @@ class KIStreaming:
     def __init__(self, controller):
         self._c = controller
 
+    def _params(self) -> dict:
+        """Liest Modell-Parameter aus den Einstellungs-Widgets."""
+        c = self._c
+        return {
+            "max_tokens": getattr(c, "_max_tokens_box", None) and c._max_tokens_box.value() or 4096,
+            "top_p":      getattr(c, "_top_p_box",      None) and c._top_p_box.value()      or 0.9,
+            "top_k":      getattr(c, "_top_k_box",      None) and c._top_k_box.value()      or 40,
+            "num_ctx":    getattr(c, "_ctx_box",         None) and c._ctx_box.value()        or 8192,
+        }
+
     # ── Zentrale Anbieter-Weiche ──────────────────────────────────────────
 
     def stream_fuer_anbieter(self, source, model, prompt, temperature):
@@ -152,7 +162,9 @@ class KIStreaming:
                 "stream": False,
                 "options": {
                     "temperature": temperature,
-                    "num_ctx":    2048,
+                    "num_ctx":    self._params()["num_ctx"],
+                    "top_p":      self._params()["top_p"],
+                    "top_k":      self._params()["top_k"],
                     "num_thread": _os.cpu_count() or 4,
                 },
             },
@@ -182,15 +194,17 @@ class KIStreaming:
 
     def stream_ollama(self, model, prompt, temperature):
         import os as _os
-        _cpu_kerne = _os.cpu_count() or 4
+        _p = self._params()
         r = self._c._session.post(
             "http://localhost:11434/api/generate",
             json={"model": model, "prompt": prompt, "stream": True,
                   "options": {
                       "temperature": temperature,
-                      "num_ctx":     2048,
-                      "num_predict": 1024,
-                      "num_thread":  _cpu_kerne,
+                      "num_ctx":     _p["num_ctx"],
+                      "num_predict": _p["max_tokens"],
+                      "top_p":       _p["top_p"],
+                      "top_k":       _p["top_k"],
+                      "num_thread":  _os.cpu_count() or 4,
                   }},
             stream=True, timeout=None)
         r.raise_for_status()
@@ -214,8 +228,9 @@ class KIStreaming:
             "https://api.anthropic.com/v1/messages",
             headers={"x-api-key": key, "anthropic-version": "2023-06-01",
                      "Content-Type": "application/json"},
-            json={"model": model, "max_tokens": 4096, "temperature": temperature,
-                  "stream": True,
+            json={"model": model, "max_tokens": self._params()["max_tokens"],
+                  "temperature": temperature, "stream": True,
+                  "top_p": self._params()["top_p"],
                   "system": "Du bist ein Python-Experte. Antworte nur mit Python-Code.",
                   "messages": [{"role": "user", "content": prompt}]},
             stream=True, timeout=120)
@@ -243,8 +258,9 @@ class KIStreaming:
             "https://api.anthropic.com/v1/messages",
             headers={"x-api-key": key, "anthropic-version": "2023-06-01",
                      "Content-Type": "application/json"},
-            json={"model": model, "max_tokens": 4096, "temperature": temperature,
-                  "stream": True,
+            json={"model": model, "max_tokens": self._params()["max_tokens"],
+                  "temperature": temperature, "stream": True,
+                  "top_p": self._params()["top_p"],
                   "system": "Du bist ein Python-Experte für FreeCAD-Makros. "
                              "Antworte nur mit Python-Code ohne Markdown-Fences.",
                   "messages": verlauf},
@@ -280,6 +296,8 @@ class KIStreaming:
             headers={"Authorization": f"Bearer {key}",
                      "Content-Type": "application/json"},
             json={"model": model, "temperature": temperature, "stream": True,
+                  "max_tokens": self._params()["max_tokens"],
+                  "top_p":      self._params()["top_p"],
                   "messages": [
                       {"role": "system",
                        "content": "Du bist ein Python-Experte. Antworte nur mit Python-Code."},
@@ -315,6 +333,8 @@ class KIStreaming:
             headers={"Authorization": f"Bearer {key}",
                      "Content-Type": "application/json"},
             json={"model": model, "temperature": temperature, "stream": True,
+                  "max_tokens": self._params()["max_tokens"],
+                  "top_p":      self._params()["top_p"],
                   "messages": nachrichten},
             stream=True, timeout=120)
         r.raise_for_status()
