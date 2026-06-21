@@ -14,7 +14,7 @@ from core import schrift
 def init_central_widget(editor) -> None:
     """Erstellt zentrales Widget, Suche-Leiste und Statusbar und setzt sie am editor."""
 
-    def mkbtn(label, tip, slot, w=None, h=28):
+    def mkbtn(label, tip, slot, w=None, h=theme.SUCHE_BTN_MIN_H):
         b = QtWidgets.QPushButton(label)
         b.setToolTip(tip)
         b.setMinimumHeight(h)
@@ -25,8 +25,9 @@ def init_central_widget(editor) -> None:
 
     editor._suche_widget = QtWidgets.QWidget()
     sl = QtWidgets.QHBoxLayout(editor._suche_widget)
-    sl.setContentsMargins(4, 2, 4, 2)
-    sl.setSpacing(6)
+    sl.setContentsMargins(theme.SUCHE_RAND_L, theme.SUCHE_RAND_T,
+                          theme.SUCHE_RAND_R, theme.SUCHE_RAND_B)
+    sl.setSpacing(theme.SUCHE_ABSTAND)
     sl.addWidget(QtWidgets.QLabel("Suche:"))
     editor._suche_feld = QtWidgets.QLineEdit()
     editor._suche_feld.setPlaceholderText("Suchen (Enter = weiter) …")
@@ -41,7 +42,7 @@ def init_central_widget(editor) -> None:
                             ("Alle", "Alle ersetzen", editor._alles_ersetzen)]:
         sl.addWidget(mkbtn(lbl, tip, slot, h=26))
     _bx = QtWidgets.QPushButton("✕")
-    _bx.setFixedWidth(26)
+    _bx.setFixedWidth(theme.SUCHE_CLOSE_BTN_W)
     _bx.setToolTip("Suche schließen (Esc)")
     _bx.clicked.connect(lambda: editor._suche_widget.setVisible(False))
     sl.addWidget(_bx)
@@ -63,8 +64,9 @@ def init_central_widget(editor) -> None:
 
     central = QtWidgets.QWidget()
     _cl = QtWidgets.QVBoxLayout(central)
-    _cl.setContentsMargins(0, 0, 0, 0)
-    _cl.setSpacing(0)
+    _cl.setContentsMargins(theme.CENTRAL_RAND, theme.CENTRAL_RAND,
+                           theme.CENTRAL_RAND, theme.CENTRAL_RAND)
+    _cl.setSpacing(theme.CENTRAL_ABSTAND)
     _cl.addWidget(editor._editor_tab_widget, stretch=1)
     _cl.addWidget(editor._suche_widget)
     editor.setCentralWidget(central)

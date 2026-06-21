@@ -14,7 +14,8 @@ from core.qt_compat import QtWidgets, QtCore, QtGui
 from core.params import (KI_PRESETS, KI_PRESET_KATEGORIEN,
                          lade_api_key, speichere_api_key, speichere_quelle, lade_quelle,
                          speichere_modell, lade_modell_params, speichere_modell_params)
-from core.theme_styles import PARAM_SPINBOX_BREITE_SCHMAL, PARAM_SPINBOX_BREITE_BREIT
+from core.theme_styles import (PARAM_SPINBOX_BREITE_SCHMAL, PARAM_SPINBOX_BREITE_BREIT,
+                               CFG_KEY_FELD_MIN_H)
 
 
 # ── Interne Event-Handler (nur hier verbunden) ────────────────────────────
@@ -229,7 +230,7 @@ def init_ki_widgets(editor, icons_dir: str) -> None:
 
     editor._key_feld = QtWidgets.QLineEdit()
     editor._key_feld.setEchoMode(QtWidgets.QLineEdit.Password)
-    editor._key_feld.setMinimumHeight(26)
+    editor._key_feld.setMinimumHeight(CFG_KEY_FELD_MIN_H)
     editor._key_feld.setPlaceholderText("sk-ant-…")
     editor._prev_anbieter_id = editor._key_anbieter_id()
     editor._key_feld.editingFinished.connect(

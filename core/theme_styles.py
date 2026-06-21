@@ -206,6 +206,7 @@ DOCK_CFG_ABSCHN_ABST       = 6    # Abstand zwischen Modus/Farbschema-Buttons
 DOCK_CFG_SEK_SPACING       = 4    # addSpacing vor jeder Sektion-Überschrift
 CFG_SYSPROMPT_MIN_H        = 0    # System-Prompt-Textfeld Mindesthöhe
 CFG_SYSPROMPT_MAX_H        = 80   # System-Prompt-Textfeld Maximalhöhe
+CFG_KEY_FELD_MIN_H         = 26   # API-Schlüssel-Eingabe Mindesthöhe
 
 # Parameterwidget-Breiten
 PARAM_SPINBOX_BREITE_SCHMAL = 58   # Temperatur, Top-P, Top-K
@@ -217,21 +218,41 @@ PARAM_FORM_RAND_OBEN = 2
 PARAM_FORM_RAND_REST = 0
 
 # KI-Dock
-DOCK_KI_RAND         = 4
-DOCK_KI_ABSTAND      = 3
-DOCK_KI_PRESET_ABST  = 3
-DOCK_KI_INPUT_ABST   = 2
-DOCK_KI_OUTPUT_ABST  = 2
-DOCK_KI_KONTEXT_ABST = 2
+DOCK_KI_RAND              = 4
+DOCK_KI_ABSTAND           = 3
+DOCK_KI_PRESET_ABST       = 3
+DOCK_KI_INPUT_ABST        = 2
+DOCK_KI_OUTPUT_ABST       = 2
+DOCK_KI_KONTEXT_ABST      = 2
+DOCK_KI_FRAGE_MIN_H       = 30   # Mindesthöhe Frage-Eingabefeld
+DOCK_KI_KONTEXT_MIN_H     = 80   # Mindesthöhe Kontext-Bereich
 
 # KI-Eingaberahmen (Frage + Code)
 DOCK_KI_RAHMEN_RAND  = 0
 DOCK_KI_RAHMEN_ABST  = 0
 
 # Aktionen-Dock
-DOCK_AKT_RAND    = 4
-DOCK_AKT_ABSTAND = 2
-DOCK_AKT_GRID_ABST = 2
+DOCK_AKT_RAND        = 4
+DOCK_AKT_ABSTAND     = 2
+DOCK_AKT_GRID_ABST   = 2
+DOCK_AKT_BTN_MIN_H   = 28   # Standard-Höhe Aktions-Buttons
+
+# Allgemein: kein Rand / kein Abstand
+KEIN_RAND            = 0
+KEIN_ABSTAND         = 0
+
+# Suche-Leiste (central widget)
+SUCHE_RAND_L         = 4    # setContentsMargins links
+SUCHE_RAND_T         = 2    # setContentsMargins oben
+SUCHE_RAND_R         = 4    # setContentsMargins rechts
+SUCHE_RAND_B         = 2    # setContentsMargins unten
+SUCHE_ABSTAND        = 6    # setSpacing zwischen Widgets
+SUCHE_BTN_MIN_H      = 26   # Mindesthöhe Such-Buttons
+SUCHE_CLOSE_BTN_W    = 26   # Breite Schließen-Button
+
+# Zentrales Editor-Layout
+CENTRAL_RAND         = 0    # kein Rand um Tab-Widget
+CENTRAL_ABSTAND      = 0    # kein Abstand zwischen Tab-Widget und Suche
 
 # Hilfe+Zugang-Dock
 DOCK_BF_RAND         = 0
@@ -239,6 +260,23 @@ DOCK_BF_ABSTAND      = 0
 DOCK_BF_LEISTE_RAND  = (4, 2, 4, 2)   # left, top, right, bottom
 DOCK_BF_LEISTE_ABST  = 2
 DOCK_BF_BTN_HOEHE    = 26
+BF_ICON_TEXT_MIN_W   = 44   # Mindestbreite im Icon+Text-Barrierefreiheitsmodus
+
+# Fehler-Panel
+FEHLER_BTN_W         = 80   # Breite Übersetzer-Buttons (Seite 0)
+FEHLER_BTN_UE_MIN_H  = 34   # Mindesthöhe Übersetzen-Button
+FEHLER_BTN_MIN_H     = 24   # Mindesthöhe Leeren/KI-erklärt-Button
+FEHLER_SB_BTN_MIN_H  = 28   # Mindesthöhe Sandbox-Buttons
+FEHLER_TOGGLE_H      = 28   # Fixhöhe Sandbox/Übersetzer-Umschalter
+FEHLER_MIN_H         = 80   # Dock-Mindesthöhe (verhindert vollständiges Kollabieren)
+FEHLER_MAX_H         = 16777215  # Qt QWIDGETSIZE_MAX – freie Größenanpassung
+FEHLER_ABST_MITTE    = 4    # Spacing mittlerer Buttons-Spalte
+FEHLER_SB_RAND       = 4    # setContentsMargins Sandbox-Button-Leiste
+FEHLER_SB_ABST       = 4    # setSpacing Sandbox-Button-Leiste
+FEHLER_LAYOUT0_RAND_L = 6   # Übersetzer-Hauptlayout Rand links/rechts
+FEHLER_LAYOUT0_RAND_T = 4   # Übersetzer-Hauptlayout Rand oben/unten
+FEHLER_LAYOUT0_ABST  = 6    # Spacing zwischen Eingabe, Buttons, Ausgabe
+FEHLER_SPALTEN_ABST  = 3    # Spacing innerhalb links/rechts-Spalte
 
 # Fehler-Dock
 DOCK_FEHLER_RAND   = 0

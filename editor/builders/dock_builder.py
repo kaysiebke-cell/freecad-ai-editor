@@ -278,7 +278,7 @@ def init_docks(editor) -> None:
     editor._frage_feld = QtWidgets.QPlainTextEdit()
     editor._frage_feld.setFont(schrift.mono_font())
     editor._frage_feld.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
-    editor._frage_feld.setMinimumHeight(30)
+    editor._frage_feld.setMinimumHeight(theme.DOCK_KI_FRAGE_MIN_H)
     editor._frage_feld.setStyleSheet(theme.STY_KI_EINGABE_FELD())
     editor._frage_feld.setPlaceholderText("Frage oder Aufgabe … (optional, überschreibt Preset)")
     theme.apply_input_bg_suche(editor._frage_feld)
@@ -329,7 +329,7 @@ def init_docks(editor) -> None:
     _ki_splitter.addWidget(_output_w)
 
     _kontext_w = QtWidgets.QWidget()
-    _kontext_w.setMinimumHeight(80)
+    _kontext_w.setMinimumHeight(theme.DOCK_KI_KONTEXT_MIN_H)
     _kontext_l = QtWidgets.QVBoxLayout(_kontext_w)
     _kontext_l.setContentsMargins(theme.DOCK_KI_RAHMEN_RAND, theme.DOCK_KI_RAHMEN_RAND,
                                   theme.DOCK_KI_RAHMEN_RAND, theme.DOCK_KI_RAHMEN_RAND)
@@ -371,7 +371,7 @@ def init_docks(editor) -> None:
         lbl.setStyleSheet(theme.STY_ABSCHNITT_LABEL(schrift.pt(schrift.STUFE_XS)))
         _akt_l.addWidget(lbl)
 
-    def _abtn(label, tip, slot=None, enabled=True, h=28):
+    def _abtn(label, tip, slot=None, enabled=True, h=theme.DOCK_AKT_BTN_MIN_H):
         b = QtWidgets.QPushButton(label)
         b.setToolTip(tip)
         b.setMinimumHeight(h)

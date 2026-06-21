@@ -85,8 +85,8 @@ def init_toolbar(editor) -> None:
     if _bf_bool("BF_IconText", False):
         for _pb, _ico, _lbl in editor._panel_btns:
             _pb.setText(f"{_ico}  {_lbl}")
-            _pb.setMinimumWidth(44)
-            _pb.setMaximumWidth(16777215)
+            _pb.setMinimumWidth(theme.BF_ICON_TEXT_MIN_W)
+            _pb.setMaximumWidth(theme.FEHLER_MAX_H)
     if _bf_bool("BF_EinfacheAnsicht", False):
         for _pb in editor._panel_btns_optional:
             _pb.setVisible(False)

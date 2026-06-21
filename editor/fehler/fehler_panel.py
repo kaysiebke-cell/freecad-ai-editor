@@ -172,8 +172,9 @@ class FehlerPanel(QtWidgets.QWidget):
 
     def _baue_ui(self) -> None:
         haupt = QtWidgets.QVBoxLayout(self)
-        haupt.setContentsMargins(0, 0, 0, 0)
-        haupt.setSpacing(0)
+        haupt.setContentsMargins(theme.KEIN_RAND, theme.KEIN_RAND,
+                                 theme.KEIN_RAND, theme.KEIN_RAND)
+        haupt.setSpacing(theme.KEIN_ABSTAND)
 
         # QStackedWidget: schaltet zwischen Seiten um
         self._stack = QtWidgets.QStackedWidget()
@@ -183,12 +184,13 @@ class FehlerPanel(QtWidgets.QWidget):
         # ─────────────────────────────────────────────────────────────────
         self._seite0 = QtWidgets.QWidget()
         layout0 = QtWidgets.QHBoxLayout(self._seite0)
-        layout0.setContentsMargins(6, 4, 6, 4)
-        layout0.setSpacing(6)
+        layout0.setContentsMargins(theme.FEHLER_LAYOUT0_RAND_L, theme.FEHLER_LAYOUT0_RAND_T,
+                                   theme.FEHLER_LAYOUT0_RAND_L, theme.FEHLER_LAYOUT0_RAND_T)
+        layout0.setSpacing(theme.FEHLER_LAYOUT0_ABST)
 
         # Links: Eingabe
         links = QtWidgets.QVBoxLayout()
-        links.setSpacing(3)
+        links.setSpacing(theme.FEHLER_SPALTEN_ABST)
         self._lbl_ein = QtWidgets.QLabel("Fehlermeldung (Englisch):")
         links.addWidget(self._lbl_ein)
         self._ein = QtWidgets.QPlainTextEdit()
@@ -198,19 +200,19 @@ class FehlerPanel(QtWidgets.QWidget):
 
         # Mitte: Buttons
         mitte = QtWidgets.QVBoxLayout()
-        mitte.setSpacing(4)
+        mitte.setSpacing(theme.FEHLER_ABST_MITTE)
         mitte.addStretch()
         self._btn_ue = QtWidgets.QPushButton("🔍 Übersetzen")
-        self._btn_ue.setFixedWidth(80)
-        self._btn_ue.setMinimumHeight(34)
+        self._btn_ue.setFixedWidth(theme.FEHLER_BTN_W)
+        self._btn_ue.setMinimumHeight(theme.FEHLER_BTN_UE_MIN_H)
         mitte.addWidget(self._btn_ue)
         self._btn_clear = QtWidgets.QPushButton("🗑 Leeren")
-        self._btn_clear.setFixedWidth(80)
-        self._btn_clear.setMinimumHeight(24)
+        self._btn_clear.setFixedWidth(theme.FEHLER_BTN_W)
+        self._btn_clear.setMinimumHeight(theme.FEHLER_BTN_MIN_H)
         mitte.addWidget(self._btn_clear)
         self._btn_ki = QtWidgets.QPushButton("🐛 KI erklärt")
-        self._btn_ki.setFixedWidth(80)
-        self._btn_ki.setMinimumHeight(24)
+        self._btn_ki.setFixedWidth(theme.FEHLER_BTN_W)
+        self._btn_ki.setMinimumHeight(theme.FEHLER_BTN_MIN_H)
         self._btn_ki.setVisible(self._ki_cb is not None)
         mitte.addWidget(self._btn_ki)
         mitte.addStretch()
@@ -218,7 +220,7 @@ class FehlerPanel(QtWidgets.QWidget):
 
         # Rechts: Ausgabe
         rechts = QtWidgets.QVBoxLayout()
-        rechts.setSpacing(3)
+        rechts.setSpacing(theme.FEHLER_SPALTEN_ABST)
         self._lbl_aus = QtWidgets.QLabel("Erklärung (Deutsch):")
         rechts.addWidget(self._lbl_aus)
         self._aus = QtWidgets.QPlainTextEdit()
@@ -234,16 +236,18 @@ class FehlerPanel(QtWidgets.QWidget):
         # ─────────────────────────────────────────────────────────────────
         self._seite1 = QtWidgets.QWidget()
         layout1 = QtWidgets.QVBoxLayout(self._seite1)
-        layout1.setContentsMargins(0, 0, 0, 0)
-        layout1.setSpacing(0)
+        layout1.setContentsMargins(theme.KEIN_RAND, theme.KEIN_RAND,
+                                   theme.KEIN_RAND, theme.KEIN_RAND)
+        layout1.setSpacing(theme.KEIN_ABSTAND)
 
         # Top: Buttons
         btn_layout = QtWidgets.QHBoxLayout()
-        btn_layout.setContentsMargins(4, 4, 4, 4)
-        btn_layout.setSpacing(4)
+        btn_layout.setContentsMargins(theme.FEHLER_SB_RAND, theme.FEHLER_SB_RAND,
+                                      theme.FEHLER_SB_RAND, theme.FEHLER_SB_RAND)
+        btn_layout.setSpacing(theme.FEHLER_SB_ABST)
 
         self._btn_sb_run = QtWidgets.QPushButton("▶ Ausführen")
-        self._btn_sb_run.setMinimumHeight(28)
+        self._btn_sb_run.setMinimumHeight(theme.FEHLER_SB_BTN_MIN_H)
         self._btn_sb_run.setDefault(True)
         self._btn_sb_run.setAutoDefault(True)
         self._btn_sb_run.setToolTip("Code aus KI-Antwort in die Sandbox laden und ausführen")
@@ -251,7 +255,7 @@ class FehlerPanel(QtWidgets.QWidget):
         btn_layout.addWidget(self._btn_sb_run)
 
         self._btn_sb_ki = QtWidgets.QPushButton("🔧 KI korrigieren")
-        self._btn_sb_ki.setMinimumHeight(28)
+        self._btn_sb_ki.setMinimumHeight(theme.FEHLER_SB_BTN_MIN_H)
         self._btn_sb_ki.setAutoDefault(False)
         self._btn_sb_ki.setToolTip("Fehler an KI schicken und korrigierten Code zurückholen (max. 3 Versuche)")
         self._btn_sb_ki.setEnabled(False)
@@ -259,7 +263,7 @@ class FehlerPanel(QtWidgets.QWidget):
         btn_layout.addWidget(self._btn_sb_ki)
 
         self._btn_sb_clear = QtWidgets.QPushButton("🗑 Leeren")
-        self._btn_sb_clear.setMinimumHeight(28)
+        self._btn_sb_clear.setMinimumHeight(theme.FEHLER_SB_BTN_MIN_H)
         self._btn_sb_clear.setAutoDefault(False)
         self._btn_sb_clear.clicked.connect(self.sandbox_leeren)
         btn_layout.addWidget(self._btn_sb_clear)
@@ -293,7 +297,7 @@ class FehlerPanel(QtWidgets.QWidget):
         haupt.addWidget(self._stack, stretch=1)
 
         self._btn_toggle = QtWidgets.QPushButton("🧪 Sandbox")
-        self._btn_toggle.setFixedHeight(28)
+        self._btn_toggle.setFixedHeight(theme.FEHLER_TOGGLE_H)
         self._btn_toggle.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding,
             QtWidgets.QSizePolicy.Fixed)
@@ -307,8 +311,8 @@ class FehlerPanel(QtWidgets.QWidget):
         if self._ki_cb:
             self._btn_ki.clicked.connect(self._ki_cb)
 
-        self.setMinimumHeight(80)
-        self.setMaximumHeight(16777215)
+        self.setMinimumHeight(theme.FEHLER_MIN_H)
+        self.setMaximumHeight(theme.FEHLER_MAX_H)
         self._style_anwenden()
 
     # ── Seiten umschalten ─────────────────────────────────────────────────
