@@ -13,7 +13,8 @@ from core.qt_compat import QtWidgets, QtCore, QtGui
 
 from core.params import (KI_PRESETS, KI_PRESET_KATEGORIEN,
                          lade_api_key, speichere_api_key, speichere_quelle, lade_quelle,
-                         speichere_modell, lade_modell_params, speichere_modell_params)
+                         speichere_modell, lade_modell_params, speichere_modell_params,
+                         lade_ki_modus, speichere_ki_modus)
 from core.theme_styles import (PARAM_SPINBOX_BREITE_SCHMAL, PARAM_SPINBOX_BREITE_BREIT,
                                CFG_KEY_FELD_MIN_H)
 
@@ -61,6 +62,7 @@ def _on_modus_geaendert(editor):
     editor._ki_modus = (MODUS_EXPERTE
                         if editor._btn_modus_experte.isChecked()
                         else MODUS_ANFAENGER)
+    speichere_ki_modus(editor._ki_modus)
     editor._set_status(f"Modus → {MODUS_LABELS[editor._ki_modus]}")
 
 
@@ -123,7 +125,7 @@ def init_ki_widgets(editor, icons_dir: str) -> None:
     """Erstellt alle KI-Einstellungs-Widgets und setzt sie als Attribute am editor."""
     from editor.ki.ki_modi import (MODUS_ANFAENGER, MODUS_EXPERTE,
                          MODUS_LABELS, MODUS_TOOLTIPS, MODUS_DEFAULT)
-    editor._ki_modus = MODUS_DEFAULT
+    editor._ki_modus = lade_ki_modus()
 
     editor._src_box = QtWidgets.QComboBox()
     editor._src_box.setIconSize(QtCore.QSize(16, 16))
@@ -221,10 +223,10 @@ def init_ki_widgets(editor, icons_dir: str) -> None:
 
     editor._btn_modus_anfaenger = QtWidgets.QRadioButton(MODUS_LABELS[MODUS_ANFAENGER])
     editor._btn_modus_anfaenger.setToolTip(MODUS_TOOLTIPS[MODUS_ANFAENGER])
-    editor._btn_modus_anfaenger.setChecked(MODUS_DEFAULT == MODUS_ANFAENGER)
+    editor._btn_modus_anfaenger.setChecked(editor._ki_modus == MODUS_ANFAENGER)
     editor._btn_modus_experte = QtWidgets.QRadioButton(MODUS_LABELS[MODUS_EXPERTE])
     editor._btn_modus_experte.setToolTip(MODUS_TOOLTIPS[MODUS_EXPERTE])
-    editor._btn_modus_experte.setChecked(MODUS_DEFAULT == MODUS_EXPERTE)
+    editor._btn_modus_experte.setChecked(editor._ki_modus == MODUS_EXPERTE)
     editor._btn_modus_anfaenger.toggled.connect(lambda: _on_modus_geaendert(editor))
     editor._btn_modus_experte.toggled.connect(lambda: _on_modus_geaendert(editor))
 

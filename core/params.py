@@ -347,6 +347,15 @@ def speichere_max_sitzungen(n: int) -> None:
     App.ParamGet(PREF_KEY).SetInt("MaxSitzungen", max(1, int(n)))
 
 
+# ── KI-Modus (Anfänger / Experte) ────────────────────────────────────────
+
+def lade_ki_modus() -> str:
+    return App.ParamGet(PREF_KEY).GetString("KIModus", "anfaenger")
+
+def speichere_ki_modus(modus: str) -> None:
+    App.ParamGet(PREF_KEY).SetString("KIModus", modus)
+
+
 # ── Auto-Einfügen nach KI-Antwort ────────────────────────────────────────
 
 def lade_auto_einfuegen() -> bool:
