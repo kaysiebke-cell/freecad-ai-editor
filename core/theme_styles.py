@@ -205,8 +205,10 @@ DOCK_CFG_ZEILEN_ABST       = 3    # Abstand innerhalb einer Zeile (z.B. Quelle+B
 DOCK_CFG_ABSCHN_ABST       = 6    # Abstand zwischen Modus/Farbschema-Buttons
 DOCK_CFG_SEK_SPACING       = 4    # addSpacing vor jeder Sektion-Überschrift
 CFG_SYSPROMPT_MIN_H        = 0    # System-Prompt-Textfeld Mindesthöhe
-CFG_SYSPROMPT_MAX_H        = 80   # System-Prompt-Textfeld Maximalhöhe
+CFG_SYSPROMPT_MAX_H        = 220  # System-Prompt-Textfeld Maximalhöhe (vollständige Prompts)
 CFG_KEY_FELD_MIN_H         = 26   # API-Schlüssel-Eingabe Mindesthöhe
+CFG_VORLAGE_BTN_W          = 22   # 📋-Vorlagen-Button Breite
+CFG_VORLAGE_BTN_H          = 18   # 📋-Vorlagen-Button Höhe
 
 # Parameterwidget-Breiten
 PARAM_SPINBOX_BREITE_SCHMAL = 58   # Temperatur, Top-P, Top-K

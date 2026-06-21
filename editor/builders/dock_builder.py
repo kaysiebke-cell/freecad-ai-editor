@@ -16,7 +16,7 @@ from core.params import (lade_kontext, speichere_kontext,
                          lade_max_sitzungen, speichere_max_sitzungen,
                          lade_auto_einfuegen, speichere_auto_einfuegen,
                          lade_thinking_modus, speichere_thinking_modus,
-                         lade_api_key)
+                         lade_api_key, SYSTEM_PROMPT_VORLAGEN)
 from ui.barrierefreiheit import BarrierefreiheitPanel
 from editor.panel import FreecadHelferPanel
 from data.hilfe import HilfeTab
@@ -217,12 +217,36 @@ def init_docks(editor) -> None:
 
     # ── System-Prompt-Zusatz ──
     _cfg_l.addSpacing(theme.DOCK_CFG_SEK_SPACING)
-    _cfg_l.addWidget(_cfg_lbl("SYSTEM-PROMPT-ZUSATZ"))
+    _sysp_hdr = QtWidgets.QHBoxLayout()
+    _sysp_hdr.setSpacing(theme.DOCK_CFG_ZEILEN_ABST)
+    _sysp_hdr.addWidget(_cfg_lbl("SYSTEM-PROMPT-ZUSATZ"), stretch=1)
+    _vorlage_btn = QtWidgets.QToolButton()
+    _vorlage_btn.setText("📋")
+    _vorlage_btn.setFixedSize(theme.CFG_VORLAGE_BTN_W, theme.CFG_VORLAGE_BTN_H)
+    _vorlage_btn.setToolTip("Vordefinierte System-Prompt-Vorlage laden")
+    _vorlage_btn.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+    _vorlage_menu = QtWidgets.QMenu(_vorlage_btn)
+    for _titel, _text in SYSTEM_PROMPT_VORLAGEN.items():
+        if _titel.startswith("──"):
+            _vorlage_menu.addSeparator()
+            continue
+        _act = _vorlage_menu.addAction(_titel)
+        _act.setEnabled(bool(_text))
+        _act.triggered.connect(
+            lambda checked, t=_text: (
+                editor._system_prompt_extra.setPlainText(t),
+                speichere_system_prompt_extra(t)
+            )
+        )
+    _vorlage_btn.setMenu(_vorlage_menu)
+    _sysp_hdr.addWidget(_vorlage_btn)
+    _cfg_l.addLayout(_sysp_hdr)
     editor._system_prompt_extra = QtWidgets.QPlainTextEdit()
     editor._system_prompt_extra.setFont(schrift.ui_font())
     editor._system_prompt_extra.setPlaceholderText(
         "Optionaler Zusatz zum System-Prompt ...\n"
-        "z. B. 'Antworte immer auf Deutsch' oder eigene Regeln.")
+        "z. B. 'Antworte immer auf Deutsch' oder eigene Regeln.\n"
+        "Beginnt der Text mit 'You are', ersetzt er den Basis-Prompt komplett.")
     editor._system_prompt_extra.setMinimumHeight(theme.CFG_SYSPROMPT_MIN_H)
     editor._system_prompt_extra.setMaximumHeight(theme.CFG_SYSPROMPT_MAX_H)
     editor._system_prompt_extra.setPlainText(lade_system_prompt_extra())

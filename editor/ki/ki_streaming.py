@@ -32,11 +32,15 @@ class KIStreaming:
 
     @staticmethod
     def _system_mit_extra(basis: str) -> str:
-        """Hängt den nutzerdefinierten System-Prompt-Zusatz an."""
+        """Gibt den System-Prompt zurück.
+        Beginnt das Extra mit 'You are', gilt es als vollständiger Ersatz-Prompt.
+        Sonst wird es als Zusatz an den Basis-Prompt angehängt."""
         extra = lade_system_prompt_extra().strip()
-        if extra:
-            return f"{basis}\n\n{extra}"
-        return basis
+        if not extra:
+            return basis
+        if extra.lower().startswith("you are"):
+            return extra
+        return f"{basis}\n\n{extra}"
 
     # ── Zentrale Anbieter-Weiche ──────────────────────────────────────────
 

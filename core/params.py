@@ -275,6 +275,41 @@ def speichere_system_prompt_extra(text: str) -> None:
     App.ParamGet(PREF_KEY).SetString("SystemPromptExtra", text)
 
 
+SYSTEM_PROMPT_VORLAGEN: dict[str, str] = {
+    "── Vorlage wählen ──": "",
+
+    "🐍 Python-Experte (Standard)": (
+        "You are a Python expert for FreeCAD macros. "
+        "Reply only with Python code, no Markdown fences. "
+        "Explanations always in German."
+    ),
+
+    "🔍 Code-Analyse (Deutsch)": (
+        "You are a senior Python code reviewer specializing in FreeCAD macros. "
+        "Analyse the provided code thoroughly: find bugs, logic errors, performance issues, "
+        "and security problems. "
+        "Reply in German. Structure your answer: "
+        "1) Zusammenfassung, 2) Gefundene Probleme (mit Zeilennummer), 3) Verbesserter Code."
+    ),
+
+    "📐 Parametrisches Modell": (
+        "You are a FreeCAD parametric modelling expert. "
+        "All dimensions must be named constants at the top of the script. "
+        "Use App.ActiveDocument correctly. Call doc.recompute() at the end. "
+        "Add short German comments at every important step. "
+        "Reply ONLY with complete, runnable Python code."
+    ),
+
+    "🛡 Sicherheits-Review": (
+        "You are a Python security expert reviewing FreeCAD macro code. "
+        "Check for: unsafe eval/exec usage, file path injection, unvalidated user input, "
+        "dangerous shell calls, and API misuse. "
+        "Reply in German. List every finding with severity (KRITISCH / MITTEL / GERING) "
+        "and provide the fixed code."
+    ),
+}
+
+
 # ── API-Key-Auflösung (file:-Präfix) ─────────────────────────────────────
 
 def api_key_resolved(anbieter: str) -> str:
