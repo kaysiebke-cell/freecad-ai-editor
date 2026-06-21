@@ -99,6 +99,9 @@ def init_docks(editor) -> None:
     editor._zeige_panel = lambda dock, area: zeige_panel(editor, dock, area)
 
     # ── Einstellungs-Dock ──────────────────────────────────────────────────
+    _cfg_scroll = QtWidgets.QScrollArea()
+    _cfg_scroll.setWidgetResizable(True)
+    _cfg_scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
     _cfg_widget = QtWidgets.QWidget()
     _cfg_l = QtWidgets.QVBoxLayout(_cfg_widget)
     _cfg_l.setContentsMargins(theme.DOCK_CFG_RAND, theme.DOCK_CFG_RAND,
@@ -266,8 +269,9 @@ def init_docks(editor) -> None:
     _cfg_l.addWidget(editor._thinking_box)
 
     _cfg_l.addStretch()
+    _cfg_scroll.setWidget(_cfg_widget)
     editor._dock_cfg = editor._make_dock(
-        "⚙  Einstellungen", "dock_einstellungen", _L, _cfg_widget)
+        "⚙  Einstellungen", "dock_einstellungen", _L, _cfg_scroll)
 
     # ── KI-Dock ────────────────────────────────────────────────────────────
     ki_widget = QtWidgets.QWidget()
