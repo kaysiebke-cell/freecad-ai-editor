@@ -21,6 +21,64 @@ from editor.ki.ki_verlauf import _VERLAUF_MAX_NACHRICHTEN
 from editor.ki.kod_analyse import erstelle_code_sitemap, extrahiere_fehler_kontext
 
 
+# ── Automatische API-Kontext-Injektion ────────────────────────────────────────
+
+_DE_EN_MAP = {
+    "kugel": "sphere",    "zylinder": "cylinder", "kasten": "box",
+    "würfel": "box",      "kegel": "cone",         "torus": "torus",
+    "schneid": "cut",     "loch": "cut",            "bohrung": "cut",
+    "verschmelz": "fuse", "vereinig": "fuse",       "subtrak": "cut",
+    "verschieb": "placement", "platz": "placement", "position": "placement",
+    "dreh": "rotation",   "vektor": "vector",       "körper": "body",
+    "skizze": "sketch",   "aufpolster": "pad",      "tasche": "pocket",
+    "netz": "mesh",       "auswahl": "selection",   "ansicht": "view",
+}
+
+_STOPP = {
+    "und", "oder", "mit", "von", "ein", "eine", "einem", "einen", "einer",
+    "der", "die", "das", "dem", "den", "des", "in", "auf", "an", "zu",
+    "als", "für", "ist", "wird", "werden", "soll", "durch", "nach",
+    "create", "make", "the", "with", "from", "that", "this", "into",
+    "using", "erstelle", "erzeuge", "mache", "erstell",
+}
+
+
+def _relevante_api_hints(frage: str, max_hints: int = 5) -> str:
+    """Sucht passende API-Hints anhand von Schlüsselwörtern aus der Nutzerfrage."""
+    try:
+        from data.freecad_api_hints import FC_API_HINTS
+    except ImportError:
+        return ""
+
+    woerter = set()
+    for w in frage.lower().split():
+        w = w.strip(".,;:!?()[]'\"")
+        if len(w) > 3 and w not in _STOPP:
+            woerter.add(w)
+            for de, en in _DE_EN_MAP.items():
+                if de in w:
+                    woerter.add(en)
+
+    if not woerter:
+        return ""
+
+    treffer = []
+    for signatur, beschreibung in FC_API_HINTS:
+        text = (signatur + " " + beschreibung).lower()
+        score = sum(1 for w in woerter if w in text)
+        if score > 0:
+            treffer.append((score, signatur, beschreibung))
+
+    treffer.sort(key=lambda x: x[0], reverse=True)
+    if not treffer:
+        return ""
+
+    zeilen = ["## FreeCAD API – relevante Funktionen:"]
+    for _, sig, desc in treffer[:max_hints]:
+        zeilen.append(f"  {sig}\n  # {desc}")
+    return "\n".join(zeilen)
+
+
 class KIAnfrage:
     """Baut KI-Prompts auf und startet Worker-Threads."""
 
@@ -167,7 +225,7 @@ class KIAnfrage:
 
         prompt = KI_PRESETS.get(preset_name, "").strip()
         if not prompt:
-            prompt = "Verbessere und kommentiere diesen Python-Code auf Deutsch."
+            prompt = "Improve and comment this Python code. Reply in English."
         if eigene_frage:
             prompt = eigene_frage
 
@@ -176,15 +234,15 @@ class KIAnfrage:
             from ui.barrierefreiheit import BarrierefreiheitPanel as _BF
             if _BF.einfache_sprache():
                 prompt += (
-                    "\n\nWICHTIG: Antworte in einfacher Sprache. "
-                    "Kurze Sätze. Einfache Wörter. Keine komplizierten Begriffe.")
+                    "\n\nIMPORTANT: Reply in plain German. "
+                    "Short sentences. Simple words. No complicated terms.")
             if _BF.fachbegriffe_erklaeren():
                 prompt += (
-                    "\nWenn du einen Fachbegriff verwendest, "
-                    "erkläre ihn sofort danach in Klammern einfach.")
+                    "\nIf you use a technical term, "
+                    "immediately explain it in simple German in parentheses.")
             if _BF.antwort_kurz():
                 prompt += (
-                    "\nHalte deine Antwort kurz und auf das Wesentliche beschränkt.")
+                    "\nKeep your answer short and to the point.")
         except Exception:
             pass
 
@@ -222,11 +280,15 @@ class KIAnfrage:
         modus_prefix = MODUS_PROMPTS.get(
             getattr(self._c, "_ki_modus", MODUS_DEFAULT), "")
 
+        # API-Hints automatisch aus Nutzerfrage ableiten
+        _hints_block = _relevante_api_hints(eigene_frage or prompt)
+        _hints_section = f"\n\n{_hints_block}" if _hints_block else ""
+
         if code_quelle == "nur_frage":
             # Reine Frage ohne Code — kein Code-Block im Prompt
             full_prompt = (
                 f"{sitemap_block}"
-                f"{prompt}\n\n"
+                f"{prompt}{_hints_section}\n\n"
                 f"{modus_prefix}"
             )
         else:
@@ -234,8 +296,9 @@ class KIAnfrage:
             full_prompt = (
                 f"{sitemap_block}"
                 f"Aufgabe: {prompt}\n\n"
-                f"{herkunft}:\n```python\n{code}\n```\n\n"
-                "Antworte ausschließlich mit fertigem Python-Code ohne Markdown.\n"
+                f"{herkunft}:\n```python\n{code}\n```"
+                f"{_hints_section}\n\n"
+                "Reply exclusively with finished Python code, no Markdown.\n"
                 f"{modus_prefix}"
             )
 
@@ -272,6 +335,10 @@ class KIAnfrage:
                     nl_inhalt = f"Aktueller FreeCAD-Zustand:\n{dok_info}\n\n{nl_inhalt}"
         except Exception:
             pass
+
+        # API-Hints an NL-Inhalt anhängen (für FC11/FC12/FC13-Worker)
+        if _hints_section:
+            nl_inhalt = f"{nl_inhalt}{_hints_section}"
 
         if ist_nl_modus:
             from editor.ki.nl_generator import NL_TEMPERATURE
@@ -415,20 +482,20 @@ class KIAnfrage:
 
         if code_ausschnitt:
             system = (
-                "Du bist ein FreeCAD-Python-Debugger. "
-                "Der User hat einen Laufzeitfehler erhalten.\n"
-                "Hier ist der relevante Code-Ausschnitt "
-                "(──▶ markiert die fehlerhafte Zeile):\n"
+                "You are a FreeCAD Python debugger. "
+                "The user has received a runtime error.\n"
+                "Here is the relevant code excerpt "
+                "(──▶ marks the faulty line):\n"
                 "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
                 f"{code_ausschnitt}\n"
                 "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-                "Erkläre kurz auf Deutsch, warum dieser Fehler auftritt, "
-                "und liefere die korrigierte Fassung nur dieses Code-Blocks."
+                "Briefly explain in German why this error occurs, "
+                "and provide the corrected version of only this code block."
             )
         else:
             system = (
-                "Du bist ein FreeCAD-Python-Debugger. "
-                "Erkläre auf Deutsch, warum dieser Fehler auftritt und wie man ihn behebt."
+                "You are a FreeCAD Python debugger. "
+                "Explain in German why this error occurs and how to fix it."
             )
 
         user_prompt = f"Fehlermeldung:\n{fehler_text}"
