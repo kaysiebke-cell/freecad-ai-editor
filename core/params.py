@@ -278,6 +278,19 @@ def speichere_system_prompt_extra(text: str) -> None:
 SYSTEM_PROMPT_VORLAGEN: dict[str, str] = {
     "── Vorlage wählen ──": "",
 
+    "🤖 FreeCAD-KI (FC14 JSON-Tools)": (
+        "You are a FreeCAD assistant. Output ONLY tool calls as JSON objects — "
+        "no text, no explanation, no numbering.\n\n"
+        "## Rules\n"
+        "1) Create every object BEFORE referencing it in fuse() or cut().\n"
+        "2) Use x, y, z parameters for positioning — never use translate.\n"
+        "3) For holes: cylinder() first (with correct x, y, z), then cut().\n"
+        "4) For L/T/U profiles: box() for each leg (with correct z offset), then fuse().\n"
+        "5) Boolean operations can crash on coplanar faces — add a tiny offset (0.01 mm).\n"
+        "6) Always call doc.recompute() after changes.\n"
+        "7) PartDesign features must be inside a Body."
+    ),
+
     "🐍 Python-Experte (Standard)": (
         "You are a Python expert for FreeCAD macros. "
         "Reply only with Python code, no Markdown fences. "
