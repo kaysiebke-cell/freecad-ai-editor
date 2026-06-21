@@ -113,7 +113,57 @@ def init_docks(editor) -> None:
         l.setStyleSheet(theme.STY_ABSCHNITT_LABEL(schrift.pt(schrift.STUFE_XS)))
         return l
 
+    # ── Schnellstart ──
+    _cfg_l.addWidget(_cfg_lbl("SCHNELLSTART"))
+
+    _SCHNELLSTART_PROFILE = [
+        ("🎯 FreeCAD Code", {
+            "vorlage":  SYSTEM_PROMPT_VORLAGEN.get("🧱 FreeCAD Part-Script", ""),
+            "temp":     0.2,
+            "modus":    "experte",
+            "thinking": "aus",
+        }),
+        ("💬 Erklärung", {
+            "vorlage":  SYSTEM_PROMPT_VORLAGEN.get("🐍 Python-Experte (Standard)", ""),
+            "temp":     0.7,
+            "modus":    "anfaenger",
+            "thinking": "aus",
+        }),
+        ("🧠 Thinking", {
+            "vorlage":  SYSTEM_PROMPT_VORLAGEN.get("🧱 FreeCAD Part-Script", ""),
+            "temp":     0.2,
+            "modus":    "experte",
+            "thinking": "an",
+        }),
+    ]
+
+    def _wende_schnellstart_an(cfg):
+        vorlage = cfg["vorlage"]
+        editor._system_prompt_extra.setPlainText(vorlage)
+        speichere_system_prompt_extra(vorlage)
+        editor._temp_box.setValue(cfg["temp"])
+        if cfg["modus"] == "experte":
+            editor._btn_modus_experte.setChecked(True)
+        else:
+            editor._btn_modus_anfaenger.setChecked(True)
+        editor._thinking_box.setCurrentIndex(1 if cfg["thinking"] == "an" else 0)
+
+    _qs_layout = QtWidgets.QHBoxLayout()
+    _qs_layout.setSpacing(theme.DOCK_CFG_ZEILEN_ABST)
+    for _qs_label, _qs_cfg in _SCHNELLSTART_PROFILE:
+        _qs_btn = QtWidgets.QPushButton(_qs_label)
+        _qs_btn.setMinimumHeight(theme.SCHNELLSTART_BTN_H)
+        _qs_btn.setFont(schrift.ui_font())
+        _qs_btn.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        _qs_btn.setToolTip(
+            f"Setzt Vorlage, Temperatur, Modus und Thinking\n"
+            f"auf bewährte Werte für: {_qs_label}")
+        _qs_btn.clicked.connect(lambda checked, c=_qs_cfg: _wende_schnellstart_an(c))
+        _qs_layout.addWidget(_qs_btn)
+    _cfg_l.addLayout(_qs_layout)
+
     # ── KI-Quelle ──
+    _cfg_l.addSpacing(theme.DOCK_CFG_SEK_SPACING)
     _cfg_l.addWidget(_cfg_lbl("KI-QUELLE"))
     _r1 = QtWidgets.QHBoxLayout()
     _r1.setSpacing(theme.DOCK_CFG_ZEILEN_ABST)

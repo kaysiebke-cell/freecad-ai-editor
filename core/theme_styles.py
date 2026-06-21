@@ -261,6 +261,9 @@ VERBTEST_BTN_BREITE  = 24   # Breite und Höhe des 🔌-Buttons
 VERBTEST_BTN_HOEHE   = 24
 VERBTEST_LABEL_MIN_H = 16   # Mindesthöhe des Status-Labels
 
+# Schnellstart-Buttons
+SCHNELLSTART_BTN_H   = 26   # Höhe der Schnellstart-Buttons
+
 # Hilfe+Zugang-Dock
 DOCK_BF_RAND         = 0
 DOCK_BF_ABSTAND      = 0
