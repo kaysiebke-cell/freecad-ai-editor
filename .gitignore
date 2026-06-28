@@ -1,4 +1,11 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
-gif_erstellen.py
+
+# Claude Code Worktrees (temporäre Agent-Branches)
+.claude/worktrees/
+
+# Editor-spezifisch
+*.swp
+.DS_Store

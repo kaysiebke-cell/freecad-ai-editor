@@ -154,7 +154,6 @@ class KIAnfrage:
         if not code:
             alle_zeilen = self._c._editor.toPlainText().splitlines()
             if not alle_zeilen:
-                # Kein Code — nur erlaubt wenn eine eigene Frage vorhanden ist
                 _fq_check = getattr(self._c, "_frage_feld", None)
                 if not (_fq_check and _fq_check.toPlainText().strip()):
                     self._c._set_status("⚠  KI-Input und Editor sind leer – bitte Frage oder Code eingeben")
@@ -175,10 +174,10 @@ class KIAnfrage:
                                             NL_SYSTEM_PROMPT_SCHRITTWEISE, NL_PRESET_SCHLUESSEL_SW,
                                             NL_PRESET_SCHLUESSEL_TC)
         preset_name  = self._c._preset_box.currentText()
-        ist_nl_modus = preset_name == NL_PRESET_SCHLUESSEL
-        ist_pd_modus = preset_name == NL_PRESET_SCHLUESSEL_PD
-        ist_sw_modus = preset_name == NL_PRESET_SCHLUESSEL_SW
-        ist_tc_modus = preset_name == NL_PRESET_SCHLUESSEL_TC
+        ist_nl_modus = NL_PRESET_SCHLUESSEL    in preset_name
+        ist_pd_modus = NL_PRESET_SCHLUESSEL_PD in preset_name
+        ist_sw_modus = NL_PRESET_SCHLUESSEL_SW in preset_name
+        ist_tc_modus = NL_PRESET_SCHLUESSEL_TC in preset_name
 
         # FC12/FC13: Harte Sperre bei Ollama
         if ist_sw_modus and self._c._src_box.currentText().startswith("Ollama"):
@@ -225,7 +224,7 @@ class KIAnfrage:
 
         prompt = KI_PRESETS.get(preset_name, "").strip()
         if not prompt:
-            prompt = "Improve and comment this Python code. Reply in English."
+            prompt = "Verbessere und kommentiere diesen Python-Code auf Deutsch."
         if eigene_frage:
             prompt = eigene_frage
 
@@ -234,15 +233,15 @@ class KIAnfrage:
             from ui.barrierefreiheit import BarrierefreiheitPanel as _BF
             if _BF.einfache_sprache():
                 prompt += (
-                    "\n\nIMPORTANT: Reply in plain German. "
-                    "Short sentences. Simple words. No complicated terms.")
+                    "\n\nWICHTIG: Antworte in einfacher Sprache. "
+                    "Kurze Sätze. Einfache Wörter. Keine komplizierten Begriffe.")
             if _BF.fachbegriffe_erklaeren():
                 prompt += (
-                    "\nIf you use a technical term, "
-                    "immediately explain it in simple German in parentheses.")
+                    "\nWenn du einen Fachbegriff verwendest, "
+                    "erkläre ihn sofort danach in Klammern einfach.")
             if _BF.antwort_kurz():
                 prompt += (
-                    "\nKeep your answer short and to the point.")
+                    "\nHalte deine Antwort kurz und auf das Wesentliche beschränkt.")
         except Exception:
             pass
 
@@ -285,7 +284,6 @@ class KIAnfrage:
         _hints_section = f"\n\n{_hints_block}" if _hints_block else ""
 
         if code_quelle == "nur_frage":
-            # Reine Frage ohne Code — kein Code-Block im Prompt
             full_prompt = (
                 f"{sitemap_block}"
                 f"{prompt}{_hints_section}\n\n"
@@ -298,11 +296,10 @@ class KIAnfrage:
                 f"Aufgabe: {prompt}\n\n"
                 f"{herkunft}:\n```python\n{code}\n```"
                 f"{_hints_section}\n\n"
-                "Reply exclusively with finished Python code, no Markdown.\n"
+                "Antworte ausschließlich mit fertigem Python-Code ohne Markdown.\n"
                 f"{modus_prefix}"
             )
 
-        # Verlauf erweitern + absolutes Limit prüfen
         if not hasattr(self._c, "_chat_verlauf"):
             self._c._verlauf.reset()
 
@@ -318,34 +315,62 @@ class KIAnfrage:
         verlauf_kopie = list(self._c._chat_verlauf)
         ki_modus_wert = getattr(self._c, "_ki_modus", None)
 
-        nl_inhalt = code or eigene_frage  # bei reiner Frage ohne Code: Frage direkt senden
+        # FC11: Nutzerbeschreibung aus frage_feld hat Vorrang — nie alten Editor-Code senden
+        ist_ollama_quelle = source_text.startswith("Ollama")
+        if ist_nl_modus:
+            nl_inhalt = eigene_frage or code
+        else:
+            nl_inhalt = code or eigene_frage
 
-        # FreeCAD-Dokumentzustand einbauen — kompakt für Ollama, voll für Cloud
+        # FreeCAD-Dokumentzustand einbauen — nur für Cloud und nicht-FC11
         try:
             from editor.ki.dokument_kontext import (get_dokument_kontext_kompakt,
                                                      get_dokument_kontext)
-            ist_ollama = source_text.startswith("Ollama")
-            if ist_ollama:
-                dok_info = get_dokument_kontext_kompakt()
-                if dok_info:
-                    nl_inhalt = f"{dok_info}\n\n{nl_inhalt}"
-            else:
+            if not ist_ollama_quelle and not ist_nl_modus:
                 dok_info = get_dokument_kontext()
                 if dok_info and "nicht verfügbar" not in dok_info and "Objekte: (keine)" not in dok_info:
                     nl_inhalt = f"Aktueller FreeCAD-Zustand:\n{dok_info}\n\n{nl_inhalt}"
+            elif ist_ollama_quelle and not ist_nl_modus:
+                dok_info = get_dokument_kontext_kompakt()
+                if dok_info:
+                    nl_inhalt = f"{dok_info}\n\n{nl_inhalt}"
         except Exception:
             pass
 
-        # API-Hints an NL-Inhalt anhängen (für FC11/FC12/FC13-Worker)
-        if _hints_section:
+        # API-Hints an NL-Inhalt anhängen — NUR für Cloud
+        if _hints_section and not ist_ollama_quelle:
             nl_inhalt = f"{nl_inhalt}{_hints_section}"
 
         if ist_nl_modus:
             from editor.ki.nl_generator import NL_TEMPERATURE
-            ist_ollama_nl = source_text.startswith("Ollama")
-            fc11_prompt = (NL_SYSTEM_PROMPT_OLLAMA if ist_ollama_nl else NL_SYSTEM_PROMPT)
+            from core.params import lade_fc11_regeln, lade_plan_modus
+            ist_ollama_nl = ist_ollama_quelle
+            _standard = NL_SYSTEM_PROMPT_OLLAMA if ist_ollama_nl else NL_SYSTEM_PROMPT
+            fc11_prompt = lade_fc11_regeln(_standard)
+            _plan_zusatz = (
+                "\n\n[PLAN]\nSchreibe als ERSTE Zeilen Python-Kommentare:\n"
+                "# Objekte: [welche Part::-Objekte]\n"
+                "# Operationen: [Part::Cut / Part::Fuse / keine]\n"
+                "# Platzierung: [wie positioniert]\n"
+                "Dann den vollständigen Code."
+            ) if lade_plan_modus() else ""
 
-            # Tipp: qwen2.5-coder empfehlen wenn kein Code-Modell gewählt
+            # Passende Beispiele — NUR für Cloud (Ollama-Prompt hat bereits Vorlagen)
+            _beispiel_block = ""
+            if not ist_ollama_nl:
+                try:
+                    from data.freecad_beispiele import beispiele_finden
+                    _bsp = beispiele_finden(nl_inhalt, max_beispiele=2)
+                    if _bsp:
+                        _beispiel_block = f"\n\n{_bsp}"
+                except Exception:
+                    pass
+
+            if _plan_zusatz:
+                nl_inhalt = f"{nl_inhalt}{_plan_zusatz}"
+            if _beispiel_block:
+                nl_inhalt = f"{nl_inhalt}{_beispiel_block}"
+
             if ist_ollama_nl and "coder" not in model_text.lower():
                 self._c._set_status(
                     "💡 Tipp: qwen2.5-coder:7b liefert bessere FreeCAD-Code-Ergebnisse "
@@ -396,42 +421,61 @@ class KIAnfrage:
                 kwargs={"preset_name": preset_name, "ki_modus": ki_modus_wert},
                 daemon=True
             ).start()
+
         elif ist_pd_modus:
             from editor.ki.nl_generator import NL_TEMPERATURE
+            from core.params import lade_nl_regeln
             self._c._nl_antwort_aktiv = True
             threading.Thread(
                 target=self._c._streaming.worker_mit_system,
-                args=(source_text, model_text, NL_SYSTEM_PROMPT_PARTDESIGN,
+                args=(source_text, model_text,
+                      lade_nl_regeln("fc12", NL_SYSTEM_PROMPT_PARTDESIGN),
                       nl_inhalt, NL_TEMPERATURE),
                 kwargs={"preset_name": preset_name, "ki_modus": ki_modus_wert},
                 daemon=True
             ).start()
+
         elif ist_sw_modus:
             from editor.ki.nl_generator import NL_TEMPERATURE
-            vorhandener_code = self._c._editor.toPlainText().strip()
+            from core.params import lade_nl_regeln
+            schritt = nl_inhalt.strip() if nl_inhalt.strip() else code
+            verlauf_eintraege = getattr(self._c, "_sw_verlauf", [])
+            if verlauf_eintraege:
+                vorhandener_code = self._c._editor.toPlainText().strip()
+            else:
+                vorhandener_code = ""
+                self._c._sw_verlauf = []
+            bisherige_schritte = ""
+            if verlauf_eintraege:
+                zeilen = [f"{i}. {e[0]}" for i, e in enumerate(verlauf_eintraege, 1)]
+                bisherige_schritte = "Bisherige Schritte:\n" + "\n".join(zeilen) + "\n\n"
             if vorhandener_code:
                 sw_user_prompt = (
+                    f"{bisherige_schritte}"
                     f"Vorhandener Code (NICHT wiederholen):\n"
                     f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
                     f"{vorhandener_code}\n"
                     f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-                    f"Neuer Schritt (NUR diesen Code-Block zurueckgeben):\n{code}"
+                    f"Neuer Schritt (NUR diesen Code-Block zurueckgeben):\n{schritt}"
                 )
             else:
-                sw_user_prompt = code
+                sw_user_prompt = schritt
             self._c._nl_antwort_aktiv = True
             self._c._sw_modus_aktiv   = True
+            if hasattr(self._c, "_frage_feld"):
+                self._c._frage_feld.clear()
             threading.Thread(
                 target=self._c._streaming.worker_mit_system,
-                args=(source_text, model_text, NL_SYSTEM_PROMPT_SCHRITTWEISE,
+                args=(source_text, model_text,
+                      lade_nl_regeln("fc13", NL_SYSTEM_PROMPT_SCHRITTWEISE),
                       sw_user_prompt, NL_TEMPERATURE),
                 kwargs={"preset_name": preset_name, "ki_modus": ki_modus_wert},
                 daemon=True
             ).start()
+
         elif ist_tc_modus:
             from editor.ki.nl_generator import NL_TEMPERATURE
-            if source_text.startswith("Ollama"):
-                # Echtes API Tool-Calling — /api/chat + tools-Array
+            if ist_ollama_quelle:
                 self._c._nl_antwort_aktiv = False
                 self._c._tc_modus_aktiv   = False
                 threading.Thread(
@@ -440,17 +484,19 @@ class KIAnfrage:
                     daemon=True
                 ).start()
             else:
-                # Cloud-Anbieter: Text-Prompt als Fallback
                 from editor.ki.fc14_tool_calling import FC14_SYSTEM_PROMPT
+                from core.params import lade_nl_regeln
                 self._c._nl_antwort_aktiv = True
                 self._c._tc_modus_aktiv   = True
                 threading.Thread(
                     target=self._c._streaming.worker_mit_system,
-                    args=(source_text, model_text, FC14_SYSTEM_PROMPT,
+                    args=(source_text, model_text,
+                          lade_nl_regeln("fc14", FC14_SYSTEM_PROMPT),
                           nl_inhalt, NL_TEMPERATURE),
                     kwargs={"preset_name": preset_name, "ki_modus": ki_modus_wert},
                     daemon=True
                 ).start()
+
         else:
             self._c._nl_antwort_aktiv = False
             threading.Thread(

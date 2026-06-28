@@ -49,11 +49,11 @@ _ICONS_DIR = os.path.join(
 class MakroEditor(QtWidgets.QMainWindow):
     """Editor mit frei anordenbaren Dock-Panels (QDockWidget)."""
 
-    _ki_chunk          = QtCore.Signal(str)
-    _ki_stream_done    = QtCore.Signal()
-    _ki_error          = QtCore.Signal(str)
-    _ki_compact_signal = QtCore.Signal(int)
-    such_in_dateien    = QtCore.Signal(str)
+    _ki_chunk           = QtCore.Signal(str)
+    _ki_stream_done     = QtCore.Signal()
+    _ki_error           = QtCore.Signal(str)
+    _ki_compact_signal  = QtCore.Signal(int)
+    such_in_dateien     = QtCore.Signal(str)
 
     # (src_name, key_display_name, key_id, icon_datei)
     _ANBIETER = [
@@ -136,6 +136,7 @@ class MakroEditor(QtWidgets.QMainWindow):
         self._ki_stream_done.connect(self._on_ki_stream_done)
         self._ki_error.connect(self._on_ki_error)
         self._ki_compact_signal.connect(self._on_ki_compact)
+
 
         self._chat_verlauf: list           = []
         self._compact_zusammenfassung: str = ""

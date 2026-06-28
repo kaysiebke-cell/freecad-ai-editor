@@ -1,296 +1,323 @@
-[← Zurück: Die Benutzeroberfläche](oberflaeche.md) | [Zur README](../README.md) | Weiter: [KI-Workflow & Presets →](ki-workflow.md)
+[← Back: The User Interface](oberflaeche.md) | [Back to README](../README.md) | Next: [AI Workflow & Presets →](ki-workflow.md)
 
-# Panels im Detail
+# Panels in Detail
 
-## ⚙ Einstellungen-Panel
+## ⚙ Settings Panel
 
-Das Panel ist scrollbar — alle Abschnitte sind auch bei kleinem Dock-Fenster erreichbar.
+The panel is scrollable — all sections are accessible even in a small dock window.
 
-### KI-QUELLE
-- **KI-Quelle** wählen (Dropdown mit allen 19 Anbietern)
-- **🔄 Modelle neu laden** – frische Modellliste vom Anbieter abrufen
-- **🔌 Verbindungstest** – prüft ohne KI-Anfrage ob Ollama erreichbar ist oder ob ein API-Key hinterlegt ist; Ergebnis erscheint als Label unter der Modell-Box
+### AI SOURCE
+- **AI source** select (dropdown with all 19 providers)
+- **🔄 Reload models** – fetch a fresh model list from the provider
+- **🔌 Connection test** – checks without an AI request whether Ollama is reachable or an API key is stored; result appears as a label below the model box
 
-### MODELL-PARAMETER
-- **Temperatur** 0.0–2.0 (empfohlen: 0.0–0.3 für Code, 0.5–0.8 für Dokumentation)
-- **Top-P · Top-K · Max-Token · Kontext** — alle Werte werden **pro Modell** gespeichert und beim Wechsel automatisch geladen
+### MODEL PARAMETERS
+- **Temperature** 0.0–2.0 (recommended: 0.0–0.3 for code, 0.5–0.8 for documentation)
+- **Top-P · Top-K · Max Tokens · Context** — all values are saved **per model** and loaded automatically on switch
 
-### MODUS
-- 🟢 **Anfänger** – ausführliche Erklärungen auf Deutsch
-- 🔵 **Experte** – knappe, technische Antworten
-- Auswahl wird beim nächsten Start **automatisch wiederhergestellt**
+### MODE
+- 🟢 **Beginner** – detailed explanations in plain language
+- 🔵 **Expert** – concise, technical responses
+- Selection is **automatically restored** on the next start
 
-### FARBSCHEMA
-- 🌙 Dunkel / ☀ Hell – umschaltet alle Farben sofort, Auswahl wird gespeichert
+### COLOUR SCHEME
+- 🌙 Dark / ☀ Light – switches all colours immediately, selection is saved
 
-### API-SCHLÜSSEL
-- API-Schlüssel pro Anbieter eingeben & automatisch speichern
-- Alternativ: `file:/pfad/zur/schluessel-datei` eingeben → Key wird zur Laufzeit aus der Datei gelesen
+### API KEYS
+- Enter & auto-save API key per provider
+- Alternative: enter `file:/path/to/key-file` → key is read from the file at runtime
 
-### SYSTEM-PROMPT-ZUSATZ
-- Freies Textfeld für eigene Anweisungen an die KI
-- **📋-Button** öffnet ein Vorlagen-Menü mit vordefinierten Prompts:
-  - 🧱 FreeCAD Part-Script (erzwingt `Part.makeBox + .cut()`, kein `Part::Cut`)
-  - 🤖 FreeCAD-KI FC14 JSON-Tools (für JSON-Tool-Calling mit FC14)
-  - 🐍 Python-Experte (Standard)
-  - 🔍 Code-Analyse auf Deutsch
-  - 📐 Parametrisches Modell
-  - 🛡 Sicherheits-Review
-- Die Vorlage kann nach dem Laden direkt im Feld angepasst werden
-- Beginnt der Text mit **„You are"** → ersetzt den Basis-Prompt vollständig
-- Sonst → wird als Zusatz an den Basis-Prompt angehängt
+### SYSTEM PROMPT ADDITION
+- Free text field for custom instructions to the AI
+- **📋 button** opens a template menu with predefined prompts:
+  - 🧱 FreeCAD Part-Script (forces `Part.makeBox + .cut()`, no `Part::Cut`)
+  - 🤖 FreeCAD AI FC14 JSON Tools (for JSON tool-calling with FC14)
+  - 🐍 Python Expert (standard)
+  - 🔍 Code Analysis
+  - 📐 Parametric Model
+  - 🛡 Security Review
+- The template can be edited directly in the field after loading
+- If the text starts with **"You are"** → it replaces the base prompt entirely
+- Otherwise → it is appended to the base prompt
 
-### AUFBEWAHRUNG
-- **Max. Sitzungen** – maximale Anzahl gespeicherter Chat-Sitzungen
+### RETENTION
+- **Max. sessions** – maximum number of stored chat sessions
 
-### AUTO-EINFÜGEN
-- Wenn aktiv: KI-Antwort wird nach Stream-Ende **automatisch** an der Fundstelle eingefügt (entspricht manuellem Klick auf ➕ Einfügen)
+### AUTO-INSERT
+- When active: AI response is **automatically** inserted at the found position after stream end (equivalent to manually clicking ➕ Insert)
 
 ### THINKING (ANTHROPIC)
-- **Aus** (Standard) – normaler Modus
-- **An** – Extended Thinking mit 8 000 Budget-Tokens; `temperature` und `top_p` werden automatisch weggelassen (API-Vorgabe)
-- Nur wirksam bei Anthropic-Modellen
+- **Off** (default) – normal mode
+- **On** – Extended Thinking with 8,000 budget tokens; `temperature` and `top_p` are automatically omitted (API requirement)
+- Only effective with Anthropic models
 
-## 🤖 KI-Panel
-- **KI-Eingabefeld** (grün hinterlegt) – ein einziges Feld, innen durch das Label unterteilt:
-  - **Oben:** Frage oder Aufgabe frei eingeben (überschreibt das gewählte Preset)
-  - **Code-Block:** darunter – zu analysierenden oder zu bearbeitenden Code einfügen
-  - Beide Bereiche werden bei `🤖 Fragen` gemeinsam an die KI geschickt
-  - `/snippetname` tippen → Snippet-Autovervollständigung öffnet sich
-- **KI-Antwort** (blau hinterlegt) – Antwort erscheint live gestreamt
-- **Projekt-Kontext** – wird bei jedem KI-Aufruf als Hintergrundinfo mitgeschickt
-- **Suche/Ersetzen** (Strg+F) – direkt im Panel
-- **💾 Sitzung speichern** – Chat-Verlauf + KI-Antwort + Anbieter als `.json` sichern
-- **📂 Sitzung laden** – gespeicherte Sitzung wiederherstellen
-- **🧹 Verlauf zurücksetzen** – löscht den gesamten Chat-Verlauf und die Anzeige
-- Chat-Verlauf mit automatischem Kompacting
+## 🤖 AI Panel
+- **AI input field** (green background) – a single field, subdivided internally by a label:
+  - **Top:** enter a question or task freely (overrides the selected preset)
+  - **Code block:** below – paste code to analyse or edit
+  - Both areas are sent to the AI together on `🤖 Ask`
+  - Type `/snippetname` → snippet autocomplete opens
+- **AI response** (blue background) – response appears live-streamed
+- **Project context** – sent with every AI call as background information
+- **Search/Replace** (Ctrl+F) – directly in the panel
+- **💾 Save session** – save chat history + AI response + provider as `.json`
+- **📂 Load session** – restore a saved session
+- **🧹 Reset history** – clears the entire chat history and display
+- Chat history with automatic compacting
 
-## 🎛 Aktionen-Panel
-Alle Aktions-Buttons auf einen Blick:
+## 🎛 Actions Panel
+All action buttons at a glance:
 
-**KI-Aktionen**
+**AI Actions**
 
-| Button | Funktion |
+| Button | Function |
 |--------|----------|
-| 📥 Laden | Markierten Code aus Editor ins KI-Eingabefeld |
-| 🔍 Markieren | KI-Eingabefeld-Inhalt im Editor suchen & markieren |
-| 🤖 Fragen | KI abfragen (mit aktuellem Preset) |
-| 🔍 Plan | **Plan-Modus** – KI-Antwort vor dem Einfügen anzeigen und bestätigen |
-| ✅ Ersetzen | Markierten Block durch KI-Antwort ersetzen |
-| ➕ Einfügen | KI-Antwort nach dem markierten Block anhängen |
-| 🔎 Auto-Analyse | Gesamten Code sofort erklären lassen |
+| 📥 Load | Load selected code from editor into AI input field |
+| 🔍 Mark | Search & highlight AI input field content in editor |
+| 🤖 Ask | Query the AI (with current preset) |
+| 🔍 Plan | **Plan mode** – display and confirm AI response before inserting |
+| ✅ Replace | Replace highlighted block with AI response |
+| ➕ Insert | Append AI response after the highlighted block |
+| 🔎 Auto-Analyze | Explain entire code immediately |
 
-**Datei-Aktionen**
+**File Actions**
 
-| Button | Funktion |
+| Button | Function |
 |--------|----------|
-| 💾 Speichern | Aktuelle Datei speichern |
-| 💾✕ Speichern & schließen | Speichern und Tab schließen |
-| ↺ Neu laden | Datei neu laden (verwirft ungespeicherte Änderungen) |
-| ↩ Backup | Neuestes .bak-Backup in Editor laden |
-| 📋 Alles auswählen | Gesamten Code markieren |
-| 🗑 Löschen | Editor-Inhalt leeren |
-| ✨ autopep8 / 🪄 Einrückung | Code automatisch formatieren |
+| 💾 Save | Save current file |
+| 💾✕ Save & close | Save and close tab |
+| ↺ Reload | Reload file (discards unsaved changes) |
+| ↩ Backup | Load newest .bak backup into editor |
+| 📋 Select all | Select all code |
+| 🗑 Clear | Empty editor content |
+| ✨ autopep8 / 🪄 Indent | Auto-format code |
 
 **Navigation**
 
-| Funktion | Beschreibung |
+| Function | Description |
 |----------|-------------|
-| Zeile anspringen | Zeilennummer eingeben → Enter |
-| Code-Baum | Alle `def` und `class` live als Baum – Doppelklick springt zur Definition |
-| Lesezeichen | ＋ setzen · ↑↓ navigieren · 🗑 löschen |
+| Jump to line | Enter line number → Enter |
+| Code tree | All `def` and `class` shown as a live tree — double-click jumps to definition |
+| Bookmarks | ＋ set · ↑↓ navigate · 🗑 delete |
 
 **Edit & Check**
 
-| Button | Funktion |
+| Button | Function |
 |--------|----------|
-| → Einrücken | Auswahl um 4 Spaces einrücken |
-| ← Ausrücken | Auswahl ausrücken |
-| # Ein/Aus | Kommentar-Zeichen setzen oder entfernen |
-| ⧉ Duplizieren | Auswahl/Zeile duplizieren |
-| ✂ Löschen | Auswahl/Zeile löschen |
-| ⬆ / ⬇ Verschieben | Zeile(n) nach oben/unten |
-| ABC / abc / Abc | Groß-/Kleinschreibung transformieren |
-| ↺ Statistiken | Zeilen, Kommentare, def, class, import, Zeichen |
-| ▶ Syntax prüfen | Python-Syntax prüfen → Fehlerstelle mit Zeilennummer |
+| → Indent | Indent selection by 4 spaces |
+| ← Unindent | Unindent selection |
+| # Toggle | Add or remove comment character |
+| ⧉ Duplicate | Duplicate selection/line |
+| ✂ Delete | Delete selection/line |
+| ⬆ / ⬇ Move | Move line(s) up/down |
+| ABC / abc / Abc | Transform case |
+| ↺ Statistics | Lines, comments, def, class, import, characters |
+| ▶ Syntax check | Check Python syntax → error location with line number |
 
-**Bereinigung**
+**Cleanup**
 
-| Button | Funktion |
+| Button | Function |
 |--------|----------|
-| ␣ Trailing Spaces | Leerzeichen am Zeilenende entfernen |
-| ⬜ Max. 2 Leerzeilen | Mehr als 2 aufeinanderfolgende Leerzeilen kürzen |
-| ¶ Schluss-Leerzeilen | Leerzeilen am Dateiende entfernen |
-| BOM entfernen | Byte-Order-Mark (UTF-8 BOM) aus Datei entfernen |
+| ␣ Trailing spaces | Remove whitespace at end of lines |
+| ⬜ Max 2 blank lines | Trim more than 2 consecutive blank lines |
+| ¶ Trailing blank lines | Remove blank lines at end of file |
+| Remove BOM | Remove UTF-8 byte-order mark from file |
 
-## 📦 Snippets-Panel
+## 📦 Snippets Panel
 
-**Lokal (Offline)**
-- Kategorien: Dokument · Part · Sketcher · Mesh · Draft · PartDesign
-- Snippet anklicken → Vorschau erscheint
-- **↪ In Editor** oder **Doppelklick** → an Cursor-Position einfügen
-- **📋 Kopieren** → in Zwischenablage
+**Local (Offline)**
+- Categories: Document · Part · Sketcher · Mesh · Draft · PartDesign
+- Click snippet → preview appears
+- **↪ Into editor** or **double-click** → insert at cursor position
+- **📋 Copy** → to clipboard
 
-**Eigene Snippets**
-- Code im Editor markieren → **💾 Markierten Code als Snippet speichern**
-- Namen vergeben → erscheint unter ⭐ Eigene
-- Wird dauerhaft in FreeCAD-Einstellungen gespeichert
+**Custom Snippets**
+- Select code in editor → **💾 Save selected code as snippet**
+- Enter a name → appears under ⭐ My Snippets
+- Saved permanently in FreeCAD settings
 
 **Online (GitHub)**
-- Lädt echte FreeCAD-Makros direkt aus dem offiziellen FreeCAD-GitHub-Repo
-- Vorschau wird asynchron geladen (kein UI-Freeze)
-- Preview-Cache (max. 50 Einträge) für schnelle Wiederanzeige
+- Loads real FreeCAD macros directly from the official FreeCAD GitHub repo
+- Preview loaded asynchronously (no UI freeze)
+- Preview cache (max. 50 entries) for fast re-display
 
-**Schnellzugriff im KI-Eingabefeld**
-- `/` tippen → Popup öffnet sich automatisch
-- Weitertippen filtert die Liste live
-- Enter oder Klick → Snippet wird ins Eingabefeld geladen
+**Quick access in AI input field**
+- Type `/` → popup opens automatically
+- Continue typing to filter the list live
+- Enter or click → snippet is loaded into the input field
 
-## 💡 API-Hints-Panel
-Offline-Kurzreferenz aller wichtigen FreeCAD-Python-Befehle:
+## 💡 API Hints Panel
+Offline quick reference for all important FreeCAD Python commands:
 - **App** · Part · Sketcher · Mesh · Draft · Placement · Selection · GUI/View
-- Suchfeld: mehrere Wörter gleichzeitig (z.B. `part shape`, `mesh vector`)
-- Befehl anklicken → Beschreibung erscheint darunter
-- **📋 Signatur kopieren** → direkt in Editor oder KI-Eingabefeld einfügen
+- Search field: multiple words at once (e.g. `part shape`, `mesh vector`)
+- Click a command → description appears below
+- **📋 Copy signature** → paste directly into editor or AI input field
 
-## 📂 Datei-Browser
-- Frei skalierbar (Rand des Panels ziehen)
-- **Navigation:** `^` Ordner hoch · `Hom` Home-Verzeichnis · `Makr` Makro-Ordner · Pfad-Feld + `GO`
-- **Filter:** nur `.py` / nur `.FCMacro` / alle Dateien
-- **Doppelklick:** `.py`/`.FCMacro` → im Editor öffnen · andere Dateien → Pfad kopieren
-- **Lesezeichen:** ☆-Button → Ordner merken
+## 📂 File Browser
+- Freely resizable (drag the panel edge)
+- **Navigation:** `^` folder up · `Hom` home directory · `Macr` macro folder · path field + `GO`
+- **Filter:** `.py` only / `.FCMacro` only / all files
+- **Double-click:** `.py`/`.FCMacro` → open in editor · other files → copy path
+- **Bookmarks:** ☆ button → remember folder
 
-## 🛠 Tools-Panel
+## 🛠 Tools Panel
 
-Enthält drei Bereiche als aufklappbare Sektionen:
+Contains three sections as collapsible areas:
 
-**📄 FreeCAD-Dokumentkontext**
-Aktueller Dokumentzustand (Objekte, Typen, Placement) wird automatisch an jeden KI-Prompt angehängt.
-→ Die KI „sieht" was in FreeCAD gerade offen ist.
+**📄 FreeCAD Document Context**
+Current document state (objects, types, placement) is automatically appended to every AI prompt.
+→ The AI "sees" what is currently open in FreeCAD.
 
-**🛠 Direkt-Werkzeuge**
-Vordefinierte, sichere FreeCAD-Operationen – kein Code nötig:
+**🛠 Direct Tools**
+Predefined, safe FreeCAD operations — no coding required:
 
-| Werkzeug | Parameter |
-|----------|-----------|
-| **Grundkörper erstellen** | Typ (Box/Zylinder/Kugel/Kegel/Torus), Maße, Position |
-| **Boolean-Operation** | Typ (Cut/Fuse/Common), Basis-Objekt, Werkzeug-Objekt |
-| **Platzierung setzen** | Objekt-Name, X/Y/Z, Drehachse, Drehwinkel |
-| **Objekte auflisten** | — (zeigt alle Objekte + TypeId) |
-| **Makro ausführen** | Freier Python-Code als Fallback |
+| Tool | Parameters |
+|------|------------|
+| **Create primitive** | Type (Box/Cylinder/Sphere/Cone/Torus), dimensions, position |
+| **Boolean operation** | Type (Cut/Fuse/Common), base object, tool object |
+| **Set placement** | Object name, X/Y/Z, rotation axis, rotation angle |
+| **List objects** | — (shows all objects + TypeId) |
+| **Run macro** | Free Python code as fallback |
 
-Jede Operation läuft in einer FreeCAD-Undo-Transaktion → sicher rückgängig zu machen.
-Ergebnis-Buttons: **▶ Ausführen** · **📥 In Editor** · **➕ Anhängen**
+Every operation runs inside a FreeCAD undo transaction → fully reversible.
+Result buttons: **▶ Run** · **📥 Into editor** · **➕ Append**
 
-**📋 Protokoll**
-Alle Ausführungen mit Zeitstempel, ✅/❌-Status und Ausgabe. 🗑 Leeren-Button.
+**📋 Log**
+All executions with timestamp, ✅/❌ status and output. 🗑 Clear button.
 
-## 📚 Bibliothek-Panel
+## 📚 Library Panel
 
-Siehe [Makro-Bibliothek](makro-bibliothek.md) für Details.
+See [Macro Library](makro-bibliothek.md) for details.
 
-## 🔧 Werkzeuge-Panel
-- **Code-Baum:** alle `def`/`class` automatisch aufgelistet → Doppelklick springt zur Definition
-- **Navigation:** Zeile anspringen · Lesezeichen setzen/navigieren/löschen
-- **Edit & Check:** Einrücken, Ausrücken, Kommentieren, Verschieben, Syntax-Prüfung
-- **Bereinigung:** Trailing Spaces, Leerzeilen, BOM
+## 🔧 Tools Panel
+- **Code tree:** all `def`/`class` listed automatically → double-click jumps to definition
+- **Navigation:** jump to line · set/navigate/delete bookmarks
+- **Edit & Check:** indent, unindent, comment, move, syntax check
+- **Cleanup:** trailing spaces, blank lines, BOM
 
-## 🔧 Helfer-Panel (Barrierefreiheit & Vision)
+## 🔧 Helper Panel (Accessibility & Vision)
 
-Ein eigenständiges Chat-Panel mit zwei Aufgaben:
+A standalone chat panel with two functions:
 
-### Legastheniker-Assistent
-Frei geschriebenen deutschen Text (Rechtschreibung egal) in eine saubere FreeCAD-Beschreibung umwandeln:
+### Dyslexia Assistant
+Convert freely written text (spelling errors OK) into a clean FreeCAD description:
 ```
-ich brauch einen kasten mit loch zum anschrauben an die wand
-→ KI korrigiert → „Eine rechteckige Halterung mit Montageöffnung für Wandbefestigung"
+i need a box with hole to screw on the wall
+→ AI corrects → "A rectangular bracket with mounting hole for wall attachment"
 ```
-- Echtzeit-Rechtschreibprüfung während des Tippens (mit `pyspellchecker`)
-- Diff-Anzeige der Korrekturen (rot = entfernt, grün = hinzugefügt)
-- Ergebnis direkt in den Editor übernehmen
+- Real-time spell checking while typing (using `pyspellchecker`)
+- Diff view of corrections (red = removed, green = added)
+- Result can be transferred directly into the editor
 
-### Text + Bild an die KI senden (Vision)
-- **📎 Bild anhängen** – Datei-Dialog mit anbieter-spezifischen Formaten
-- **📋 Aus Zwischenablage** – Strg+V oder Schaltfläche
-- **Drag & Drop** – Bilddatei direkt in das Eingabefeld ziehen
-- Thumbnail-Vorschau mit Bildgröße-Anzeige und ✕-Button
-- Warnung wenn das gewählte Modell kein Vision unterstützt
-- Erlaubte Formate werden automatisch pro Anbieter geladen (keine Hartkodierung)
+### Send Text + Image to AI (Vision)
+- **📎 Attach image** – file dialog with provider-specific formats
+- **📋 From clipboard** – Ctrl+V or button
+- **Drag & Drop** – drag image file directly into the input field
+- Thumbnail preview with image size display and ✕ button
+- Warning when the selected model does not support vision
+- Allowed formats are loaded automatically per provider (no hardcoding)
 
-| Anbieter | Vision-Modelle | Formate |
-|----------|---------------|---------|
-| Ollama (Lokal) | llava, bakllava, moondream, minicpm-v | JPEG, PNG, WebP, GIF, BMP |
+| Provider | Vision models | Formats |
+|----------|--------------|---------|
+| Ollama (Local) | llava, bakllava, moondream, minicpm-v | JPEG, PNG, WebP, GIF, BMP |
 | Anthropic (Claude) | claude-3+ | JPEG, PNG, GIF, WebP |
 | OpenAI (ChatGPT) | gpt-4o, gpt-4-turbo | JPEG, PNG, GIF, WebP |
-| Gemini (Google) | gemini-1.5+ | JPEG, PNG, GIF, WebP, HEIC + mehr |
-| OpenRouter (Cloud) | modellabhängig | JPEG, PNG, GIF, WebP |
+| Gemini (Google) | gemini-1.5+ | JPEG, PNG, GIF, WebP, HEIC + more |
+| OpenRouter (Cloud) | model-dependent | JPEG, PNG, GIF, WebP |
 
-## ⚠ Fehler-Panel
+## ⚠ Error Panel
 
-Siehe [Fehler-Übersetzer & Backup-System](fehler-und-backup.md) für Details.
-
----
-
-## 🤝 Assistent-Panel
-
-Ein interaktiver Schritt-für-Schritt-Assistent, der Fragen über den Editor auf Deutsch beantwortet
-und dabei die relevanten Buttons und Panels direkt aufleuchten lässt.
-
-**Verwendung:**
-1. `🤝 Assist.`-Button in der Toolbar klicken
-2. Frage ins Eingabefeld tippen, z. B.:
-   - *„wie übersetze ich einen Fehler?"*
-   - *„wie richte ich Ollama ein?"*
-   - *„wie benutze ich den Plan-Modus?"*
-3. **❓ Fragen** oder Enter drücken
-4. Die KI antwortet auf Deutsch in nummerierten Schritten
-5. Die genannten Panels/Buttons leuchten automatisch nacheinander auf (2,2 s Abstand)
-   – geschlossene Panels öffnen sich dabei automatisch
-
-**Hinweise:**
-- Funktioniert mit dem aktuell eingestellten KI-Anbieter (⚙ Einst.)
-- Für Ollama (lokal) wird ein kompakter System-Prompt verwendet – für Cloud-Anbieter der ausführlichere
-- **🗑 Verlauf löschen** leert die Chat-Anzeige
+See [Error Translator & Backup System](fehler-und-backup.md) for details.
 
 ---
 
-## ♿ Barrierefreiheit-Panel
+## 🤝 Assistant Panel
 
-Anpassungen für Sehschwäche, Motorik und persönliche Vorlieben. Alle Einstellungen werden
-gespeichert und beim nächsten Start automatisch wiederhergestellt.
+An interactive step-by-step assistant with two modes:
 
-### 👁 Sehschwäche
+### Normal Help Mode
 
-| Einstellung | Funktion |
-|---|---|
-| **UI-Schriftgröße** (Slider 8–24 pt) | Schriftgröße aller Beschriftungen live anpassen |
-| **Editor-Schriftgröße** (Slider 8–24 pt) | Schriftgröße im Code-Editor anpassen |
-| **Hoher Kontrast** | Alle UI-Elemente: weiß auf schwarz (überschreibt das Theme) |
-| **Icons mit Text** | Toolbar-Buttons zeigen Emoji + Kurzname, z. B. `⚙ Einst.` statt nur `⚙` |
+Answers questions about the editor and highlights the relevant buttons and panels directly.
 
-### 🖐 Motorik
+**Usage:**
+1. Click `🤝 Assist.` in the toolbar
+2. Type a question in the input field, e.g.:
+   - *"how do I translate an error?"*
+   - *"how do I set up Ollama?"*
+   - *"how do I use plan mode?"*
+3. Press **❓ Ask** or Enter
+4. The AI responds in numbered steps
+5. The mentioned panels/buttons light up automatically in sequence (2.2 s interval)
+   – closed panels open automatically
 
-| Einstellung | Funktion |
-|---|---|
-| **Button-Größe** Normal / Groß / Sehr groß | Höhe aller Buttons: 26 / 34 / 42 px |
-| **Tastaturmodus** | Alt+1 bis Alt+0 öffnen die Panels; Shortcut wird im Tooltip angezeigt |
-| **Einfache Ansicht** | Blendet selten genutzte Panels aus der Toolbar aus (Snip, API, Dat., Tools, Bib., Werkz., Helfer bleiben erhalten; Einst., KI, Akt., Fehler, ♿, Assist. bleiben sichtbar) |
+**Notes:**
+- Works with the currently selected AI provider (⚙ Settings)
+- For Ollama (local) a compact system prompt is used — for cloud providers the more detailed one
+- **🗑 Clear history** empties the chat display
 
-### 💬 Einfache Sprache
+### 🔤 Technical Language Mode (Natural Language → FreeCAD Terminology)
 
-| Einstellung | Funktion |
-|---|---|
-| **KI antwortet in einfacher Sprache** | KI verwendet kurze Sätze, vermeidet Fachbegriffe |
-| **Fachbegriffe automatisch erklären** | KI erklärt verwendete Begriffe direkt danach |
-| **KI-Antworten kürzer halten** | Kompakte Antworten ohne lange Erklärungen |
+Toggle at the top of the Assistant panel → the assistant translates
+free-form descriptions into structured FreeCAD terminology.
 
-### ⚙ Allgemein
+**Why this is useful:**
+Ollama produces significantly more reliable code when given structured
+terminology as input instead of free-form text. Technical language mode
+is the first step in the two-stage workflow:
 
-| Einstellung | Funktion |
-|---|---|
-| **Tooltips immer sichtbar** | Tooltip erscheint sofort beim Einfahren mit der Maus (kein Wartedelay) |
-| **Animationen reduzieren** | Button-Aufleuchten dauert 300 ms statt 1800 ms |
+```
+[Technical language mode ON]
+Input:   "Sphere 30mm radius. Cylinder 10mm radius 60mm height through the centre"
+Output:
+  Part::Sphere Radius=30 mm, centre at origin.
+  Part::Cylinder Radius=10 mm, Height=60 mm, Placement.Base=App.Vector(0, 0, -30).
+  Part::Cut: Base=sphere, Tool=cylinder.
+
+[Technical language mode OFF]
+Paste this terminology into the FC11 input field → generate code
+```
+
+The terminology can be reviewed and corrected before being passed on.
 
 ---
 
-[← Zurück: Die Benutzeroberfläche](oberflaeche.md) | [Zur README](../README.md) | Weiter: [KI-Workflow & Presets →](ki-workflow.md)
+## ♿ Accessibility Panel
+
+Adjustments for visual impairment, motor difficulties, and personal preferences. All settings are
+saved and automatically restored on the next start.
+
+### 👁 Visual
+
+| Setting | Function |
+|---------|----------|
+| **UI font size** (slider 8–24 pt) | Adjust font size of all labels live |
+| **Editor font size** (slider 8–24 pt) | Adjust font size in the code editor |
+| **High contrast** | All UI elements: white on black (overrides the theme) |
+| **Icons with text** | Toolbar buttons show emoji + short name, e.g. `⚙ Settings` instead of just `⚙` |
+
+### 🖐 Motor
+
+| Setting | Function |
+|---------|----------|
+| **Button size** Normal / Large / Extra large | Height of all buttons: 26 / 34 / 42 px |
+| **Keyboard mode** | Alt+1 to Alt+0 open the panels; shortcut shown in tooltip |
+| **Simple view** | Hides rarely used panels from the toolbar |
+
+### 💬 Plain Language
+
+| Setting | Function |
+|---------|----------|
+| **AI responds in plain language** | AI uses short sentences, avoids jargon |
+| **Explain technical terms automatically** | AI explains terms it uses immediately after |
+| **Keep AI responses shorter** | Compact answers without long explanations |
+
+### ⚙ General
+
+| Setting | Function |
+|---------|----------|
+| **Tooltips always visible** | Tooltip appears immediately on hover (no delay) |
+| **Reduce animations** | Button highlight lasts 300 ms instead of 1,800 ms |
+
+---
+
+[← Back: The User Interface](oberflaeche.md) | [Back to README](../README.md) | Next: [AI Workflow & Presets →](ki-workflow.md)

@@ -16,6 +16,7 @@ from core.params import (lade_kontext, speichere_kontext,
                          lade_max_sitzungen, speichere_max_sitzungen,
                          lade_auto_einfuegen, speichere_auto_einfuegen,
                          lade_thinking_modus, speichere_thinking_modus,
+                         lade_plan_modus, speichere_plan_modus,
                          lade_api_key, SYSTEM_PROMPT_VORLAGEN)
 from ui.barrierefreiheit import BarrierefreiheitPanel
 from editor.panel import FreecadHelferPanel
@@ -208,6 +209,7 @@ def init_docks(editor) -> None:
     def _flbl(text):
         l = QtWidgets.QLabel(text)
         l.setStyleSheet(theme.STY_FORM_LABEL())
+        l.setFont(schrift.ui_font(schrift.STUFE_LG))
         return l
 
     _param_form = QtWidgets.QFormLayout()
@@ -305,6 +307,89 @@ def init_docks(editor) -> None:
             editor._system_prompt_extra.toPlainText()))
     _cfg_l.addWidget(editor._system_prompt_extra)
 
+    # ── FC11 Regeln bearbeiten ──
+    _fc11_btn = QtWidgets.QPushButton("📝 FC11–FC14 Prompt-Regeln bearbeiten …")
+    _fc11_btn.setToolTip(
+        "System-Prompt für FC11–FC14 anpassen.\n"
+        "Gespeichert in ~/.FreeCAD/nl_regeln_fc{11-14}.txt")
+
+    def _fc11_regeln_bearbeiten():
+        from editor.ki.nl_generator import (
+            NL_SYSTEM_PROMPT_OLLAMA, NL_SYSTEM_PROMPT_PARTDESIGN,
+            NL_SYSTEM_PROMPT_SCHRITTWEISE)
+        from editor.ki.fc14_tool_calling import FC14_SYSTEM_PROMPT
+        from core.params import lade_nl_regeln, speichere_nl_regeln, nl_regeln_datei
+
+        _PRESETS = [
+            ("FC11 · Makro aus Beschreibung",   "fc11", NL_SYSTEM_PROMPT_OLLAMA),
+            ("FC12 · PartDesign aus Beschreibung", "fc12", NL_SYSTEM_PROMPT_PARTDESIGN),
+            ("FC13 · Schrittweise aufbauen",    "fc13", NL_SYSTEM_PROMPT_SCHRITTWEISE),
+            ("FC14 · Objekt-Befehle (Cloud)",   "fc14", FC14_SYSTEM_PROMPT),
+        ]
+
+        dlg = QtWidgets.QDialog(editor)
+        dlg.setWindowTitle("FC-Prompt Regeln bearbeiten")
+        dlg.resize(680, 560)
+        _v = QtWidgets.QVBoxLayout(dlg)
+
+        _combo = QtWidgets.QComboBox()
+        for _name, _key, _ in _PRESETS:
+            _combo.addItem(_name)
+        _v.addWidget(_combo)
+
+        _info = QtWidgets.QLabel()
+        _info.setWordWrap(True)
+        _v.addWidget(_info)
+
+        _edit = QtWidgets.QPlainTextEdit()
+        _edit.setFont(schrift.mono_font())
+        _v.addWidget(_edit)
+
+        def _lade_preset(idx):
+            _, _key, _std = _PRESETS[idx]
+            _edit.setPlainText(lade_nl_regeln(_key, _std))
+            _info.setText(f"Datei: {nl_regeln_datei(_key)}")
+
+        _combo.currentIndexChanged.connect(_lade_preset)
+        _lade_preset(0)
+
+        _btn_row = QtWidgets.QHBoxLayout()
+        _reset_btn = QtWidgets.QPushButton("↺ Zurücksetzen")
+        _reset_btn.setToolTip("Standard-Regeln für dieses Preset wiederherstellen")
+        def _reset():
+            _, _, _std = _PRESETS[_combo.currentIndex()]
+            _edit.setPlainText(_std)
+        _reset_btn.clicked.connect(_reset)
+
+        _save_btn = QtWidgets.QPushButton("💾 Speichern")
+        def _speichern():
+            _, _key, _ = _PRESETS[_combo.currentIndex()]
+            speichere_nl_regeln(_key, _edit.toPlainText())
+            dlg.accept()
+        _save_btn.clicked.connect(_speichern)
+
+        _cancel_btn = QtWidgets.QPushButton("Abbrechen")
+        _cancel_btn.clicked.connect(dlg.reject)
+        _btn_row.addWidget(_reset_btn)
+        _btn_row.addStretch()
+        _btn_row.addWidget(_cancel_btn)
+        _btn_row.addWidget(_save_btn)
+        _v.addLayout(_btn_row)
+        dlg.exec_()
+
+    _fc11_btn.clicked.connect(_fc11_regeln_bearbeiten)
+    _cfg_l.addWidget(_fc11_btn)
+
+    editor._chk_plan_modus = QtWidgets.QCheckBox("🧠 Plan-Modus (FC11: erst analysieren, dann Code)")
+    editor._chk_plan_modus.setFont(schrift.ui_font())
+    editor._chk_plan_modus.setToolTip(
+        "Vor dem Code schreibt die KI einen Analyse-Plan als Kommentare:\n"
+        "# Operationen: welche Objekte + boolean Ops nötig sind\n"
+        "Hilft kleinen Modellen (Ollama) bei komplexen Aufgaben.")
+    editor._chk_plan_modus.setChecked(lade_plan_modus())
+    editor._chk_plan_modus.toggled.connect(speichere_plan_modus)
+    _cfg_l.addWidget(editor._chk_plan_modus)
+
     # ── Aufbewahrung ──
     _cfg_l.addSpacing(theme.DOCK_CFG_SEK_SPACING)
     _cfg_l.addWidget(_cfg_lbl("AUFBEWAHRUNG"))
@@ -380,8 +465,8 @@ def init_docks(editor) -> None:
     _input_hdr.addWidget(QtWidgets.QLabel("🔍 KI-Input"))
     _input_hdr.addStretch()
     for ico, tip, slot in [
-        ("🧹", "Gesprächsverlauf zurücksetzen",                           editor._ki_verlauf_reset),
-        ("💾", "Sitzung speichern\n(Chat-Verlauf + KI-Antwort als .json)", editor._sitzung_speichern),
+        ("🧹", "Gesprächsverlauf zurücksetzen",                               editor._ki_verlauf_reset),
+        ("💾", "Sitzung speichern\n(Chat-Verlauf + KI-Antwort als .json)",   editor._sitzung_speichern),
         ("📂", "Sitzung laden\n(gespeicherten Chat-Verlauf wiederherstellen)", editor._sitzung_laden),
     ]:
         _b = QtWidgets.QPushButton(ico)
@@ -396,6 +481,7 @@ def init_docks(editor) -> None:
     _feld_rahmen = QtWidgets.QFrame()
     _feld_rahmen.setObjectName("ki_eingabe_rahmen")
     _feld_rahmen.setStyleSheet(theme.STY_KI_EINGABE_RAHMEN())
+    theme.apply_input_bg_suche(_feld_rahmen)
     _feld_rahmen_l = QtWidgets.QVBoxLayout(_feld_rahmen)
     _feld_rahmen_l.setContentsMargins(theme.DOCK_KI_RAHMEN_RAND, theme.DOCK_KI_RAHMEN_RAND,
                                       theme.DOCK_KI_RAHMEN_RAND, theme.DOCK_KI_RAHMEN_RAND)
@@ -404,16 +490,18 @@ def init_docks(editor) -> None:
     editor._frage_feld = QtWidgets.QPlainTextEdit()
     editor._frage_feld.setFont(schrift.mono_font())
     editor._frage_feld.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
-    editor._frage_feld.setMinimumHeight(theme.DOCK_KI_FRAGE_MIN_H)
     editor._frage_feld.setStyleSheet(theme.STY_KI_EINGABE_FELD())
     editor._frage_feld.setPlaceholderText("Frage oder Aufgabe … (optional, überschreibt Preset)")
+    editor._frage_feld.setSizePolicy(
+        QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
     theme.apply_input_bg_suche(editor._frage_feld)
-    _feld_rahmen_l.addWidget(editor._frage_feld, stretch=1)
+    _feld_rahmen_l.addWidget(editor._frage_feld)
 
     editor._ki_trenner_lbl = QtWidgets.QLabel("  Code-Block:")
     editor._ki_trenner_lbl.setFixedHeight(theme.DOCK_TRENNER_LBL_HOEHE)
-    theme.apply_input_bg_suche(editor._ki_trenner_lbl)
+    theme.apply_trenner_lbl_style(editor._ki_trenner_lbl)
     _feld_rahmen_l.addWidget(editor._ki_trenner_lbl)
+    _feld_rahmen_l.addSpacing(theme.DOCK_KI_CODE_LABEL_ABST)
 
     editor.find_area = SnipCommandEdit(_alle_snippets)
     editor.find_area.snip_gewaehlt.connect(editor._on_snip_slash_cmd)
@@ -426,11 +514,41 @@ def init_docks(editor) -> None:
     theme.apply_input_bg_suche(editor.find_area)
     editor.find_area.setPlaceholderText(
         "Code-Block hier einfügen …\n/ + Snippet-Name → Autocomplete")
+    editor.find_area.setSizePolicy(
+        QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
     editor._hl_find = PythonHighlighter(editor.find_area.document())
     QtCore.QTimer.singleShot(200, editor._hl_find.aktualisiere_theme)
-    _feld_rahmen_l.addWidget(editor.find_area, stretch=1)
+    _feld_rahmen_l.addWidget(editor.find_area)
 
-    _input_l.addWidget(_feld_rahmen, stretch=1)
+    # Spacer damit Felder oben bleiben wenn beide klein sind
+    _feld_rahmen_l.addStretch(1)
+
+    # ── Auto-Resize: Felder passen sich der Inhaltshöhe an ───────────────────
+    def _ki_feld_hoehe_anpassen(widget, min_z: int, max_z: int):
+        fm   = widget.fontMetrics()
+        rand = widget.contentsMargins()
+        rahmen = widget.frameWidth() * 2
+        zeilen = max(min_z, min(max_z, widget.document().blockCount()))
+        h = fm.lineSpacing() * zeilen + rand.top() + rand.bottom() + rahmen + theme.DOCK_KI_FELD_RAND_EXTRA
+        widget.setFixedHeight(h)
+
+    _ki_feld_hoehe_anpassen(editor._frage_feld,
+                            theme.DOCK_KI_FRAGE_MIN_ZEILEN,
+                            theme.DOCK_KI_FRAGE_MAX_ZEILEN)
+    _ki_feld_hoehe_anpassen(editor.find_area,
+                            theme.DOCK_KI_CODE_MIN_ZEILEN,
+                            theme.DOCK_KI_CODE_MAX_ZEILEN)
+
+    editor._frage_feld.document().contentsChanged.connect(
+        lambda: _ki_feld_hoehe_anpassen(editor._frage_feld,
+                                        theme.DOCK_KI_FRAGE_MIN_ZEILEN,
+                                        theme.DOCK_KI_FRAGE_MAX_ZEILEN))
+    editor.find_area.document().contentsChanged.connect(
+        lambda: _ki_feld_hoehe_anpassen(editor.find_area,
+                                        theme.DOCK_KI_CODE_MIN_ZEILEN,
+                                        theme.DOCK_KI_CODE_MAX_ZEILEN))
+
+    _input_l.addWidget(_feld_rahmen)
 
     _ki_splitter.addWidget(_input_w)
 
@@ -672,6 +790,17 @@ def init_docks(editor) -> None:
     editor._fehler_inhalt.setze_sandbox_toggle_cb(_sandbox_toggle_cb)
     editor._fehler_inhalt._btn_sb_run.clicked.disconnect()
     editor._fehler_inhalt._btn_sb_run.clicked.connect(editor._on_sandbox_run)
+
+    def _on_sandbox_fertig(erfolgreich: bool, _ausgabe: str):
+        if erfolgreich:
+            editor._btn_ersetzen.setEnabled(True)
+            editor._btn_einfuegen.setEnabled(True)
+
+    editor._fehler_inhalt.sandbox_fertig.connect(_on_sandbox_fertig)
+
+    editor._fehler_inhalt.setze_laufzeit_check_cb(
+        lambda code: editor._vorschau._vorschau_exec(code, nur_pruefen=True)
+    )
 
     editor._rechte_tabs = QtWidgets.QStackedWidget()
     editor._rechte_tabs.hide()

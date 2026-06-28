@@ -70,7 +70,7 @@ class _AssistentKiThread(QtCore.QThread):
             "http://localhost:11434/api/generate",
             json={"model": self._model, "prompt": prompt, "stream": True,
                   "options": {"temperature": 0.3, "num_ctx": 4096,
-                               "num_predict": 512, "num_thread": _os.cpu_count() or 4}},
+                               "num_predict": 1024, "num_thread": _os.cpu_count() or 4}},
             stream=True, timeout=None)
         r.raise_for_status()
         teile = []
@@ -178,15 +178,21 @@ class AssistentPanel(QtWidgets.QWidget):
 
     # ── UI ────────────────────────────────────────────────────────────────
     def _setup_ui(self):
+        from core import schrift
         lay = QtWidgets.QVBoxLayout(self)
         lay.setContentsMargins(6, 6, 6, 6)
         lay.setSpacing(4)
 
-        # Hinweis-Label
-        info = QtWidgets.QLabel(
-            "Stelle eine Frage – die KI zeigt dir Schritt für Schritt was zu tun ist.")
-        info.setWordWrap(True)
-        lay.addWidget(info)
+        # Umschalter: Hilfe-Assistent ↔ Fachsprache-Übersetzer
+        self._chk_fachsprache = QtWidgets.QCheckBox(
+            "🔤 Fachsprache-Modus  (Natürliche Sprache → FreeCAD-Fachsprache)")
+        self._chk_fachsprache.setFont(schrift.ui_font())
+        self._chk_fachsprache.setToolTip(
+            "Ein: Deine Eingabe wird in FreeCAD-Fachsprache übersetzt\n"
+            "(Part::Sphere, Part::Box, Placement usw.)\n"
+            "Aus: Normaler Hilfe-Assistent")
+        self._chk_fachsprache.toggled.connect(self._on_modus_gewechselt)
+        lay.addWidget(self._chk_fachsprache)
 
         # Chat-Anzeige
         self._anzeige = QtWidgets.QTextEdit()
@@ -202,31 +208,41 @@ class AssistentPanel(QtWidgets.QWidget):
         _unten_lay.setContentsMargins(0, 4, 0, 0)
         _unten_lay.setSpacing(4)
 
-        # Eingabe (mehrzeilig) + Button
-        reihe = QtWidgets.QHBoxLayout()
+        # Eingabe (volle Breite)
         self._eingabe = QtWidgets.QPlainTextEdit()
         self._eingabe.setPlaceholderText(
             'z.B. "wie übersetze ich einen Fehler?" oder "wie richte ich Ollama ein?"\n'
             '(Enter = Senden  |  Shift+Enter = neue Zeile)')
         self._eingabe.setMinimumHeight(30)
         self._eingabe.installEventFilter(self)
-        reihe.addWidget(self._eingabe)
+        _unten_lay.addWidget(self._eingabe)
 
+        _btn_zeile = QtWidgets.QHBoxLayout()
         self._btn_fragen = QtWidgets.QPushButton("❓ Fragen")
-        self._btn_fragen.setFixedWidth(80)
         self._btn_fragen.clicked.connect(self._fragen)
-        reihe.addWidget(self._btn_fragen, 0, QtCore.Qt.AlignBottom)
-        _unten_lay.addLayout(reihe)
+        _btn_zeile.addWidget(self._btn_fragen)
 
-        # Verlauf löschen
         btn_clear = QtWidgets.QPushButton("🗑  Verlauf löschen")
         btn_clear.clicked.connect(self._verlauf_loeschen)
-        _unten_lay.addWidget(btn_clear)
+        _btn_zeile.addWidget(btn_clear)
+        _unten_lay.addLayout(_btn_zeile)
 
         splitter.addWidget(_unten)
         splitter.setStretchFactor(0, 3)
         splitter.setStretchFactor(1, 1)
         lay.addWidget(splitter, 1)
+
+    # ── Modus-Wechsel ─────────────────────────────────────────────────────
+    def _on_modus_gewechselt(self, fachsprache_aktiv: bool):
+        if fachsprache_aktiv:
+            self._eingabe.setPlaceholderText(
+                'Natürliche Sprache eingeben, z.B.:\n'
+                '"Kugel 30 mm Radius. Zylinder 10 mm Radius von unten durchschneiden."\n'
+                '(Enter = Übersetzen  |  Shift+Enter = neue Zeile)')
+        else:
+            self._eingabe.setPlaceholderText(
+                'z.B. "wie übersetze ich einen Fehler?" oder "wie richte ich Ollama ein?"\n'
+                '(Enter = Senden  |  Shift+Enter = neue Zeile)')
 
     # ── Fragen ────────────────────────────────────────────────────────────
     def _fragen(self):
@@ -243,25 +259,31 @@ class AssistentPanel(QtWidgets.QWidget):
 
         self._eingabe.setPlainText("")
         self._btn_fragen.setEnabled(False)
+        ist_fachsprache = self._chk_fachsprache.isChecked()
+        label = "Übersetzen" if ist_fachsprache else "Assistent"
         self._anzeige.append(f"<b>Du:</b> {frage}<br>")
-        self._anzeige.append("<b>Assistent:</b> ")
+        self._anzeige.append(f"<b>{label}:</b> ")
         self._puffer.clear()
 
         try:
-            # KI-Einstellungen aus dem Editor lesen
             source  = self._editor._src_box.currentText()
             model   = self._editor._model_box.currentText()
             from core.params import lade_api_key
             kid = source.split()[0].lower()
             api_key = lade_api_key(kid)
 
-            from editor.ki.assistent_prompt import (
-                ASSISTENT_SYSTEM_PROMPT_OLLAMA,
-                ASSISTENT_SYSTEM_PROMPT_CLOUD,
-            )
-            prompt = (ASSISTENT_SYSTEM_PROMPT_OLLAMA
-                      if source.startswith("Ollama")
-                      else ASSISTENT_SYSTEM_PROMPT_CLOUD)
+            if ist_fachsprache:
+                from editor.ki.nl_generator import UEBERSETZER_SYSTEM_PROMPT
+                prompt = UEBERSETZER_SYSTEM_PROMPT
+            else:
+                from editor.ki.assistent_prompt import (
+                    ASSISTENT_SYSTEM_PROMPT_OLLAMA,
+                    ASSISTENT_SYSTEM_PROMPT_CLOUD,
+                )
+                prompt = (ASSISTENT_SYSTEM_PROMPT_OLLAMA
+                          if source.startswith("Ollama")
+                          else ASSISTENT_SYSTEM_PROMPT_CLOUD)
+
             self._thread = _AssistentKiThread(
                 source, model, api_key, prompt, frage, self)
             self._thread.chunk.connect(self._on_chunk)

@@ -1,55 +1,55 @@
-[← Zurück: Makro-Bibliothek](makro-bibliothek.md) | [Zur README](../README.md) | Weiter: [Ollama – Erfahrungsbericht →](OLLAMA_ERFAHRUNGEN.md)
+[← Back: Macro Library](makro-bibliothek.md) | [Back to README](../README.md) | Next: [Ollama – Field Report →](OLLAMA_ERFAHRUNGEN.md)
 
-# Fehler-Übersetzer
+# Error Translator
 
-FreeCAD-Fehlermeldungen auf Deutsch erklären:
+Explain FreeCAD error messages in plain language:
 
 ```
-Fehlermeldung kopieren (z.B. aus der FreeCAD-Konsole):
+Copy an error message (e.g. from the FreeCAD console):
 
   AttributeError: 'NoneType' object has no attribute 'Shape'
 
-→ In das Eingabefeld einfügen
-→ 🔍 Übersetzen  (oder Strg+Enter)
-→ Deutsche Erklärung:
-   "Das Objekt existiert nicht oder ist noch nicht vollständig aufgebaut …"
-→ Lösungsvorschlag:
-   "Prüfe ob doc.getObject('...') nicht None zurückgibt …"
+→ Paste it into the input field
+→ 🔍 Translate  (or Ctrl+Enter)
+→ Explanation:
+   "The object does not exist or has not been fully built yet …"
+→ Suggested fix:
+   "Check whether doc.getObject('...') returns None …"
 ```
 
-Für komplexere Fehler: **🔧 KI korrigieren** sendet Fehler + Code direkt an die KI.
+For more complex errors: **🔧 AI Fix** sends the error + current code directly to the AI.
 
-Zweigeteilt: **Fehler-Tab** (im Dock) + **Fehler-Panel** (unterer Rand, immer sichtbar).
+Split into two areas: **Error Tab** (in the dock) + **Error Panel** (bottom edge, always visible).
 
-**Fehler-Tab im Dock:**
-1. Englische Fehlermeldung / Traceback einfügen
-2. **🔍 Übersetzen** oder **Strg+Enter**
-3. Deutsche Erklärung + Lösungsvorschlag erscheint
+**Error Tab in the dock:**
+1. Paste an English error message / traceback
+2. **🔍 Translate** or **Ctrl+Enter**
+3. Plain-language explanation + suggested fix appears
 
-Erkannte Fehlertypen: `AttributeError` · `TypeError` · `NameError` · `ImportError` · `No active document` · Shape-Fehler · Constraint-Fehler
+Recognised error types: `AttributeError` · `TypeError` · `NameError` · `ImportError` · `No active document` · Shape errors · Constraint errors
 
-**🔧 KI korrigieren:**
-Fehler + aktueller Code werden direkt an die KI gesendet → Korrigierter Code erscheint in der Sandbox (max. 3 Versuche).
+**🔧 AI Fix:**
+Error + current code are sent directly to the AI → corrected code appears in the sandbox (max. 3 attempts).
 
 ---
 
-# Backup-System
+# Backup System
 
-- Vor jedem **✅ Ersetzen** wird automatisch eine `.bak`-Datei erstellt
-- Backups landen in einem eigenen Unterordner **`__backups__/`** neben der Originaldatei
-- Maximal **3 Backups** je Datei (älteste werden automatisch gelöscht)
-- **↩ Backup** im Aktionen-Panel lädt das neueste Backup in den Editor
-- Beim Schließen mit ungespeicherten Änderungen: Speichern / Verwerfen / Abbrechen
+- Before every **✅ Replace**, a `.bak` file is created automatically
+- Backups are stored in a dedicated **`__backups__/`** subfolder next to the original file
+- Maximum **3 backups** per file (oldest are deleted automatically)
+- **↩ Backup** in the Actions panel loads the newest backup into the editor
+- On close with unsaved changes: Save / Discard / Cancel
 
 ```
-Makro-Ordner/
-├── mein_skript.py
+Macro folder/
+├── my_script.py
 └── __backups__/
-    ├── mein_skript.py.20260615_201500.bak
-    ├── mein_skript.py.20260615_202100.bak
-    └── mein_skript.py.20260615_203000.bak
+    ├── my_script.py.20260615_201500.bak
+    ├── my_script.py.20260615_202100.bak
+    └── my_script.py.20260615_203000.bak
 ```
 
 ---
 
-[← Zurück: Makro-Bibliothek](makro-bibliothek.md) | [Zur README](../README.md) | Weiter: [Ollama – Erfahrungsbericht →](OLLAMA_ERFAHRUNGEN.md)
+[← Back: Macro Library](makro-bibliothek.md) | [Back to README](../README.md) | Next: [Ollama – Field Report →](OLLAMA_ERFAHRUNGEN.md)

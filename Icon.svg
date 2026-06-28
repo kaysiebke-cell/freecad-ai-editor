@@ -1,17 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Hintergrund -->
-  <rect x="2" y="2" width="60" height="60" rx="8" ry="8"
-        fill="#1E2A1E" stroke="#4A8A4A" stroke-width="2"/>
-
-  <!-- Code-Klammern -->
-  <text x="6" y="28" font-family="monospace" font-size="22" font-weight="bold"
-        fill="#4EC94E">&lt;/&gt;</text>
-
-  <!-- KI-Blitz -->
-  <polygon points="38,8 30,32 38,32 26,56 46,28 36,28 44,8"
-           fill="#E5A000" opacity="0.92"/>
-
-  <!-- Unterstrich-Linie -->
-  <line x1="6" y1="52" x2="58" y2="52"
-        stroke="#4A8A4A" stroke-width="2" stroke-linecap="round"/>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cube outer edges -->
+  <line x1="100" y1="35" x2="155" y2="65" stroke="#5A9FFF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="155" y1="65" x2="155" y2="125" stroke="#5A9FFF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="155" y1="125" x2="100" y2="155" stroke="#5A9FFF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="100" y1="155" x2="45" y2="125" stroke="#5A9FFF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="45" y1="125" x2="45" y2="65" stroke="#5A9FFF" stroke-width="3" stroke-linecap="round"/>
+  <line x1="45" y1="65" x2="100" y2="35" stroke="#5A9FFF" stroke-width="3" stroke-linecap="round"/>
+  <!-- Cube inner edges (dashed) -->
+  <line x1="100" y1="35" x2="100" y2="95" stroke="#5A9FFF" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.6"/>
+  <line x1="155" y1="65" x2="100" y2="95" stroke="#5A9FFF" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.6"/>
+  <line x1="45" y1="65" x2="100" y2="95" stroke="#5A9FFF" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.6"/>
+  <line x1="100" y1="95" x2="100" y2="155" stroke="#5A9FFF" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.6"/>
+  <line x1="100" y1="95" x2="155" y2="125" stroke="#5A9FFF" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.6"/>
+  <line x1="100" y1="95" x2="45" y2="125" stroke="#5A9FFF" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.6"/>
+  <!-- Corner dots -->
+  <circle cx="100" cy="35" r="4.5" fill="#5A9FFF"/>
+  <circle cx="155" cy="65" r="4.5" fill="#5A9FFF"/>
+  <circle cx="155" cy="125" r="4.5" fill="#5A9FFF"/>
+  <circle cx="100" cy="155" r="4.5" fill="#5A9FFF"/>
+  <circle cx="45" cy="65" r="4.5" fill="#5A9FFF"/>
+  <circle cx="45" cy="125" r="4.5" fill="#5A9FFF"/>
+  <!-- Lightning bolt -->
+  <path d="M92,50 L116,50 L106,100 L120,100 L105,153 L81,153 L96,100 L82,100 Z" fill="#FFB830"/>
 </svg>

@@ -82,7 +82,7 @@ def _anbieter_icon(svg: str | None, emoji: str, size: int = 28) -> QtWidgets.QLa
                 lbl.setPixmap(px)
                 return lbl
     lbl.setText(emoji)
-    lbl.setStyleSheet(f"font-size: {size - 4}px;")
+    lbl.setStyleSheet(theme.STY_EMOJI_ICON(size - 4))
     return lbl
 
 
@@ -107,9 +107,9 @@ class AnbieterKarte(QtWidgets.QFrame):
         txt = QtWidgets.QVBoxLayout()
         txt.setSpacing(1)
         n = QtWidgets.QLabel(name)
-        n.setStyleSheet("font-weight: bold; font-size: 11px;")
+        n.setStyleSheet(theme.STY_ANBIETER_NAME(schrift.pt(schrift.STUFE_BASE)))
         s = QtWidgets.QLabel(sub)
-        s.setStyleSheet("font-size: 9px; color: #888;")
+        s.setStyleSheet(theme.STY_ANBIETER_SUB(schrift.pt(schrift.STUFE_XS)))
         txt.addWidget(n)
         txt.addWidget(s)
         row.addLayout(txt)
@@ -117,15 +117,9 @@ class AnbieterKarte(QtWidgets.QFrame):
 
     def _set_aktiv(self, aktiv: bool):
         if aktiv:
-            self.setStyleSheet(
-                "AnbieterKarte { border: 2px solid #4a9eff; border-radius: 6px;"
-                " background: rgba(74,158,255,0.12); }")
+            self.setStyleSheet(theme.STY_ANBIETER_KARTE_AKTIV())
         else:
-            self.setStyleSheet(
-                "AnbieterKarte { border: 1px solid rgba(128,128,128,0.3);"
-                " border-radius: 6px; background: transparent; }"
-                "AnbieterKarte:hover { border: 1px solid rgba(74,158,255,0.6);"
-                " background: rgba(74,158,255,0.06); }")
+            self.setStyleSheet(theme.STY_ANBIETER_KARTE_INAKTIV())
 
     def setAktiv(self, ja: bool):
         self._set_aktiv(ja)
@@ -152,7 +146,7 @@ class BegrüssungsDialog(QtWidgets.QDialog):
         self.setWindowFlags(
             QtCore.Qt.Dialog | QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowCloseButtonHint
         )
-        self.setFont(QtGui.QFont("Ubuntu", 10))
+        self.setFont(schrift.ui_font())
         self.setStyleSheet(theme.STY_BEGRUESSUNG_DIALOG(schrift.pt(schrift.STUFE_LG)))
 
         self._anbieter_id = None

@@ -87,6 +87,7 @@ class FehlerPanel(QtWidgets.QWidget):
         self._korrektur_zaehler  = 0
         self._max_korrekturen    = 3
         self._ki_korrektur_cb    = None   # wird vom Editor gesetzt
+        self._laufzeit_check_cb  = None   # wird vom Editor gesetzt (vorschau._vorschau_exec)
         self._baue_ui()
 
     # ── öffentliche API ───────────────────────────────────────────────────
@@ -136,6 +137,10 @@ class FehlerPanel(QtWidgets.QWidget):
         """Editor übergibt hier seinen Self-Correction-Callback."""
         self._ki_korrektur_cb = cb
 
+    def setze_laufzeit_check_cb(self, cb) -> None:
+        """Editor übergibt hier den FreeCAD-Laufzeit-Check (vorschau._vorschau_exec)."""
+        self._laufzeit_check_cb = cb
+
     def _ki_korrektur_anfordern(self) -> None:
         """Schickt den fehlerhaften Code + Fehlermeldung an die KI (max. 3x)."""
         if self._korrektur_zaehler >= self._max_korrekturen:
@@ -163,6 +168,23 @@ class FehlerPanel(QtWidgets.QWidget):
 
     def sandbox_ausgabe(self) -> str:
         return self._sb_ausgabe.toPlainText()
+
+    def ausgabe_starten(self, code: str = "") -> None:
+        """Leert Sandbox-Ausgabe und schaltet auf Seite 1 — für Live-Ausgabe."""
+        self._sb_ausgabe.clear()
+        self._sb_ausgabe.setStyleSheet("")
+        self._sb_status.setText("⏳ Läuft …")
+        self._geladener_code = code
+        self._btn_sb_ki.setEnabled(False)
+        self._stack.setCurrentIndex(1)
+        self._ist_sandbox = True
+        self._btn_toggle.setText("🔍 Fehler-Übersetzer")
+
+    def ausgabe_anhaengen(self, text: str) -> None:
+        """Hängt eine Zeile an die Sandbox-Ausgabe an ohne den Inhalt zu ersetzen."""
+        self._sb_ausgabe.appendPlainText(text)
+        sb = self._sb_ausgabe.verticalScrollBar()
+        sb.setValue(sb.maximum())
 
     def setze_theme(self, theme: Dict[str, object]) -> None:
         self._theme = _merge(THEME_STANDARD, theme)
@@ -367,13 +389,30 @@ class FehlerPanel(QtWidgets.QWidget):
         self._btn_sb_run.setEnabled(True)
         if erfolg:
             self._sb_ausgabe.setPlainText(ausgabe)
+            # Laufzeit-Check direkt im Haupt-Thread anhängen
+            if self._laufzeit_check_cb and code.strip():
+                rt_fehler = self._laufzeit_check_cb(code)
+                if rt_fehler:
+                    self._sb_ausgabe.appendPlainText(rt_fehler)
+                    self._sb_rahmen("fehler")
+                    self._geladener_code = code
+                    verbleibend = self._max_korrekturen - self._korrektur_zaehler
+                    if verbleibend > 0 and self._ki_korrektur_cb:
+                        self._btn_sb_ki.setEnabled(True)
+                        self._btn_sb_ki.setText(f"🔧 KI korrigieren ({verbleibend}x)")
+                        self._sb_status.setText(f"❌ Laufzeitfehler – KI verfügbar ({verbleibend}x)")
+                        self._btn_sb_ki.setFocus()
+                    else:
+                        self._sb_status.setText("❌ Laufzeitfehler")
+                        self._btn_sb_run.setFocus()
+                    self.sandbox_fertig.emit(False, rt_fehler)
+                    return
             self._sb_status.setText("✅ Erfolgreich ausgeführt")
             self._sb_rahmen("ok")
             self._btn_sb_ki.setEnabled(False)
             self._btn_sb_ki.setText("🔧 KI korrigieren")
             self._korrektur_zaehler = 0
             self.sandbox_fertig.emit(True, ausgabe)
-            # Fokus zurück auf Ausführen-Button (nicht auf Löschen springen)
             self._btn_sb_run.setFocus()
         else:
             self._geladener_code = code

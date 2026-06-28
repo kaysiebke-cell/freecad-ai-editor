@@ -18,11 +18,11 @@ MODUS_LABELS = {
 # Bewusst minimalistisch: jedes Wort kostet Ollama Rechenzeit
 MODUS_PROMPTS = {
     MODUS_ANFAENGER:
-        "Antworte auf Deutsch. Erkläre kurz nach dem Code was er macht. "
-        "Keine Fachbegriffe ohne Erklärung.\n\n",
+        "Reply in German. After the code, briefly explain what it does. "
+        "No technical terms without explanation.\n\n",
 
     MODUS_EXPERTE:
-        "Antworte auf Deutsch. Nur Code, kein Erklärungstext.\n\n",
+        "Reply in German. Code only, no explanation text.\n\n",
 }
 
 MODUS_TOOLTIPS = {

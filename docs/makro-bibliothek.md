@@ -1,33 +1,33 @@
-[← Zurück: Snippets, API-Hints & Werkzeuge](snippets-und-werkzeuge.md) | [Zur README](../README.md) | Weiter: [Fehler-Übersetzer & Backup-System →](fehler-und-backup.md)
+[← Back: Snippets, API Hints & Tools](snippets-und-werkzeuge.md) | [Back to README](../README.md) | Next: [Error Translator & Backup →](fehler-und-backup.md)
 
-# Makro-Bibliothek
+# Macro Library
 
-Eigene Makro-Sammlung aufbauen:
+Build your own macro collection:
 
 ```
-Makro im Editor öffnen
-→ 💾 In Bibliothek  →  Dialog:
-   Name (Pflicht)
-   Beschreibung
-   Tags: Box, Boolean, PartDesign  (kommagetrennt)
-   🤖 KI-generiert  (Checkbox)
-→ Gespeichert in FreeCAD-Einstellungen (dauerhaft)
+Open a macro in the editor
+→ 💾 Save to library  →  dialog:
+   Name (required)
+   Description
+   Tags: Box, Boolean, PartDesign  (comma-separated)
+   🤖 AI-generated  (checkbox)
+→ Saved permanently in FreeCAD settings
 ```
 
-Jeder Eintrag zeigt: **Name · Datum · Ausführungs-Zähler · KI-Flag · Code-Vorschau**
+Each entry shows: **Name · Date · Run counter · AI flag · Code preview**
 
-## Suchen & Filtern
-- Nach Name, Beschreibung oder Tag filtern
-- Code-Vorschau direkt in der Liste
+## Search & Filter
+- Filter by name, description or tag
+- Code preview directly in the list
 
-## Aktionen pro Eintrag
+## Actions per entry
 
-| Button | Funktion |
+| Button | Function |
 |--------|----------|
-| ▶ Ausführen | Direkt in FreeCAD ausführen (Zähler erhöht sich) |
-| 📥 In Editor | In aktuellen/neuen Editor-Tab laden |
-| 🗑 Löschen | Mit Bestätigung löschen |
+| ▶ Run | Execute directly in FreeCAD (counter increments) |
+| 📥 Open in editor | Load into current/new editor tab |
+| 🗑 Delete | Delete with confirmation |
 
 ---
 
-[← Zurück: Snippets, API-Hints & Werkzeuge](snippets-und-werkzeuge.md) | [Zur README](../README.md) | Weiter: [Fehler-Übersetzer & Backup-System →](fehler-und-backup.md)
+[← Back: Snippets, API Hints & Tools](snippets-und-werkzeuge.md) | [Back to README](../README.md) | Next: [Error Translator & Backup →](fehler-und-backup.md)

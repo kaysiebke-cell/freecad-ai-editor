@@ -68,6 +68,24 @@ _MODELLE = {
 }
 
 
+# Ollama-Modelle die Tool-Calling unterstützen (Substring-Match, lowercase)
+OLLAMA_TOOL_MODELLE = {
+    "llama3.1", "llama3.2", "llama3.3",
+    "qwen2.5", "qwen2.5-coder",
+    "mistral-nemo", "mistral-small",
+    "command-r",
+    "phi4",
+    "deepseek-r1",
+    "granite3",
+}
+
+
+def ollama_unterstuetzt_tools(modell: str) -> bool:
+    """True wenn das Ollama-Modell Tool-Calling unterstützt."""
+    m = modell.lower()
+    return any(name in m for name in OLLAMA_TOOL_MODELLE)
+
+
 def lade_anbieter_url(source: str):
     """Gibt (base_url, key_id) für den Anbieter-Namen zurück.
 

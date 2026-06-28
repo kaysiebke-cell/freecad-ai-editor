@@ -1,116 +1,122 @@
-[← Zurück: Panels im Detail](panels.md) | [Zur README](../README.md) | Weiter: [Makro aus Beschreibung →](makro-generator.md)
+[← Back: Panels in Detail](panels.md) | [Back to README](../README.md) | Next: [Macro from Description →](makro-generator.md)
 
-# KI-Workflow & Presets
+# AI Workflow & Presets
 
-## Standard-Workflow (Code ändern)
+## Standard Workflow (edit / improve code)
 ```
-1. Block im Editor markieren
-2. 📥 Laden  →  Block erscheint im KI-Eingabefeld
-3. Preset wählen  (z.B. „Fehler finden & erklären")
-4. 🤖 Fragen  →  KI-Antwort erscheint live
-5. 🔍 Markieren  →  Block im Editor wird markiert
-6. ✅ Ersetzen  →  Backup wird erstellt, Code wird ersetzt
-```
-
-## Schnell-Analyse (ohne Markierung)
-```
-🔎 Auto-Analyse  →  Gesamter Code wird sofort erklärt
+1. Select a block in the editor
+2. 📥 Load  →  block appears in the AI input field
+3. Choose a preset  (e.g. "Find & explain errors")
+4. 🤖 Ask  →  AI response appears live
+5. 🔍 Mark  →  block is highlighted in the editor
+6. ✅ Replace  →  backup is created, code is replaced
 ```
 
-## Code nach Block einfügen
+## Quick Analysis (without selection)
 ```
-Block markieren → 📥 Laden → 🤖 Fragen → ➕ Einfügen
-→  KI-Antwort wird NACH dem Block angehängt (kein Überschreiben)
-```
-
-## Auto-Einfügen (automatisch nach KI-Antwort)
-```
-⚙ Einstellungen → AUTO-EINFÜGEN ✓ aktivieren
-→ Nach jedem Stream-Ende wird die KI-Antwort automatisch eingefügt
-→  (kein manueller Klick auf ➕ Einfügen nötig)
-```
-Deaktivieren wenn du die Antwort erst prüfen möchtest, bevor sie eingefügt wird.
-
-## Plan-Modus (Code vor dem Einfügen prüfen)
-```
-🔍 Plan  aktivieren (Button im Aktionen-Panel)
-→ 🤖 Fragen
-→ ✅ Ersetzen  →  Dialog öffnet sich mit dem neuen Code zur Prüfung
-   → ✅ Ausführen  →  Code wird ersetzt
-   → ❌ Abbrechen →  nichts wird verändert, kein Backup
-```
-Ideal für kritische Stellen — kein versehentliches Überschreiben von wichtigem Code.
-
-## Sitzung speichern & wiederherstellen
-```
-💾  →  Datei-Dialog  →  .json speichern
-        (Chat-Verlauf + KI-Antwort + Anbieter + Modell)
-
-📂  →  .json öffnen  →  alles wird wiederhergestellt
-```
-Beim nächsten FreeCAD-Start einfach die `.json`-Datei laden und nahtlos weiterarbeiten.
-
-## Chat-Verlauf nutzen
-Der Chat-Verlauf bleibt zwischen Fragen erhalten. Folgefragen bauen auf vorherigen Antworten auf.
-Ab 5 000 Zeichen wird der älteste Teil automatisch komprimiert (Zusammenfassung).
-
-## System-Prompt-Vorlagen
-```
-⚙ Einstellungen → SYSTEM-PROMPT-ZUSATZ → 📋-Button klicken
-→ Vorlage auswählen → Text erscheint im Feld
-→ Optional: direkt im Feld anpassen
-→ Wird automatisch gespeichert
+🔎 Auto-Analyze  →  entire code is explained immediately
 ```
 
-| Vorlage | Verwendung |
-|---------|-----------|
-| 🧱 FreeCAD Part-Script | Erzwingt `Part.makeBox + .cut()`, verhindert fehleranfälligen `Part::Cut`-Feature-Ansatz |
-| 🤖 FreeCAD-KI FC14 JSON | Für JSON-Tool-Calling mit dem FC14-Preset |
-| 🐍 Python-Experte | Standard-Prompt für allgemeine Code-Aufgaben |
-| 🔍 Code-Analyse | Strukturierte Fehleranalyse mit Zeilennummern auf Deutsch |
-| 📐 Parametrisches Modell | Alle Maße als Konstanten, vollständiges FreeCAD-Script |
-| 🛡 Sicherheits-Review | Kritisch/Mittel/Gering-Einstufung von Sicherheitsproblemen |
+## Insert code after a block
+```
+Select block → 📥 Load → 🤖 Ask → ➕ Insert
+→  AI response is appended AFTER the block (no overwriting)
+```
 
-**Tipp:** Beginnt der eigene Text mit „You are …" → ersetzt er den Basis-Prompt vollständig. Sonst wird er als Zusatz angehängt.
+## Auto-Insert (automatic after AI response)
+```
+⚙ Settings → AUTO-INSERT ✓ enable
+→ After every stream end, the AI response is inserted automatically
+→  (no manual click on ➕ Insert needed)
+```
+Disable this if you want to review the response before it is inserted.
+
+## Plan Mode (review code before inserting)
+```
+🔍 Plan  activate (button in the Actions panel)
+→ 🤖 Ask
+→ ✅ Replace  →  a dialog opens showing the new code for review
+   → ✅ Run     →  code is replaced
+   → ❌ Cancel  →  nothing changes, no backup created
+```
+Ideal for critical sections — no accidental overwriting of important code.
+
+## Save & restore session
+```
+💾  →  file dialog  →  save as .json
+        (chat history + AI response + provider + model)
+
+📂  →  open .json  →  everything is restored
+```
+On the next FreeCAD start, simply load the `.json` file and continue seamlessly.
+
+## Using the chat history
+The chat history is kept between questions. Follow-up questions build on previous answers.
+After 5,000 characters the oldest part is automatically compressed (summarised).
+
+## System prompt templates
+```
+⚙ Settings → SYSTEM PROMPT ADDITION → click 📋 button
+→ Select a template → text appears in the field
+→ Optional: edit directly in the field
+→ Saved automatically
+```
+
+| Template | Use case |
+|----------|----------|
+| 🧱 FreeCAD Part-Script | Forces `Part.makeBox + .cut()`, prevents error-prone `Part::Cut` feature approach |
+| 🤖 FreeCAD AI FC14 JSON | For JSON tool-calling with the FC14 preset |
+| 🐍 Python Expert | Standard prompt for general coding tasks |
+| 🔍 Code Analysis | Structured error analysis with line numbers |
+| 📐 Parametric Model | All dimensions as constants, complete FreeCAD script |
+| 🛡 Security Review | Critical/Medium/Low classification of security issues |
+
+**Tip:** If your own text starts with "You are …" → it replaces the base prompt entirely. Otherwise it is appended as an addition.
 
 ---
 
-# KI-Presets
+# AI Presets
 
-Über 40 vordefinierte Aufgabenstellungen in 7 Kategorien:
+Over 40 predefined task templates in 7 categories:
 
-## ★ Schnell
-- Was macht dieser Code?
-- Fehler finden & erklären
-- Code verbessern
-- Zusammenfassung
-- Einfach erklären
+## ★ Quick
+- What does this code do?
+- Find & explain errors
+- Improve code
+- Summary
+- Explain simply
 
 ## 🔧 Code
-- Refactoring · Kommentieren · Performance-Optimierung · Bug-Hunt
-- SOLID-Refactoring · Sicherheits-Review · Threading · Produktionsreife
+- Refactoring · Add comments · Performance optimisation · Bug hunt
+- SOLID refactoring · Security review · Threading · Production-ready
 
 ## ⚡ FreeCAD: Performance
-- Performance-Analyse · Transaktionen prüfen · Schleifen optimieren
+- Performance analysis · Check transactions · Optimise loops
 
-## 🧱 FreeCAD: Erstellen
-- Makro erstellen · Parametrisches Modell · PartDesign-Script
-- **FC11** – Makro aus Beschreibung (Natural Language → Part-Code)
-- **FC12** – PartDesign aus Beschreibung (Natural Language → Body/Sketch/Pad)
-- **FC13** – Schrittweise aufbauen (Modell Schritt für Schritt erweitern)
-- GUI-Dialog hinzufügen
+## 🧱 FreeCAD: Create
+- Create macro · Parametric model · PartDesign script
+- **FC11** – Macro from description (Natural language → Part code)
+- **FC12** – PartDesign from description (Natural language → Body/Sketch/Pad)
+- **FC13** – Build step by step (extend a model incrementally)
+- Add GUI dialog
 
-→ Details zu FC11/FC12/FC13: [Makro aus Beschreibung](makro-generator.md)
+→ Details on FC11/FC12/FC13: [Macro from Description](makro-generator.md)  
+→ Ollama experiences & model comparison: [Ollama Field Report](OLLAMA_ERFAHRUNGEN.md)
 
-## 🔍 FreeCAD: Analysieren
-- Fehlersuche · Selektions-Makro · Mesh-Verarbeitung
+**Tip for Ollama + FC11:** First open the 🤝 Assistant panel and activate **🔤 Technical language mode**,
+translate the natural description into structured FreeCAD terminology,
+then paste that terminology into FC11. Ollama produces significantly more reliable code
+from structured input than from free-form text.
 
-## 📦 FreeCAD: Erweitern
-- Workbench-Klasse · STEP/IGES Export · Batch-Verarbeitung · Backup-Erweiterung
+## 🔍 FreeCAD: Analyse
+- Error hunting · Selection macro · Mesh processing
 
-## ✍ Dokumentation
-- Docstrings generieren · Inline-Kommentare · README-Abschnitt
+## 📦 FreeCAD: Extend
+- Workbench class · STEP/IGES export · Batch processing · Backup extension
+
+## ✍ Documentation
+- Generate docstrings · Inline comments · README section
 
 ---
 
-[← Zurück: Panels im Detail](panels.md) | [Zur README](../README.md) | Weiter: [Makro aus Beschreibung →](makro-generator.md)
+[← Back: Panels in Detail](panels.md) | [Back to README](../README.md) | Next: [Macro from Description →](makro-generator.md)

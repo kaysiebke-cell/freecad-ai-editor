@@ -483,15 +483,16 @@ class TestPresets(unittest.TestCase):
             self.assertGreater(len(prompt.strip()), 0,
                                f"FC-Preset leer: {name}")
 
-    def test_preset_prompts_auf_deutsch(self):
-        """Alle Schnell-Prompts müssen deutschsprachige Schlüsselwörter enthalten."""
-        deutschen_woerter = ("Code", "erkläre", "zeige", "Deutsch", "Fehler",
-                             "verbessere", "Fasse", "Schritt")
+    def test_preset_prompts_have_content(self):
+        """All quick presets must contain meaningful English content."""
+        english_words = ("code", "Code", "explain", "Explain", "error", "Error",
+                         "improve", "Improve", "summarize", "Summarize", "step", "Step",
+                         "analyse", "Analyse", "English")
         schnell = self.kategorien["★ Schnell"]
         for name, prompt in schnell.items():
-            gefunden = any(w in prompt for w in deutschen_woerter)
+            gefunden = any(w in prompt for w in english_words)
             self.assertTrue(gefunden,
-                f"Preset '{name}' scheint nicht auf Deutsch: {prompt[:60]}")
+                f"Preset '{name}' seems to have no content: {prompt[:60]}")
 
     def test_fc_kategorien_in_kategorien_eingebunden(self):
         """FC_KI_PRESETS müssen in KI_PRESET_KATEGORIEN eingebettet sein."""

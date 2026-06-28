@@ -1,147 +1,147 @@
 # FreeCAD MultiAI Panel
 
-Ein moderner, KI-gestützter Python-Editor als FreeCAD-Plugin mit frei anordenbaren Panels,
-Syntax-Highlighting, 19 unterstützten KI-Anbietern und umfangreichen Werkzeugen zur
-FreeCAD-Automatisierung.
+A modern, AI-assisted Python editor as a FreeCAD plugin with freely arrangeable panels,
+syntax highlighting, 19 supported AI providers, and extensive tools for
+FreeCAD automation.
 
 ---
 
-## Vorschau
+## Preview
 
 ![FreeCAD MultiAI Panel Demo](assets/ki-makro-editor-demo.gif)
 
-> *Tool zur Aufnahme: [Peek](https://github.com/phw/peek) unter Linux*
+> *Recording tool: [Peek](https://github.com/phw/peek) on Linux*
 
 ---
 
 ## Quick Start
 
-1. **Pflicht-Paket installieren:** `pip install requests`
-2. **Repo klonen/herunterladen** und in den FreeCAD-`Mod`-Ordner legen (Ordnername: `FreeCAD_MultiAI_Panel`, ohne Leerzeichen)
-3. **FreeCAD neu starten** und die Workbench **„FreeCAD MultiAI Panel"** auswählen
-4. **KI-Anbieter einrichten** im Begrüßungs-Dialog (z. B. lokal mit Ollama oder mit eigenem API-Key) – fertig!
+1. **Install required package:** `pip install requests`
+2. **Clone/download the repo** and place it in the FreeCAD `Mod` folder (folder name: `FreeCAD_MultiAI_Panel`, no spaces)
+3. **Restart FreeCAD** and select the workbench **"FreeCAD MultiAI Panel"**
+4. **Set up an AI provider** in the welcome dialog (e.g. locally with Ollama or with your own API key) — done!
 
-> Details zu den Pfaden je Betriebssystem (Linux/Flatpak/Windows/macOS) findest du unter [Voraussetzungen & Installation](#voraussetzungen--installation).
-
----
-
-## Inhaltsverzeichnis
-
-- [Features im Überblick](#features-im-überblick)
-- [Voraussetzungen & Installation](#voraussetzungen--installation)
-- [KI-Anbieter einrichten](#ki-anbieter-einrichten)
-- [Erststart & Willkommen-Dialog](docs/erststart.md)
-- [Die Benutzeroberfläche](docs/oberflaeche.md)
-- [Panels im Detail](docs/panels.md)
-- [KI-Workflow & Presets](docs/ki-workflow.md)
-- [FC11, FC12 & FC13 – Makro aus Beschreibung](docs/makro-generator.md)
-- [Snippets, API-Hints & Werkzeuge-Panel](docs/snippets-und-werkzeuge.md)
-- [Makro-Bibliothek](docs/makro-bibliothek.md)
-- [Fehler-Übersetzer & Backup-System](docs/fehler-und-backup.md)
-- [Ollama – Erfahrungsbericht](docs/OLLAMA_ERFAHRUNGEN.md)
-- [Tastenkürzel](#tastenkürzel)
-- [Projektstruktur](#projektstruktur)
-- [Bekannte Einschränkungen](#bekannte-einschränkungen)
-- [Lizenz](#lizenz)
+> For OS-specific installation paths (Linux/Flatpak/Windows/macOS) see [Requirements & Installation](#requirements--installation).
 
 ---
 
-## Features im Überblick
+## Table of Contents
+
+- [Feature Overview](#feature-overview)
+- [Requirements & Installation](#requirements--installation)
+- [Setting Up AI Providers](#setting-up-ai-providers)
+- [First Start & Welcome Dialog](docs/erststart.md)
+- [The User Interface](docs/oberflaeche.md)
+- [Panels in Detail](docs/panels.md)
+- [AI Workflow & Presets](docs/ki-workflow.md)
+- [FC11, FC12 & FC13 – Macro from Description](docs/makro-generator.md)
+- [Snippets, API Hints & Tools Panel](docs/snippets-und-werkzeuge.md)
+- [Macro Library](docs/makro-bibliothek.md)
+- [Error Translator & Backup System](docs/fehler-und-backup.md)
+- [Ollama – Field Report](docs/OLLAMA_ERFAHRUNGEN.md)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
+- [Project Structure](#project-structure)
+- [Known Limitations](#known-limitations)
+- [License](#license)
+
+---
+
+## Feature Overview
 
 ### Editor
-- Mehrere Dateien gleichzeitig als Tabs mit Drag & Drop
-- Python-Syntax-Highlighting (automatisch hell/dunkel-adaptiv)
-- Zeilennummern, Einrückungs-Guides, Cursor-Position
-- Jedi-basierte Autovervollständigung (optional)
-- Suche & Ersetzen mit Strg+F
-- Unbegrenzte Undo/Redo-Transaktionen
-- Automatische Backups vor jeder KI-Ersetzung (max. 3 je Datei)
-- autopep8-Formatierung (optional)
+- Multiple files open simultaneously as tabs with drag & drop
+- Python syntax highlighting (automatically adapts to light/dark theme)
+- Line numbers, indent guides, cursor position
+- Jedi-based autocomplete (optional)
+- Search & replace with Ctrl+F
+- Unlimited undo/redo transactions
+- Automatic backups before every AI replacement (max. 3 per file)
+- autopep8 formatting (optional)
 
-### KI-Integration
-- **19 KI-Anbieter** unterstützt (Ollama, Claude, ChatGPT, Gemini, DeepSeek, Groq …)
-- **40+ Presets** für alle gängigen Code-Aufgaben
-- Streaming-Antworten in Echtzeit (50 ms Chunk-Batching)
-- Chat-Verlauf mit Auto-Kompacting ab 5 000 Zeichen
-- Zwei Modi: 🟢 Anfänger (ausführlich, Deutsch) / 🔵 Experte (knapp, technisch) — **Auswahl wird gespeichert**
-- Makro aus natürlichsprachlicher Beschreibung generieren (FC11 / FC12 / FC13)
-- KI-Tool-Calling für strukturierte FreeCAD-Operationen (FC14 JSON)
-- KI-Frage auch ohne Code im Editor stellen (reines Frage-Antwort-Modus)
-- **FreeCAD-Dokumentzustand** automatisch im Prompt — kompakt für Ollama, vollständig für Cloud-Modelle
-- **AGENTS.md-Support** — projektspezifische Anweisungen neben der geöffneten Datei oder im Home-Verzeichnis werden automatisch geladen
-- **Vorschau-Fehler → KI-Sandbox** — Laufzeitfehler aus der Vorschau direkt mit „⚠ Fehler erklären" oder „🔧 KI korrigieren" beheben
-- **🔌 Verbindungstest** — prüft Ollama-Erreichbarkeit oder API-Key-Status ohne KI-Anfrage
-- **Auto-Einfügen** — KI-Antwort wird nach Stream-Ende automatisch in den Editor eingefügt (optional)
-- **Thinking-Modus** (Anthropic) — Extended Thinking mit 8 000 Budget-Tokens aktivierbar
-- **System-Prompt-Vorlagen** — 📋-Menü mit vordefinierten Prompts (FreeCAD Part-Script, FC14 JSON, Code-Analyse u. a.), direkt editierbar; Prompt der mit „You are" beginnt ersetzt den Basis-Prompt vollständig
-- **Pro-Modell-Parameter** — Temperatur, Top-P, Top-K, Max-Token und Kontext werden pro Modell gespeichert und beim Wechsel automatisch geladen
-- **API-Key aus Datei** — `file:/pfad/zur/key-datei` als API-Schlüssel eingeben → Key wird zur Laufzeit gelesen
+### AI Integration
+- **19 AI providers** supported (Ollama, Claude, ChatGPT, Gemini, DeepSeek, Groq …)
+- **40+ presets** for all common coding tasks
+- Streaming responses in real time (50 ms chunk batching)
+- Chat history with auto-compacting after 5,000 characters
+- Two modes: 🟢 Beginner (detailed, plain language) / 🔵 Expert (concise, technical) — **selection is saved**
+- Generate macros from natural-language descriptions (FC11 / FC12 / FC13)
+- AI tool-calling for structured FreeCAD operations (FC14 JSON)
+- Ask the AI without any code in the editor (pure Q&A mode)
+- **FreeCAD document state** automatically included in the prompt — compact for Ollama, full for cloud models
+- **AGENTS.md support** — project-specific instructions next to the open file or in the home directory are loaded automatically
+- **Preview errors → AI sandbox** — runtime errors from the preview can be resolved directly with "⚠ Explain error" or "🔧 AI fix"
+- **🔌 Connection test** — checks Ollama reachability or API key status without an AI request
+- **Auto-insert** — AI response is automatically inserted into the editor after stream end (optional)
+- **Thinking mode** (Anthropic) — Extended Thinking with 8,000 budget tokens
+- **System prompt templates** — 📋 menu with predefined prompts (FreeCAD Part-Script, FC14 JSON, Code Analysis etc.), directly editable; a prompt starting with "You are" replaces the base prompt entirely
+- **Per-model parameters** — temperature, top-P, top-K, max tokens and context are saved per model and loaded automatically on switch
+- **API key from file** — enter `file:/path/to/key-file` as the API key → key is read at runtime
 
-### Benutzeroberfläche
-- 11 frei anordnbare Dock-Panels (verschieben, abdocken, zu Tabs zusammenfassen)
-- **Hell- und Dunkel-Modus** umschaltbar per 🌙/☀-Button in den Einstellungen, Auswahl wird gespeichert
-- Alle Panels einzeln per Toolbar ein-/ausschaltbar
-- Begrüßungs-Dialog bei Erststart (KI-Anbieter direkt einrichten)
-- **🤝 Interaktiver Assistent** – Fragen stellen, KI antwortet mit Schritt-für-Schritt-Anleitung und lässt Buttons aufleuchten
-- **♿ Barrierefreiheit** – Schrift, Kontrast, Tastaturmodus (Alt+1–0), Einfache Ansicht, Tooltip-Delay, Animationen
+### User Interface
+- 11 freely arrangeable dock panels (move, detach, merge into tabs)
+- **Light and dark mode** switchable via 🌙/☀ button in settings, selection is saved
+- Every panel individually toggleable via toolbar
+- Welcome dialog on first start (set up AI provider immediately)
+- **🤝 Interactive assistant** — ask questions, AI responds with step-by-step instructions and highlights buttons
+- **♿ Accessibility** — font size, contrast, keyboard mode (Alt+1–0), simplified view, tooltip delay, animations
 
 ---
 
-## Voraussetzungen & Installation
+## Requirements & Installation
 
-### Voraussetzungen
-- **FreeCAD 0.21** oder neuer
+### Requirements
+- **FreeCAD 0.21** or newer
 - **Python 3.10+**
 
-### Pflicht-Paket
+### Required package
 ```bash
 pip install requests
 ```
-*Wird für alle KI-Anbindungen benötigt. Ohne `requests` startet der Editor, alle KI-Funktionen sind aber deaktiviert.*
+*Needed for all AI connections. Without `requests` the editor starts but all AI features are disabled.*
 
-### Optionale Pakete
+### Optional packages
 ```bash
-pip install jedi            # Python-Autovervollständigung im Editor
-pip install autopep8        # automatische PEP-8-Formatierung (Button wechselt zu "✨ autopep8")
-pip install pyspellchecker  # Rechtschreibprüfung im Helfer-Panel (reines Python, Flatpak-kompatibel)
+pip install jedi            # Python autocomplete in the editor
+pip install autopep8        # automatic PEP-8 formatting (button changes to "✨ autopep8")
+pip install pyspellchecker  # spell checking in the helper panel (pure Python, Flatpak-compatible)
 ```
 
-Alle auf einmal:
+All at once:
 ```bash
 pip install requests jedi autopep8 pyspellchecker
 ```
 
-> **Flatpak-Nutzer:** Pakete müssen über das eingebettete Python installiert werden:
+> **Flatpak users:** packages must be installed via the embedded Python:
 > ```bash
 > flatpak run --command=python3 org.freecad.FreeCAD -m pip install pyspellchecker
 > ```
 
-> **FreeCAD AppImage / Flatpak:** Nach `pip install` FreeCAD neu starten.
-> Bei AppImages muss `pip` ggf. gegen das eingebettete Python gerichtet werden:
-> `/path/to/FreeCAD.AppImage --appimage-extract` → Python aus dem extrahierten Verzeichnis verwenden.
+> **FreeCAD AppImage / Flatpak:** restart FreeCAD after `pip install`.
+> For AppImages, `pip` may need to target the embedded Python:
+> `/path/to/FreeCAD.AppImage --appimage-extract` → use the Python from the extracted directory.
 
-### Plugin installieren
+### Installing the plugin
 
-1. Dieses Repository klonen oder als ZIP herunterladen und entpacken
-2. Den Ordner umbenennen in `FreeCAD_MultiAI_Panel` (ohne Leerzeichen – wichtig!)
+1. Clone this repository or download and extract the ZIP
+2. Rename the folder to `FreeCAD_MultiAI_Panel` (no spaces — important!)
 
 #### Linux – AppImage
 
 ```bash
 mkdir -p ~/.local/share/FreeCAD/v1-1/Mod
-ln -s /pfad/zum/FreeCAD_MultiAI_Panel ~/.local/share/FreeCAD/v1-1/Mod/FreeCAD_MultiAI_Panel
+ln -s /path/to/FreeCAD_MultiAI_Panel ~/.local/share/FreeCAD/v1-1/Mod/FreeCAD_MultiAI_Panel
 ```
 
 #### Linux – Flatpak
 
 ```bash
 mkdir -p ~/.var/app/org.freecad.FreeCAD/data/FreeCAD/v1-1/Mod
-ln -s /pfad/zum/FreeCAD_MultiAI_Panel ~/.var/app/org.freecad.FreeCAD/data/FreeCAD/v1-1/Mod/FreeCAD_MultiAI_Panel
+ln -s /path/to/FreeCAD_MultiAI_Panel ~/.var/app/org.freecad.FreeCAD/data/FreeCAD/v1-1/Mod/FreeCAD_MultiAI_Panel
 ```
 
-> **Tipp:** Mit einem Symlink (`ln -s`) bleibt der Ordner am ursprünglichen Speicherort – Änderungen am Code werden sofort wirksam ohne erneutes Kopieren.
+> **Tip:** Using a symlink (`ln -s`) keeps the folder at its original location — code changes take effect immediately without copying again.
 
-> **Flatpak Dateizugriff:** Falls die Workbench im Flatpak nicht lädt, muss FreeCAD Zugriff auf den Home-Ordner erhalten:
+> **Flatpak file access:** If the workbench does not load in Flatpak, grant FreeCAD access to the home folder:
 > ```bash
 > flatpak override --user --filesystem=home org.freecad.FreeCAD
 > ```
@@ -158,170 +158,170 @@ ln -s /pfad/zum/FreeCAD_MultiAI_Panel ~/.var/app/org.freecad.FreeCAD/data/FreeCA
 ~/Library/Preferences/FreeCAD/Mod/FreeCAD_MultiAI_Panel/
 ```
 
-> **Wichtig für Linux:** FreeCAD 1.x speichert Benutzerdaten unter `v1-1/` – ältere Anleitungen ohne diesen Unterordner funktionieren nicht.
+> **Note for Linux:** FreeCAD 1.x stores user data under `v1-1/` — older guides without this subfolder will not work.
 
-3. FreeCAD neu starten → die Workbench **„FreeCAD MultiAI Panel"** erscheint im Workbench-Menü
+3. Restart FreeCAD → the workbench **"FreeCAD MultiAI Panel"** appears in the workbench menu
 
 ---
 
-## KI-Anbieter einrichten
+## Setting Up AI Providers
 
-### Unterstützte Anbieter (19)
+### Supported providers (19)
 
-| Anbieter | Modelle (Auswahl) | API-Key Format |
-|----------|-------------------|----------------|
-| **Ollama** (lokal) | codellama, llama3, mistral, … | — (kein Key) |
+| Provider | Models (selection) | API key format |
+|----------|--------------------|----------------|
+| **Ollama** (local) | codellama, llama3, mistral, … | — (no key) |
 | **Anthropic (Claude)** | claude-opus-4-6, claude-sonnet-4-6, claude-haiku-4-5 | `sk-ant-…` |
 | **OpenAI (ChatGPT)** | gpt-4o, gpt-4o-mini, gpt-4-turbo | `sk-…` |
 | **GitHub Copilot** | gpt-4o, gpt-4o-mini, o1-mini | `ghp_…` |
-| **DeepSeek** | deepseek-coder, deepseek-chat, deepseek-reasoner | API-Key |
-| **Gemini (Google)** | gemini-2.0-flash, gemini-1.5-pro, gemini-1.5-flash | API-Key |
-| **Groq** | llama-3.3-70b, mixtral-8x7b, gemma2-9b | API-Key |
-| **Mistral** | mistral-large-latest, codestral-latest | API-Key |
-| **Together AI** | llama-3.3-70B, mixtral-8x7B, CodeLlama-34b | API-Key |
-| **HuggingFace** | Llama 3.2, Qwen2.5-Coder, Mistral | API-Key |
-| **xAI (Grok)** | grok-3, grok-3-mini, grok-2 | API-Key |
-| **Fireworks AI** | llama-v3p3-70b, deepseek-coder-v2 | API-Key |
-| **Moonshot** | moonshot-v1-8k, v1-32k, v1-128k | API-Key |
-| **Qwen (Alibaba)** | qwen-coder-plus, qwen-plus, qwen-max, qwen2.5-coder-32b | API-Key |
-| **Cohere** | command-a-03-2025, command-r-plus, command-r | API-Key |
-| **SambaNova** | DeepSeek-R1, Meta-Llama-3.3-70B, Qwen2.5-Coder | API-Key |
-| **MiniMax** | MiniMax-Text-01, abab6.5s-chat | API-Key |
-| **Llama API** | Llama-4-Scout-17B, Llama-4-Maverick-17B, Llama-3.3-70B | API-Key |
-| **OpenRouter** | (alle unterstützten Modelle) | `sk-or-…` |
+| **DeepSeek** | deepseek-coder, deepseek-chat, deepseek-reasoner | API key |
+| **Gemini (Google)** | gemini-2.0-flash, gemini-1.5-pro, gemini-1.5-flash | API key |
+| **Groq** | llama-3.3-70b, mixtral-8x7b, gemma2-9b | API key |
+| **Mistral** | mistral-large-latest, codestral-latest | API key |
+| **Together AI** | llama-3.3-70B, mixtral-8x7B, CodeLlama-34b | API key |
+| **HuggingFace** | Llama 3.2, Qwen2.5-Coder, Mistral | API key |
+| **xAI (Grok)** | grok-3, grok-3-mini, grok-2 | API key |
+| **Fireworks AI** | llama-v3p3-70b, deepseek-coder-v2 | API key |
+| **Moonshot** | moonshot-v1-8k, v1-32k, v1-128k | API key |
+| **Qwen (Alibaba)** | qwen-coder-plus, qwen-plus, qwen-max, qwen2.5-coder-32b | API key |
+| **Cohere** | command-a-03-2025, command-r-plus, command-r | API key |
+| **SambaNova** | DeepSeek-R1, Meta-Llama-3.3-70B, Qwen2.5-Coder | API key |
+| **MiniMax** | MiniMax-Text-01, abab6.5s-chat | API key |
+| **Llama API** | Llama-4-Scout-17B, Llama-4-Maverick-17B, Llama-3.3-70B | API key |
+| **OpenRouter** | (all supported models) | `sk-or-…` |
 
-### Ollama (lokal, kostenlos)
+### Ollama (local, free)
 ```bash
-# 1. Ollama installieren: https://ollama.ai
-# 2. Empfohlenes Modell für FreeCAD-Code herunterladen
-ollama pull qwen2.5-coder:7b   # ← empfohlen für FC11-Makros
+# 1. Install Ollama: https://ollama.ai
+# 2. Download recommended model for FreeCAD code
+ollama pull qwen2.5-coder:7b   # ← recommended for FC11 macros
 
-# Alternativ allgemeine Modelle
+# Alternative general models
 ollama pull codellama
 ollama pull llama3
 
-# 3. Ollama-Dienst starten (läuft auf http://localhost:11434)
+# 3. Start the Ollama service (runs on http://localhost:11434)
 ollama serve
 ```
-Im Editor: **⚙ Einstellungen** → Quelle: `Ollama (Lokal)` → kein API-Key nötig → **🔄 Modelle neu laden**
+In the editor: **⚙ Settings** → Source: `Ollama (Local)` → no API key needed → **🔄 Reload models**
 
-> 💡 **Tipp:** Der Editor erkennt automatisch ob ein Code-Modell installiert ist und zeigt einen Hinweis wenn `qwen2.5-coder` fehlt.
+> 💡 **Tip:** The editor automatically detects whether a code model is installed and shows a hint if `qwen2.5-coder` is missing.
 
-### Anthropic / OpenAI / weitere Cloud-Anbieter
-Im Editor: **⚙ Einstellungen** → Anbieter wählen → API-Schlüssel eingeben → **Tab drücken** (wird automatisch in den FreeCAD-Einstellungen gespeichert)
+### Anthropic / OpenAI / other cloud providers
+In the editor: **⚙ Settings** → select provider → enter API key → **press Tab** (saved automatically in FreeCAD settings)
 
 ### OpenRouter
 ```bash
-# Umgebungsvariable vor FreeCAD-Start setzen
+# Set environment variable before starting FreeCAD
 export OPENROUTER_API_KEY=sk-or-...
 ```
 
-> ⚠️ **Sicherheitshinweis:** API-Schlüssel werden unverschlüsselt in den FreeCAD-Einstellungen gespeichert. Keine Produktions-Schlüssel verwenden.
+> ⚠️ **Security note:** API keys are stored unencrypted in FreeCAD settings. Do not use production keys.
 
 ---
 
-## Tastenkürzel
+## Keyboard Shortcuts
 
-| Kürzel | Aktion |
-|--------|--------|
-| **Strg+S** | Speichern |
-| **Strg+A** | Alles auswählen |
-| **Strg+Z** | Rückgängig |
-| **Strg+Y** | Wiederholen |
-| **Strg+F** | Suche/Ersetzen ein-/ausblenden |
-| **Tab** | Autovervollständigung bestätigen |
-| **Escape** | Autovervollständigung schließen |
-| **Strg+Enter** | Fehler-Übersetzer: sofort übersetzen |
+| Shortcut | Action |
+|----------|--------|
+| **Ctrl+S** | Save |
+| **Ctrl+A** | Select all |
+| **Ctrl+Z** | Undo |
+| **Ctrl+Y** | Redo |
+| **Ctrl+F** | Toggle search/replace |
+| **Tab** | Accept autocomplete suggestion |
+| **Escape** | Close autocomplete |
+| **Ctrl+Enter** | Error translator: translate immediately |
 
 ---
 
-## Projektstruktur
+## Project Structure
 
 ```
 FreeCAD_MultiAI_Panel/
 │
-├── main.py              # Einstiegspunkt (FreeCAD-Makro / Seitenleiste)
-├── InitGui.py           # FreeCAD-GUI-Integration (Toolbar-Button)
-├── Icon.svg             # Plugin-Icon
-├── package.xml          # FreeCAD-Addon-Metadaten
+├── main.py              # Entry point (FreeCAD macro / sidebar)
+├── InitGui.py           # FreeCAD GUI integration (toolbar button)
+├── Icon.svg             # Plugin icon
+├── package.xml          # FreeCAD addon metadata
 ├── README.md
 │
 ├── core/
-│   ├── params.py        # Einstellungs-Persistenz (FreeCAD-Parameter + API-Keys)
-│   ├── qt_compat.py     # PySide6/PySide2-Kompatibilitäts-Layer + requests-Export
-│   ├── theme.py         # Stylesheets & Design-Funktionen (hell/dunkel-adaptiv)
-│   ├── farben.py        # Farbdefinitionen für Hell- und Dunkel-Modus
-│   ├── highlighter.py   # Python-Syntax-Highlighter
-│   └── schrift.py       # Schriftgrößen-Konstanten
+│   ├── params.py        # Settings persistence (FreeCAD params + API keys)
+│   ├── qt_compat.py     # PySide6/PySide2 compatibility layer + requests export
+│   ├── theme.py         # Stylesheets & design functions (light/dark adaptive)
+│   ├── farben.py        # Colour definitions for light and dark mode
+│   ├── highlighter.py   # Python syntax highlighter
+│   └── schrift.py       # Font size constants
 │
 ├── editor/
-│   ├── editor.py        # Koordinator (QMainWindow, delegiert an intern/)
+│   ├── editor.py        # Coordinator (QMainWindow, delegates to intern/)
 │   ├── freecad_helfer_panel.py
 │   │
-│   ├── intern/          # Aufbau- und Logik-Module des Editors
-│   │   ├── central_widget_builder.py  # Zentrales Widget + Statusleiste
-│   │   ├── dock_builder.py            # Alle 13 Dock-Panels
-│   │   ├── toolbar_builder.py         # Werkzeug-Leiste
-│   │   ├── ki_widget_builder.py       # KI-Panel (Anbieter, Modell, Presets, Temp.)
-│   │   ├── editor_datei.py            # Datei-Logik (Speichern, Backup, Neu laden)
-│   │   ├── editor_suche.py            # Suche & Ersetzen
-│   │   ├── editor_code.py             # Formatierung, Einrückung, Selektion
-│   │   ├── editor_plan.py             # Plan-Modus, Einfügen nach Fundstelle
-│   │   ├── editor_tabs.py             # Tab-Verwaltung
-│   │   └── editor_barrierefreiheit.py # Farbschema, Schrift, Tastaturmodus
+│   ├── intern/          # Editor build and logic modules
+│   │   ├── central_widget_builder.py  # Central widget + status bar
+│   │   ├── dock_builder.py            # All 13 dock panels
+│   │   ├── toolbar_builder.py         # Toolbar
+│   │   ├── ki_widget_builder.py       # AI panel (provider, model, presets, temp.)
+│   │   ├── editor_datei.py            # File logic (save, backup, reload)
+│   │   ├── editor_suche.py            # Search & replace
+│   │   ├── editor_code.py             # Formatting, indentation, selection
+│   │   ├── editor_plan.py             # Plan mode, insert after match
+│   │   ├── editor_tabs.py             # Tab management
+│   │   └── editor_barrierefreiheit.py # Colour scheme, font, keyboard mode
 │   │
 │   ├── widgets/
 │   │   └── editor_widgets.py   # CodeEditor, LinksTextEdit, LineNumberArea
 │   │
 │   ├── controller/
-│   │   ├── assistent.py          # Interaktiver Assistent (Button-Highlighting)
-│   │   ├── bibliothek_tab.py     # Makro-Bibliothek-Tab
-│   │   ├── browser_controller.py # Datei-Browser
-│   │   ├── ki_tools_tab.py       # KI-Tools-Tab (Direktoperationen)
-│   │   ├── snippet_controller.py # Snippets-Tab-Controller (lokal + online)
-│   │   ├── snippet_widgets.py    # Hilfs-Widgets: SnipCommandEdit, Worker, Banner
+│   │   ├── assistent.py          # Interactive assistant (button highlighting)
+│   │   ├── bibliothek_tab.py     # Macro library tab
+│   │   ├── browser_controller.py # File browser
+│   │   ├── ki_tools_tab.py       # AI tools tab (direct operations)
+│   │   ├── snippet_controller.py # Snippets tab controller (local + online)
+│   │   ├── snippet_widgets.py    # Helper widgets: SnipCommandEdit, Worker, Banner
 │   │   ├── vorschau_controller.py
-│   │   └── werkzeuge.py          # Werkzeuge-Panel (Code-Baum, Navigation, Edit)
+│   │   └── werkzeuge.py          # Tools panel (code tree, navigation, edit)
 │   │
 │   ├── fehler/
-│   │   └── fehler_panel.py       # Fehler-Panel + KI-Selbstkorrektur + Sandbox
+│   │   └── fehler_panel.py       # Error panel + AI self-correction + sandbox
 │   │
 │   └── ki/
-│       ├── ki_controller.py      # KI-Koordinator (delegiert an Kompositions-Objekte)
-│       ├── ki_werkzeuge.py       # KI-Tool-Calling
-│       ├── assistent_prompt.py   # Assistent-System-Prompt
-│       ├── dokument_kontext.py   # Dokument-Kontext-Aufbereitung
+│       ├── ki_controller.py      # AI coordinator (delegates to composition objects)
+│       ├── ki_werkzeuge.py       # AI tool-calling
+│       ├── assistent_prompt.py   # Assistant system prompt
+│       ├── dokument_kontext.py   # Document context preparation
 │       │
-│       └── intern/               # KI-Implementierungs-Module
-│           ├── provider_daten.py      # Anbieter-URLs + Modell-Listen (19 Anbieter)
-│           ├── ki_streaming.py        # HTTP-Streaming aller Anbieter + Worker-Threads
-│           ├── ki_anfrage.py          # Prompt-Aufbau + KI-Anfragen
-│           ├── ki_verlauf.py          # Chat-Verlauf + Context Compacting
-│           ├── ki_chunk.py            # Chunk-Puffer + Stream-Done-Verarbeitung
-│           ├── ki_sitzung.py          # Sitzung speichern/laden (JSON)
-│           ├── ki_fehler.py           # Fehler-Panel-Integration + Selbstkorrektur
-│           ├── kod_analyse.py         # AST-Analyse (reine Funktionen)
-│           └── kod_korrektor.py       # FreeCAD-Code-Korrektur + NL-Filter
+│       └── intern/               # AI implementation modules
+│           ├── provider_daten.py      # Provider URLs + model lists (19 providers)
+│           ├── ki_streaming.py        # HTTP streaming for all providers + worker threads
+│           ├── ki_anfrage.py          # Prompt building + AI requests
+│           ├── ki_verlauf.py          # Chat history + context compacting
+│           ├── ki_chunk.py            # Chunk buffer + stream-done processing
+│           ├── ki_sitzung.py          # Save/load sessions (JSON)
+│           ├── ki_fehler.py           # Error panel integration + self-correction
+│           ├── kod_analyse.py         # AST analysis (pure functions)
+│           └── kod_korrektor.py       # FreeCAD code correction + NL filter
 │
 ├── ui/
-│   ├── manager.py       # FreeCAD Makro-Manager (Seitenleiste)
-│   ├── begruessung.py   # Willkommens-Dialog (Erststart)
-│   ├── barrierefreiheit.py  # Barrierefreiheits-Panel
-│   └── fehler.py        # Fehler-Übersetzer (EN→DE) + Fehler-Anzeige
+│   ├── manager.py       # FreeCAD macro manager (sidebar)
+│   ├── begruessung.py   # Welcome dialog (first start)
+│   ├── barrierefreiheit.py  # Accessibility panel
+│   └── fehler.py        # Error translator (EN→DE) + error display
 │
 ├── data/
-│   ├── freecad_data.py       # Snippets (6 Kategorien) + API-Hints
-│   ├── nl_generator.py       # System-Prompts für FC11/FC12/FC13
-│   ├── ki_modi.py            # KI-Modi (Anfänger / Experte)
-│   ├── bibliothek.py         # Makro-Bibliothek-Daten
-│   ├── anbieter_formate.py   # Anbieter-Formate
-│   ├── hilfe_texte.py        # Eingebaute Hilfetexte
-│   └── hilfe.py              # Hilfe-Panel
+│   ├── freecad_data.py       # Snippets (6 categories) + API hints
+│   ├── nl_generator.py       # System prompts for FC11/FC12/FC13
+│   ├── ki_modi.py            # AI modes (beginner / expert)
+│   ├── bibliothek.py         # Macro library data
+│   ├── anbieter_formate.py   # Provider formats
+│   ├── hilfe_texte.py        # Built-in help texts
+│   └── hilfe.py              # Help panel
 │
 ├── assets/
-│   └── icons/           # SVG-Icons für KI-Anbieter, Demo-GIF
+│   └── icons/           # SVG icons for AI providers, demo GIF
 │
-├── docs/                # Ausführliche Dokumentation
+├── docs/                # Detailed documentation
 │   ├── erststart.md
 │   ├── oberflaeche.md
 │   ├── panels.md
@@ -339,16 +339,15 @@ FreeCAD_MultiAI_Panel/
 
 ---
 
-## Bekannte Einschränkungen
+## Known Limitations
 
-| Problem | Ursache | Lösung |
-|---------|---------|--------|
-| **Emojis als Umriss** im Flatpak | Flatpak-Sandbox blockiert System-Emoji-Fonts | Nativer Paket / AppImage verwenden |
-| **FC12/FC13 bei Ollama gesperrt** | Zu komplex für lokale Modelle | Claude (Anthropic) oder GPT-4o verwenden |
-| **API-Keys unverschlüsselt** | FreeCAD-Einstellungen haben keine Verschlüsselung | Keine Produktions-Keys verwenden |
-| **Große Dateien (>2000 Zeilen)** | KI-Kontextfenster begrenzt | Nur relevante Abschnitte ins Eingabefeld laden |
-| **Ollama nicht gefunden** | Dienst läuft nicht | `ollama serve` im Terminal starten |
-| **Ollama liefert schlechten FreeCAD-Code** | Allgemeines Modell ohne Code-Fokus | `ollama pull qwen2.5-coder:7b` installieren |
+| Problem | Cause | Solution |
+|---------|-------|----------|
+| **Emojis displayed as outlines** in Flatpak | Flatpak sandbox blocks system emoji fonts | Use native package or AppImage |
+| **FC12/FC13 disabled for Ollama** | Too complex for local models | Use Claude (Anthropic) or GPT-4o |
+| **API keys stored unencrypted** | FreeCAD settings have no encryption | Do not use production keys |
+| **Large files (>2,000 lines)** | AI context window is limited | Load only relevant sections into the input field |
+| **Ollama not found** | Service is not running | Run `ollama serve` in the terminal |
+| **Ollama produces poor FreeCAD code** | General model without code focus | Install `ollama pull qwen2.5-coder:7b` |
 
 ---
-

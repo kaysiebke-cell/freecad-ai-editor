@@ -1,18 +1,18 @@
-[Zur README](../README.md) | Weiter: [Die Benutzeroberfläche →](oberflaeche.md)
+[Back to README](../README.md) | Next: [The User Interface →](oberflaeche.md)
 
-# Erststart & Willkommen-Dialog
+# First Start & Welcome Dialog
 
-Beim ersten Start erscheint automatisch ein Einrichtungs-Dialog:
+On first launch, a setup dialog appears automatically:
 
-**Schritt 1 – KI-Anbieter wählen:**
-Klickbare Karten für Ollama, Anthropic, OpenAI, GitHub Copilot oder „Später einrichten".
+**Step 1 – Choose an AI provider:**
+Clickable cards for Ollama, Anthropic, OpenAI, GitHub Copilot, or "Set up later".
 
-**Schritt 2 – API-Key eingeben:**
-Passwort-Feld mit „Schlüssel anzeigen"-Option (entfällt bei Ollama und „Später").
+**Step 2 – Enter API key:**
+Password field with a "Show key" option (skipped for Ollama and "Later").
 
-**Fertig:**
-Bestätigung + Tipp zum Projekt-Kontext → Editor öffnet sich direkt.
+**Done:**
+Confirmation + tip about the Project Context → the editor opens immediately.
 
-Der Dialog kann jederzeit übersprungen werden. Alle Einstellungen sind auch im **⚙ Einstellungen-Panel** verfügbar.
+The dialog can be skipped at any time. All settings are also available in the **⚙ Settings panel**.
 
-[Zur README](../README.md) | Weiter: [Die Benutzeroberfläche →](oberflaeche.md)
+[Back to README](../README.md) | Next: [The User Interface →](oberflaeche.md)

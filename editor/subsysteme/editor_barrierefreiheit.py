@@ -34,9 +34,10 @@ class BarriereLogik:
                 hl.aktualisiere_theme()
         if hasattr(e, "_hl_find"):  e._hl_find.aktualisiere_theme()
         if hasattr(e, "_hl_ki"):    e._hl_ki.aktualisiere_theme()
-        if hasattr(e, "find_area"): theme.apply_input_bg_suche(e.find_area)
-        if hasattr(e, "_ki_area"):  theme.apply_input_bg_ki(e._ki_area)
-        if hasattr(e, "_kontext"):  theme.apply_input_bg_kontext(e._kontext)
+        if hasattr(e, "_frage_feld"): theme.apply_input_bg_suche(e._frage_feld)
+        if hasattr(e, "find_area"):  theme.apply_input_bg_suche(e.find_area)
+        if hasattr(e, "_ki_area"):   theme.apply_input_bg_ki(e._ki_area)
+        if hasattr(e, "_kontext"):   theme.apply_input_bg_kontext(e._kontext)
 
     def on_barrierefreiheit(self, schluessel, wert):
         e = self._e

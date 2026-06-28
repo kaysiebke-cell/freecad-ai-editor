@@ -25,6 +25,8 @@ Ablauf:
 """
 
 import ast
+import io as _io
+import contextlib as _cl
 import traceback as _tb
 
 from core.qt_compat import QtWidgets, QtCore, QtGui
@@ -60,6 +62,7 @@ class Vorschau:
         self._vorschau_code_override:  str | None = None
         self._vorschau_letzter_fehler: str | None = None
         self._vorschau_letzter_code:   str | None = None
+        self._letzter_exec_ausgabe:    str        = ""
 
         self._e._editor_tab_widget.tabCloseRequested.connect(
             self._vorschau_tab_close_requested)
@@ -144,18 +147,6 @@ class Vorschau:
         container_lay.addWidget(self._vorschau_placeholder)
         root.addWidget(self._vorschau_container, stretch=1)
 
-        # Log (klein)
-        log_lbl = QtWidgets.QLabel("Ausgabe:")
-        log_lbl.setStyleSheet(theme.STY_VORSCHAU_LOG_LABEL(schrift.pt(schrift.STUFE_SM)))
-        root.addWidget(log_lbl)
-
-        self._vorschau_log_box = QtWidgets.QPlainTextEdit()
-        self._vorschau_log_box.setReadOnly(True)
-        self._vorschau_log_box.setFont(QtGui.QFont("Courier New", 9))
-        self._vorschau_log_box.setMaximumHeight(70)
-        self._vorschau_log_box.setStyleSheet(theme.STY_VORSCHAU_LOG_BOX)
-        root.addWidget(self._vorschau_log_box)
-
         # Buttons
         bz = QtWidgets.QHBoxLayout()
         bz.setSpacing(6)
@@ -177,14 +168,8 @@ class Vorschau:
         self._btn_vp_fit  = _btn("⊡  Einpassen",
                                   self._vorschau_fit_all,
                                   "fitAll() — Modell ins Bild einpassen")
-        self._btn_vp_fehler = _btn("⚠  Fehler erklären",
-                                   self._vorschau_fehler_oeffnen,
-                                   "Letzten Vorschau-Fehler im Fehler-Übersetzer öffnen")
-        self._btn_vp_fehler.setVisible(False)
-        self._btn_vp_ki_fix = _btn("🔧  KI korrigieren",
-                                   self._vorschau_ki_korrigieren,
-                                   "Vorschau-Fehler an KI schicken und Code automatisch reparieren")
-        self._btn_vp_ki_fix.setVisible(False)
+        self._btn_vp_fehler = None
+        self._btn_vp_ki_fix = None
         root.addLayout(bz)
 
         warn = QtWidgets.QLabel(
@@ -199,27 +184,42 @@ class Vorschau:
     def _vorschau_ausfuehren(self):
         # Priorität: override (KI-Code) → Editor
         code = getattr(self, "_vorschau_code_override", None) or self._e._editor.toPlainText().strip()
-        self._vorschau_code_override = None  # einmalig verwenden
+        self._vorschau_code_override = None
         if not code:
             self._vorschau_log("⚠  Editor ist leer.")
             return
 
+        panel = getattr(self._e, "_fehler_inhalt", None)
+
         try:
             ast.parse(code)
         except SyntaxError as e:
-            self._vorschau_log(f"❌  SyntaxError Zeile {e.lineno}: {e.msg}")
             self._vorschau_status(f"❌ SyntaxError Zeile {e.lineno}")
             if hasattr(self._e._editor, "setze_fehler_zeilen") and e.lineno:
                 self._e._editor.setze_fehler_zeilen([e.lineno - 1])
+            if panel is not None:
+                panel._sandbox_ergebnis(False, f"❌ SyntaxError Zeile {e.lineno}: {e.msg}", code)
+                panel._stack.setCurrentIndex(1)
+                panel._ist_sandbox = True
+                panel._btn_toggle.setText("🔍 Fehler-Übersetzer")
+                if hasattr(self._e, "_dock_fehler"):
+                    self._e._dock_fehler.show()
+                    self._e._dock_fehler.raise_()
             return
 
         if hasattr(self._e._editor, "setze_fehler_zeilen"):
             self._e._editor.setze_fehler_zeilen([])
-        self._vorschau_log_box.clear()
-        self._vorschau_log("▶ Führe Code aus …")
+
+        # Sandbox als einzige Ausgabe starten
+        if panel is not None:
+            panel.ausgabe_starten(code)
+            if hasattr(self._e, "_dock_fehler"):
+                self._e._dock_fehler.show()
+                self._e._dock_fehler.raise_()
+            panel.ausgabe_anhaengen("✅ Syntax korrekt")
         self._vorschau_status("⏳ Code wird ausgeführt …")
 
-        # Auto-Backup vor Ausführung (wie im Referenzprojekt freecad-ai)
+        # Auto-Backup
         try:
             import FreeCAD as _App
             _doc = _App.ActiveDocument
@@ -227,9 +227,13 @@ class Vorschau:
                 import shutil as _sh
                 backup = _doc.FileName + ".vorschau-backup"
                 _sh.copy2(_doc.FileName, backup)
-                self._vorschau_log(f"💾 Backup: {backup}")
+                if panel is not None:
+                    panel.ausgabe_anhaengen(f"💾 Backup: {backup}")
         except Exception:
             pass
+
+        if panel is not None:
+            panel.ausgabe_anhaengen("▶ Führe Code aus …")
 
         fehler = self._vorschau_exec(code)
         if fehler:
@@ -237,20 +241,25 @@ class Vorschau:
             self._vorschau_letzter_fehler = fehler
             self._vorschau_letzter_code   = code
             self._vorschau_fehler_panel_befuellen(fehler)
-            if hasattr(self, "_btn_vp_fehler"):
-                self._btn_vp_fehler.setVisible(True)
-            if hasattr(self, "_btn_vp_ki_fix"):
-                self._btn_vp_ki_fix.setVisible(True)
+            if hasattr(self._e, "_dock_fehler"):
+                self._e._dock_fehler.show()
+                self._e._dock_fehler.raise_()
+            if hasattr(self._e, "_btn_ersetzen"):
+                self._e._btn_ersetzen.setEnabled(False)
+            if hasattr(self._e, "_btn_einfuegen"):
+                self._e._btn_einfuegen.setEnabled(False)
             return
-        # Erfolg: Fehler-Buttons ausblenden
+
         self._vorschau_letzter_fehler = None
         self._vorschau_letzter_code   = None
-        if hasattr(self, "_btn_vp_fehler"):
-            self._btn_vp_fehler.setVisible(False)
-        if hasattr(self, "_btn_vp_ki_fix"):
-            self._btn_vp_ki_fix.setVisible(False)
 
-        self._vorschau_log("✅ Ausgeführt — bette Viewport ein …")
+        if panel is not None:
+            exec_ausgabe = getattr(self, "_letzter_exec_ausgabe", "")
+            if exec_ausgabe.strip():
+                panel.ausgabe_anhaengen(exec_ausgabe.strip())
+            panel.ausgabe_anhaengen("✅ Ausgeführt — bette Viewport ein …")
+
+        self._vorschau_status("✅ Ausgeführt …")
 
         # View einbetten nach kurzem Delay (FreeCAD braucht einen Frame)
         self._vorschau_shot_timer = QtCore.QTimer(self._e)
@@ -258,8 +267,12 @@ class Vorschau:
         self._vorschau_shot_timer.timeout.connect(self._view_einbetten)
         self._vorschau_shot_timer.start(200)
 
-    def _vorschau_exec(self, code: str):
-        """exec() im echten FreeCAD-Namespace. Gibt None oder Fehlermeldung zurück."""
+    def _vorschau_exec(self, code: str, nur_pruefen: bool = False):
+        """exec() im echten FreeCAD-Namespace. Gibt None oder Fehlermeldung zurück.
+
+        nur_pruefen=True: Transaction wird auch bei Erfolg abgebrochen — keine
+        dauerhaften FreeCAD-Änderungen. Zum Laufzeit-Check vor dem Einfügen in den Editor.
+        """
         try:
             import FreeCAD as App
             import FreeCADGui as Gui
@@ -333,11 +346,13 @@ class Vorschau:
 
         doc = App.ActiveDocument
         in_transaction = False
+        _stdout_buf = _io.StringIO()
         try:
             if doc:
-                doc.openTransaction("KI-Vorschau")
+                doc.openTransaction("KI-Prüflauf" if nur_pruefen else "KI-Vorschau")
                 in_transaction = True
-            exec(compile(code, "<vorschau>", "exec"), ns)  # noqa: S102
+            with _cl.redirect_stdout(_stdout_buf):
+                exec(compile(code, "<vorschau>", "exec"), ns)  # noqa: S102
         except Exception as e:
             if in_transaction:
                 try:
@@ -345,8 +360,22 @@ class Vorschau:
                 except Exception:
                     pass
             zeilen = _tb.format_exc().strip().splitlines()
-            self._vorschau_log("\n".join(zeilen[-8:]))
+            ausgabe = _stdout_buf.getvalue()
+            log_text = (ausgabe + "\n" if ausgabe else "") + "\n".join(zeilen[-8:])
+            self._vorschau_log(log_text.strip())
+            self._letzter_exec_ausgabe = ""
             return f"{type(e).__name__}: {e}"
+
+        self._letzter_exec_ausgabe = _stdout_buf.getvalue()
+
+        if nur_pruefen:
+            # Nur Laufzeit-Check: alle FreeCAD-Änderungen rückgängig machen
+            if in_transaction:
+                try:
+                    doc.abortTransaction()
+                except Exception:
+                    pass
+            return None
 
         # recompute + fitAll
         try:
@@ -405,12 +434,19 @@ class Vorschau:
         # Platzhalter ausblenden
         self._vorschau_placeholder.hide()
 
-        # View in unseren Container einbetten
-        lay = self._vorschau_container.layout()
-        self._vorschau_view_widget = view_widget
-        view_widget.setParent(self._vorschau_container)
-        lay.addWidget(view_widget)
-        view_widget.show()
+        # UI einfrieren während setParent() das Fenster kurz versteckt —
+        # verhindert das sichtbare Schließen/Öffnen des Hauptfensters.
+        main_win = self._e.window()
+        main_win.setUpdatesEnabled(False)
+        try:
+            lay = self._vorschau_container.layout()
+            self._vorschau_view_widget = view_widget
+            view_widget.setParent(self._vorschau_container)
+            lay.addWidget(view_widget)
+            view_widget.show()
+        finally:
+            main_win.setUpdatesEnabled(True)
+            main_win.repaint()
 
         # Docks wiederherstellen die Qt beim setParent() versteckt hat
         for dock, war_sichtbar in self._vorschau_dock_zustaende:
@@ -418,12 +454,19 @@ class Vorschau:
                 dock.show()
 
         self._vorschau_status("✅ 3D-Viewport eingebettet — drehen/zoomen mit Maus")
-        self._vorschau_log("📐 Viewport eingebettet — Maus: Drehen=Rechtsklick, Zoom=Rad, Pan=Mitte")
+        panel = getattr(self._e, "_fehler_inhalt", None)
+        if panel is not None:
+            panel.ausgabe_anhaengen("📐 Viewport eingebettet — Maus: Drehen=Rechtsklick, Zoom=Rad, Pan=Mitte")
+            panel._sb_rahmen("ok")
+            panel._sb_status.setText("✅ Vorschau aktiv")
+            panel.sandbox_fertig.emit(True, "")
 
     def _view_zurueckgeben(self):
         """Gibt den eingebetteten View zurück an FreeCAD."""
         if self._vorschau_view_widget is None:
             return
+        main_win = self._e.window()
+        main_win.setUpdatesEnabled(False)
         try:
             vw = self._vorschau_view_widget
             lay = self._vorschau_container.layout()
@@ -445,6 +488,8 @@ class Vorschau:
         except Exception as e:
             self._vorschau_log(f"Rückgabe View: {e}")
         finally:
+            main_win.setUpdatesEnabled(True)
+            main_win.repaint()
             self._vorschau_view_widget = None
             self._vorschau_orig_parent = None
             self._vorschau_orig_geom   = None
@@ -580,8 +625,6 @@ class Vorschau:
         if not hasattr(self._e, "_on_self_correction_needed"):
             self._vorschau_status("⚠ KI-Korrektur nicht verfügbar")
             return
-        if hasattr(self, "_btn_vp_ki_fix"):
-            self._btn_vp_ki_fix.setEnabled(False)
         self._vorschau_status("🔧 KI korrigiert Vorschau-Fehler …")
         self._vorschau_log("🔧 Sende Fehler an KI zur Korrektur …")
         self._e._on_self_correction_needed(code, fehler)

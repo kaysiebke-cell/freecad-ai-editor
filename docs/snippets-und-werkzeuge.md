@@ -1,56 +1,56 @@
-[← Zurück: Makro aus Beschreibung](makro-generator.md) | [Zur README](../README.md) | Weiter: [Makro-Bibliothek →](makro-bibliothek.md)
+[← Back: Macro from Description](makro-generator.md) | [Back to README](../README.md) | Next: [Macro Library →](makro-bibliothek.md)
 
-# Snippets & API-Hints
+# Snippets & API Hints
 
-## Snippet-Kategorien
-- 📄 **Dokument** – Dokument anlegen/laden/speichern, Objekte abfragen
-- 🔷 **Part** – Box, Zylinder, Boolean, Placement, Shape-Operationen
-- 📐 **Sketcher** – Sketch erstellen, Constraints, Geometrie
-- 🕸 **Mesh** – Mesh importieren/exportieren, konvertieren
-- 📏 **Draft** – Linien, Kreise, Bemaßungen
-- 🧩 **PartDesign** – Body, Feature-Kette, Pad, Pocket
+## Snippet Categories
+- 📄 **Document** – create/load/save documents, query objects
+- 🔷 **Part** – Box, Cylinder, Boolean, Placement, Shape operations
+- 📐 **Sketcher** – create sketches, constraints, geometry
+- 🕸 **Mesh** – import/export, convert meshes
+- 📏 **Draft** – lines, circles, dimensions
+- 🧩 **PartDesign** – Body, feature chain, Pad, Pocket
 
-## API-Hints Bereiche
-- `App.*` – Dokument, Objekte, Einstellungen
-- `Part.*` – Shapes, Operationen, Geometrie
-- `Sketcher.*` – Constraints, Geometrie
-- `Mesh.*` – Import/Export, Verarbeitung
-- `Draft.*` – 2D-Operationen
+## API Hints Areas
+- `App.*` – document, objects, settings
+- `Part.*` – shapes, operations, geometry
+- `Sketcher.*` – constraints, geometry
+- `Mesh.*` – import/export, processing
+- `Draft.*` – 2D operations
 - `Placement`, `Vector`, `Rotation`
-- `Gui.*`, `FreeCADGui.*` – View, Selection
+- `Gui.*`, `FreeCADGui.*` – view, selection
 
 ---
 
-# Werkzeuge-Panel
+# Tools Panel
 
-## Direktoperationen (ohne Code schreiben)
+## Direct Operations (no coding required)
 
-**Grundkörper erstellen**
+**Create primitive**
 ```
-Typ:    Box / Zylinder / Kugel / Kegel / Torus
-Maße:   Länge / Breite / Höhe / Radius
-Pos.:   X / Y / Z
-→ Objekt erscheint direkt in FreeCAD
-```
-
-**Boolean-Operation**
-```
-Typ:        Cut / Fuse / Common
-Basis:      Name des Basis-Objekts
-Werkzeug:   Name des Werkzeug-Objekts
-→ Ergebnis-Objekt wird erstellt
+Type:     Box / Cylinder / Sphere / Cone / Torus
+Dims:     Length / Width / Height / Radius
+Pos.:     X / Y / Z
+→ Object appears directly in FreeCAD
 ```
 
-**Platzierung setzen**
+**Boolean operation**
 ```
-Objekt:     Name des Objekts
-Position:   X / Y / Z
-Rotation:   Achse (X/Y/Z), Winkel
-→ Objekt wird neu positioniert
+Type:     Cut / Fuse / Common
+Base:     name of the base object
+Tool:     name of the tool object
+→ Result object is created
 ```
 
-Alle Operationen laufen in einer **FreeCAD-Undo-Transaktion** – vollständig rückgängig machbar.
+**Set placement**
+```
+Object:   name of the object
+Position: X / Y / Z
+Rotation: axis (X/Y/Z), angle
+→ Object is repositioned
+```
+
+All operations run inside a **FreeCAD undo transaction** — fully reversible.
 
 ---
 
-[← Zurück: Makro aus Beschreibung](makro-generator.md) | [Zur README](../README.md) | Weiter: [Makro-Bibliothek →](makro-bibliothek.md)
+[← Back: Macro from Description](makro-generator.md) | [Back to README](../README.md) | Next: [Macro Library →](makro-bibliothek.md)

@@ -5,7 +5,24 @@ editor_plan.py
 Plan-Modus und KI-Code-Einfüge-Operationen für den MakroEditor.
 """
 
+import ast as _ast
+
 from core.qt_compat import QtWidgets, QtGui
+
+
+def _sandbox_fehler(e, code: str, fehler: str,
+                    status: str = "❌ Syntaxfehler — Code in Sandbox geladen, Editor unverändert") -> None:
+    """Leitet Code + Fehler in die Sandbox und öffnet den Fehler-Dock."""
+    panel = getattr(e, "_fehler_inhalt", None)
+    if panel is not None:
+        panel._sandbox_ergebnis(False, fehler, code)
+        panel._stack.setCurrentIndex(1)
+        panel._ist_sandbox = True
+        panel._btn_toggle.setText("🔍 Fehler-Übersetzer")
+    if hasattr(e, "_dock_fehler"):
+        e._dock_fehler.show()
+        e._dock_fehler.raise_()
+    e._set_status(status)
 
 
 class PlanLogik:
@@ -61,6 +78,18 @@ class PlanLogik:
         if not neu_code:
             e._set_status("⚠  KI-Antwort ist leer")
             return
+        try:
+            _ast.parse(neu_code)
+        except SyntaxError as _se:
+            _sandbox_fehler(e, neu_code, f"SyntaxError Zeile {_se.lineno}: {_se.msg}")
+            return
+        _vorschau = getattr(e, "_vorschau", None)
+        if _vorschau is not None:
+            _rt = _vorschau._vorschau_exec(neu_code, nur_pruefen=True)
+            if _rt:
+                _sandbox_fehler(e, neu_code, _rt,
+                                "❌ Laufzeitfehler — Code in Sandbox geladen, Editor unverändert")
+                return
         if e._plan_modus_aktiv:
             if not self.plan_dialog_zeigen(neu_code):
                 e._set_status("❌ Ersetzen abgebrochen")
@@ -74,6 +103,8 @@ class PlanLogik:
                 e.speichern()
                 e._btn_ersetzen.setEnabled(False)
                 e._letzter_editor_cursor = None
+                if hasattr(e, "_frage_feld"):
+                    e._frage_feld.clear()
                 e._set_status("🎉 KI-Code in Editor übertragen und gespeichert")
                 return
             c = e._editor.textCursor()
@@ -85,6 +116,8 @@ class PlanLogik:
         e.speichern()
         e._btn_ersetzen.setEnabled(False)
         e._letzter_editor_cursor = None
+        if hasattr(e, "_frage_feld"):
+            e._frage_feld.clear()
         e._set_status("🎉 Block ersetzt und gespeichert")
 
     def einfuegen_nach_fundstelle(self):
@@ -93,6 +126,18 @@ class PlanLogik:
         if not neu_code:
             e._set_status("⚠  KI-Antwort ist leer")
             return
+        try:
+            _ast.parse(neu_code)
+        except SyntaxError as _se:
+            _sandbox_fehler(e, neu_code, f"SyntaxError Zeile {_se.lineno}: {_se.msg}")
+            return
+        _vorschau = getattr(e, "_vorschau", None)
+        if _vorschau is not None:
+            _rt = _vorschau._vorschau_exec(neu_code, nur_pruefen=True)
+            if _rt:
+                _sandbox_fehler(e, neu_code, _rt,
+                                "❌ Laufzeitfehler — Code in Sandbox geladen, Editor unverändert")
+                return
         hat_selektion = e._stelle_selektion_wieder_her()
         c = e._editor.textCursor()
         if not hat_selektion or not c.hasSelection():
@@ -107,6 +152,8 @@ class PlanLogik:
                 e.speichern()
                 e._btn_einfuegen.setEnabled(False)
                 e._letzter_editor_cursor = None
+                if hasattr(e, "_frage_feld"):
+                    e._frage_feld.clear()
                 e._set_status("🎉 Am Dateiende eingefügt und gespeichert")
                 return
             c = e._editor.textCursor()
@@ -121,4 +168,6 @@ class PlanLogik:
         e.speichern()
         e._btn_einfuegen.setEnabled(False)
         e._letzter_editor_cursor = None
+        if hasattr(e, "_frage_feld"):
+            e._frage_feld.clear()
         e._set_status("🎉 Block eingefügt und gespeichert")

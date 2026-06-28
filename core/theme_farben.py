@@ -39,6 +39,9 @@ def _apply_semantik_tint(widget: "QtWidgets.QWidget", schluessel: str) -> None:
             sel = "QLabel"
         elif cls == "QLineEdit":
             sel = "QLineEdit"
+        elif cls == "QFrame":
+            name = widget.objectName()
+            sel = f"QFrame#{name}" if name else "QFrame"
         else:
             sel = "QPlainTextEdit"
         snippet = f"{sel} {{ background-color: {col}; color: {txt}; }}"
@@ -51,6 +54,19 @@ def _apply_semantik_tint(widget: "QtWidgets.QWidget", schluessel: str) -> None:
 
 def apply_input_bg_suche(widget: "QtWidgets.QWidget") -> None:
     _apply_semantik_tint(widget, "tint_suche")
+
+
+def apply_trenner_lbl_style(widget: "QtWidgets.QWidget") -> None:
+    """Hintergrund tint_suche + Akzentfarbe label_trenner für das Code-Block-Label."""
+    def _do():
+        f = _farben_mod.DUNKEL if _FARBSCHEMA_DUNKEL else _farben_mod.HELL
+        bg  = f["tint_suche"]
+        col = f["label_trenner"]
+        snippet = f"QLabel {{ background-color: {bg}; color: {col}; }}"
+        if not hasattr(widget, "_tint_basis"):
+            widget._tint_basis = widget.styleSheet()
+        widget.setStyleSheet((widget._tint_basis + "\n" + snippet) if widget._tint_basis else snippet)
+    QtCore.QTimer.singleShot(50, _do)
 
 
 def apply_input_bg_ki(widget: "QtWidgets.QWidget") -> None:

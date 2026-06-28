@@ -124,6 +124,10 @@ class KIChunkUI:
         if getattr(self._c, "_sw_modus_aktiv", False):
             self._c._sw_modus_aktiv = False
             vorhandener = self._c._editor.toPlainText().rstrip()
+            schritt_text = ""
+            if hasattr(self._c, "_frage_feld"):
+                schritt_text = self._c._frage_feld.toPlainText().strip()
+                self._c._frage_feld.clear()
             clean = extrahiere_code_aus_nl_antwort(clean)
             clean = schneide_erklaerung_ab(clean)
             neue_zeilen = []
@@ -148,12 +152,24 @@ class KIChunkUI:
                     self._c._set_status(
                         "❌ Syntax-Fehler im neuen Block – Editor unverändert")
                     return
+                if not vorhandener:
+                    self._c._sw_verlauf = []
+                if not hasattr(self._c, "_sw_verlauf"):
+                    self._c._sw_verlauf = []
+                self._c._sw_verlauf.append((schritt_text, self._c._stream_token_count, elapsed))
+                verlauf_text = ""
+                for eintrag, tok, sek in self._c._sw_verlauf:
+                    verlauf_text += f"👤  {eintrag}\n"
+                    verlauf_text += f"🤖  Code angehängt  ({tok} Token, {sek:.1f} s)\n"
+                    verlauf_text += "─" * 44 + "\n\n"
+                self._c._ki_area.setPlainText(verlauf_text.rstrip())
                 if vorhandener:
                     self._c._editor.setPlainText(vorhandener + "\n\n" + neuer_block)
                 else:
                     self._c._editor.setPlainText(neuer_block)
                 self._c._set_status(
-                    f"✅ Schritt angehängt – {self._c._stream_token_count} Token "
+                    f"✅ Schritt {len(self._c._sw_verlauf)} angehängt – "
+                    f"{self._c._stream_token_count} Token "
                     f"in {elapsed:.1f} s{hinweis}")
             else:
                 self._c._set_status("⚠ Neuer Block war leer – nichts angehängt")

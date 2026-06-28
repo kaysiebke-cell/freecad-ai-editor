@@ -25,6 +25,8 @@ DUNKEL = {
     "tint_suche":   "#1a2e1a",
     "tint_ki":      "#1a1a2e",
     "tint_kontext": "#1a1a2e",
+    # Trenner-Label "Code-Block:" Textfarbe
+    "label_trenner": "#98C379",
 }
 
 HELL = {
@@ -47,4 +49,6 @@ HELL = {
     "tint_suche":   "#e8f5e9",
     "tint_ki":      "#e8eaf6",
     "tint_kontext": "#e8eaf6",
+    # Trenner-Label "Code-Block:" Textfarbe
+    "label_trenner": "#3A7212",
 }

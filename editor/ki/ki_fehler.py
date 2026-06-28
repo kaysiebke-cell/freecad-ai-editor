@@ -83,14 +83,18 @@ class KIFehlerUI:
         versuch_nr  = len(self._c._korrektur_verlauf)
         max_vers    = self._c._fehler_panel._max_korrekturen
         user_prompt = (
-            f"Ich brauche einen korrekten FreeCAD-Python-Code. "
+            f"[KONTEXT]\n"
+            f"Der folgende FreeCAD-Python-Code hat einen Fehler. "
             f"Dies ist Korrekturversuch {versuch_nr}/{max_vers}.\n"
-            + (f"\nVorherige fehlgeschlagene Versuche:{verlauf_text}" if verlauf_text else "")
-            + f"\n━━━ Aktueller Code mit Fehler ━━━\n"
-            f"{code}\n\n"
-            f"Fehlermeldung:\n{fehler}\n\n"
-            f"Analysiere den Fehler, beachte die Regeln aus dem System-Prompt "
-            f"und gib NUR den vollständig korrigierten Code zurück."
+            + (f"Vorherige fehlgeschlagene Versuche:{verlauf_text}\n" if verlauf_text else "")
+            + f"\n[CODE]\n{code}\n"
+            f"\n[FEHLERMELDUNG]\n{fehler}\n"
+            f"\n[AUFGABE]\n"
+            f"Analysiere die Fehlermeldung. "
+            f"Korrigiere den fehlerhaften API-Aufruf. "
+            f"Behalte alle Konstanten und Variablennamen aus dem Original. "
+            f"Gib NUR den vollständig korrigierten Python-Code zurück — "
+            f"kein Text, keine Erklärung, keine Markdown-Fences."
         )
 
         self._c._ki_area.clear()

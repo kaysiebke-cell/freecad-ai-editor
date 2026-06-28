@@ -193,7 +193,7 @@ def STY_ABSCHNITT_LABEL(fs: int) -> str:
 
 
 def STY_FORM_LABEL() -> str:
-    return _lbl(extra="color:palette(window-text);padding-right:4px;")
+    return _lbl(schrift.pt(schrift.STUFE_LG), extra="padding-right:4px;")
 
 
 # ── Dock-Layout-Konstanten ────────────────────────────────────────────────
@@ -226,8 +226,16 @@ DOCK_KI_PRESET_ABST       = 3
 DOCK_KI_INPUT_ABST        = 2
 DOCK_KI_OUTPUT_ABST       = 2
 DOCK_KI_KONTEXT_ABST      = 2
-DOCK_KI_FRAGE_MIN_H       = 30   # Mindesthöhe Frage-Eingabefeld
+DOCK_KI_FRAGE_MIN_H       = 30   # Mindesthöhe Frage-Eingabefeld (legacy, nicht mehr direkt genutzt)
 DOCK_KI_KONTEXT_MIN_H     = 80   # Mindesthöhe Kontext-Bereich
+
+# KI-Eingabefelder: Zeilen-Grenzen für Auto-Resize
+DOCK_KI_FRAGE_MIN_ZEILEN  = 2    # Frage-Feld: mindestens 2 Zeilen
+DOCK_KI_FRAGE_MAX_ZEILEN  = 8    # Frage-Feld: maximal 8 Zeilen
+DOCK_KI_CODE_MIN_ZEILEN   = 3    # Code-Feld: mindestens 3 Zeilen
+DOCK_KI_CODE_MAX_ZEILEN   = 20   # Code-Feld: maximal 20 Zeilen
+DOCK_KI_FELD_RAND_EXTRA   = 4    # Höhenberechnung: Puffer für Rahmen/Innenabstand
+DOCK_KI_CODE_LABEL_ABST   = 8    # Abstand zwischen "Code-Block:"-Label und Code-Feld
 
 # KI-Eingaberahmen (Frage + Code)
 DOCK_KI_RAHMEN_RAND  = 0
@@ -300,8 +308,8 @@ DOCK_RELOAD_BTN_HOEHE  = 24
 DOCK_PLAN_BTN_HOEHE = 22
 
 # Icon-Buttons in KI-Header
-DOCK_ICON_BTN_BREITE = 22
-DOCK_ICON_BTN_HOEHE  = 18
+DOCK_ICON_BTN_BREITE      = 20
+DOCK_ICON_BTN_HOEHE       = 18
 
 # Panel-Toolbar-Buttons
 TOOLBAR_PANEL_BTN_HOEHE  = 26
@@ -316,7 +324,9 @@ def STY_KI_EINGABE_RAHMEN() -> str:
 
 # CSS: KI-Eingabefelder (ohne eigenen Rahmen, da im Rahmen-Widget)
 def STY_KI_EINGABE_FELD() -> str:
-    return "QPlainTextEdit{font-family:'Courier New',monospace;border:none;border-radius:0;}"
+    return ("QPlainTextEdit{font-family:'Courier New',monospace;"
+            "border:none;border-radius:0;"
+            "background:palette(base);color:palette(text);}")
 
 
 def STY_ABSCHNITT_LABEL_LG(fs: int) -> str:
@@ -333,7 +343,7 @@ def STY_MINI_TAB_BTN(fs: int) -> str:
 
 
 def STY_ICON_BTN_BORDERLESS(fs: int) -> str:
-    return f"QPushButton{{border:none;font-size:{fs}pt;}}"
+    return f"QPushButton{{border:none;padding:0px;margin:0px;font-size:{fs}pt;}}"
 
 
 def STY_KI_INPUT_FIELD() -> str:
@@ -346,7 +356,8 @@ def STY_KI_INPUT_FIELD() -> str:
 
 def STY_KI_OUTPUT_FIELD() -> str:
     return ("QPlainTextEdit{font-family:'Courier New',monospace;"
-            " border:1px solid palette(shadow);}")
+            "border:1px solid palette(shadow);"
+            "background:palette(base);color:palette(text);}")
 
 
 STY_TOOLBAR: str = "QToolBar { border: none; spacing: 2px; padding: 2px 4px; }"
@@ -392,6 +403,24 @@ def STY_SECONDARY_BTN(fs: int) -> str:
     return (f"QPushButton{{border:1px solid palette(shadow);border-radius:6px;"
             f"font-size:{fs}pt;padding:5px 14px;}}QPushButton:hover{{}}")
 
+
+def STY_ANBIETER_KARTE_AKTIV() -> str:
+    return ("AnbieterKarte{border:2px solid palette(highlight);"
+            "border-radius:6px;background:palette(highlight);}")
+
+def STY_ANBIETER_KARTE_INAKTIV() -> str:
+    return ("AnbieterKarte{border:1px solid palette(shadow);"
+            "border-radius:6px;background:transparent;}"
+            "AnbieterKarte:hover{border:1px solid palette(highlight);}")
+
+def STY_ANBIETER_NAME(fs: int) -> str:
+    return f"QLabel{{font-size:{fs}pt;font-weight:bold;}}"
+
+def STY_ANBIETER_SUB(fs: int) -> str:
+    return f"QLabel{{font-size:{fs}pt;color:palette(mid);}}"
+
+def STY_EMOJI_ICON(px: int) -> str:
+    return f"font-size:{px}px;"
 
 def STY_BEGRUESSUNG_DIALOG(fs: int) -> str:
     return (

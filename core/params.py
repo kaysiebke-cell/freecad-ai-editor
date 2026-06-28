@@ -287,12 +287,18 @@ SYSTEM_PROMPT_VORLAGEN: dict[str, str] = {
         "2. Get or create document: doc = App.ActiveDocument or App.newDocument('Modell')\n"
         "3. For geometry use Part.makeBox / Part.makeCylinder / Part.makeSphere etc. — "
         "these return Shape objects, NOT Feature objects.\n"
-        "4. Boolean operations on shapes: result = shape_a.cut(shape_b) "
-        "or shape_a.fuse(shape_b) — never use doc.addObject('Part::Cut').\n"
-        "5. To show the result: obj = doc.addObject('Part::Feature', 'Name'); obj.Shape = result\n"
-        "6. For positioning use App.Vector and Part.makeCylinder(r, h, App.Vector(x, y, z)).\n"
-        "7. Always end with: doc.recompute()\n"
-        "8. Wrap everything in try/except and show errors with "
+        "4. CRITICAL — Boolean operations:\n"
+        "   - SUBTRACT (hole/cut): result = base_shape.cut(tool_shape)  ← removes material\n"
+        "   - UNION (merge):       result = shape_a.fuse(shape_b)       ← adds material\n"
+        "   - INTERSECT:           result = shape_a.common(shape_b)\n"
+        "   Never use doc.addObject('Part::Cut') or doc.addObject('Part::Fuse').\n"
+        "5. Cutting tool must be LARGER than the object in the cut direction "
+        "(extend 1 mm beyond each face to avoid coplanar errors).\n"
+        "6. For a hole/cylinder through a sphere of radius R centred at origin: "
+        "Part.makeCylinder(r, 2*R+2, App.Vector(cx, cy, -R-1)) — starts 1 mm below, ends 1 mm above.\n"
+        "7. To show the result: obj = doc.addObject('Part::Feature', 'Name'); obj.Shape = result\n"
+        "8. Always end with: doc.recompute()\n"
+        "9. Wrap everything in try/except and show errors with "
         "from PySide2.QtWidgets import QMessageBox; QMessageBox.critical(None, 'Fehler', str(e))"
     ),
 
@@ -390,3 +396,47 @@ def lade_thinking_modus() -> str:
 
 def speichere_thinking_modus(s: str) -> None:
     App.ParamGet(PREF_KEY).SetString("ThinkingModus", s)
+
+
+# ── FC11 Plan-Modus ───────────────────────────────────────────────────────────
+
+def lade_plan_modus() -> bool:
+    return App.ParamGet(PREF_KEY).GetBool("FC11PlanModus", False)
+
+def speichere_plan_modus(v: bool) -> None:
+    App.ParamGet(PREF_KEY).SetBool("FC11PlanModus", bool(v))
+
+
+
+
+# ── NL-Regeln je Preset (FC11–FC14, editierbar per Datei) ────────────────────
+
+import os as _os
+_NL_REGELN_VERZ = _os.path.join(_os.path.expanduser("~"), ".FreeCAD")
+
+def nl_regeln_datei(schluessel: str) -> str:
+    return _os.path.join(_NL_REGELN_VERZ, f"nl_regeln_{schluessel}.txt")
+
+def lade_nl_regeln(schluessel: str, standard: str) -> str:
+    pfad = nl_regeln_datei(schluessel)
+    if _os.path.isfile(pfad):
+        try:
+            with open(pfad, "r", encoding="utf-8") as f:
+                return f.read()
+        except OSError:
+            pass
+    return standard
+
+def speichere_nl_regeln(schluessel: str, text: str) -> None:
+    with open(nl_regeln_datei(schluessel), "w", encoding="utf-8") as f:
+        f.write(text)
+
+# Rückwärtskompatibilität FC11
+def lade_fc11_regeln(standard: str) -> str:
+    return lade_nl_regeln("fc11", standard)
+
+def speichere_fc11_regeln(text: str) -> None:
+    speichere_nl_regeln("fc11", text)
+
+def fc11_regeln_datei() -> str:
+    return nl_regeln_datei("fc11")

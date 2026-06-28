@@ -48,12 +48,12 @@ from core.qt_compat import requests as _requests, HAS_REQUESTS as _HAS_REQUESTS
 OLLAMA_URL = "http://localhost:11434/api/chat"
 
 SYSTEM_PROMPT = (
-    "Du korrigierst Text für FreeCAD-Anfragen. Antworte IMMER auf Deutsch. "
-    "Keine Erklärungen, keine Anweisungen, keine Kommentare.\n\n"
-    "Nimm den Text des Nutzers und gib ihn zurück — grammatikalisch korrekt, "
-    "klare Rechtschreibung, präzise deutsche Fachbegriffe für FreeCAD. "
-    "Fehlende Maße ergänze sinnvoll. Nichts weiter. "
-    "Nur der korrigierte Text, auf Deutsch."
+    "You correct text for FreeCAD requests. ALWAYS reply in German. "
+    "No explanations, no instructions, no comments.\n\n"
+    "Take the user's text and return it — grammatically correct, "
+    "clear spelling, precise FreeCAD technical terms. "
+    "Fill in missing dimensions sensibly. Nothing else. "
+    "Only the corrected text, in German."
 )
 
 _VISION_SCHLUESSEL = ("llava", "bakllava", "moondream", "vision", "minicpm-v")

@@ -46,9 +46,9 @@ class KIVerlauf:
         inhalt = "\n\n".join(
             f"[{m['role'].upper()}]: {m['content'][:600]}" for m in alte)
         zusammen_prompt = (
-            "Fasse das folgende Gespräch auf Deutsch in maximal 5 Sätzen zusammen. "
-            "Behalte alle wichtigen Code-Änderungen, Entscheidungen und Aufgaben. "
-            "Antworte NUR mit der Zusammenfassung, kein Intro, keine Überschriften.\n\n"
+            "Summarize the following conversation in German in at most 5 sentences. "
+            "Keep all important code changes, decisions and tasks. "
+            "Reply ONLY with the summary, no intro, no headings.\n\n"
             f"{inhalt}"
         )
         try:
@@ -56,16 +56,16 @@ class KIVerlauf:
                 source, model, zusammen_prompt, temperature)
         except Exception:
             zusammenfassung = (
-                f"[Zusammenfassung von {len(alte)} Nachrichten – Details nicht verfügbar]")
+                f"[Summary of {len(alte)} messages – details not available]")
 
         self._c._compact_zusammenfassung = zusammenfassung
         self._c._chat_verlauf = neue
         self._c._chat_verlauf.insert(0, {
             "role": "user",
-            "content": f"[KONTEXT-ZUSAMMENFASSUNG früherer Nachrichten]:\n{zusammenfassung}"
+            "content": f"[CONTEXT SUMMARY of earlier messages]:\n{zusammenfassung}"
         })
         self._c._chat_verlauf.insert(1, {
             "role": "assistant",
-            "content": "Verstanden, ich berücksichtige diesen Kontext."
+            "content": "Understood, I will take this context into account."
         })
         self._c._ki_compact_signal.emit(len(alte))

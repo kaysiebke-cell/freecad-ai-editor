@@ -16,6 +16,7 @@ Exports:
 """
 
 import os
+import re
 import threading
 
 from core.qt_compat import QtWidgets, QtCore, QtGui
@@ -305,6 +306,116 @@ def _jedi_ausnahme(zeilentext: str) -> bool:
     return any(exc in text_clear for exc in FREECAD_AUTOCOMPLETE_AUSNAHMEN)
 
 
+# Letzter Fallback falls weder jedi noch dir() etwas liefert
+_FC_METHODEN_ALLGEMEIN: list[str] = [
+    "Label", "Placement", "Shape", "Visibility", "ViewObject",
+    "Base", "Tool", "Radius", "Height", "Length", "Width", "Angle",
+]
+
+# Modul-Namen → Python-Import-Name für dir()-Auflösung
+_FC_MODUL_MAP: dict[str, str] = {
+    "App": "FreeCAD",
+    "FreeCAD": "FreeCAD",
+    "Part": "Part",
+    "Gui": "FreeCADGui",
+    "FreeCADGui": "FreeCADGui",
+    "Mesh": "Mesh",
+    "Draft": "Draft",
+    "Sketcher": "Sketcher",
+}
+
+
+def _freecad_dir(obj_name: str) -> list[str]:
+    """dir() des echten FreeCAD-Objekts: Modul → Instanz → Dokument-Objekt."""
+    import importlib
+    try:
+        if obj_name in _FC_MODUL_MAP:
+            modul = importlib.import_module(_FC_MODUL_MAP[obj_name])
+            return [m for m in dir(modul) if not m.startswith("_")]
+        import FreeCAD  # noqa: PLC0415
+        _instanzen = {
+            "doc":       FreeCAD.ActiveDocument,
+            "Placement": FreeCAD.Placement(),
+            "Vector":    FreeCAD.Vector(),
+            "Rotation":  FreeCAD.Rotation(),
+        }
+        if obj_name in _instanzen:
+            obj = _instanzen[obj_name]
+            if obj is not None:
+                return [m for m in dir(obj) if not m.startswith("_")]
+        if FreeCAD.ActiveDocument:
+            fc_obj = FreeCAD.ActiveDocument.getObject(obj_name)
+            if fc_obj:
+                return [m for m in dir(fc_obj) if not m.startswith("_")]
+    except Exception:
+        pass
+    return []
+
+
+# Statische FreeCAD-Signaturen für den Parameter-Hint (Tooltip nach "(")
+_FC_SIGNATUREN: dict[str, str] = {
+    "addObject":    "addObject(typeid: str, name: str) → object",
+    "getObject":    "getObject(name: str) → object | None",
+    "removeObject": "removeObject(name: str)",
+    "recompute":    "recompute()",
+    "newDocument":  "newDocument(name: str = 'Unnamed') → Document",
+    "openDocument": "openDocument(path: str) → Document",
+    "save":         "save()",
+    "saveAs":       "saveAs(path: str)",
+    "Vector":       "Vector(x=0.0, y=0.0, z=0.0)",
+    "Placement":    "Placement(base: Vector, rotation: Rotation)",
+    "Rotation":     "Rotation(axis: Vector, angle_deg: float)",
+    "Matrix":       "Matrix()",
+    "makeBox":      "makeBox(length, width, height, [pnt, dir])",
+    "makeCylinder": "makeCylinder(radius, height, [pnt, dir, angle])",
+    "makeSphere":   "makeSphere(radius, [pnt])",
+    "makeCone":     "makeCone(radius1, radius2, height)",
+    "makeTorus":    "makeTorus(radius1, radius2)",
+    "makePolygon":  "makePolygon(points: list[Vector])",
+    "makeWire":     "makeWire(edges: list)",
+    "makeLine":     "makeLine(startPoint: Vector, endPoint: Vector)",
+    "makeCircle":   "makeCircle(radius, [pnt, dir, angle1, angle2])",
+    "show":         "show(shape, name: str = 'Shape')",
+    "makeFillet":   "makeFillet(edges: list, radius: float)",
+    "makeChamfer":  "makeChamfer(edges: list, size: float)",
+    "cut":          "cut(tool: Shape) → Shape",
+    "fuse":         "fuse(tool: Shape) → Shape",
+    "common":       "common(tool: Shape) → Shape",
+    "extrude":      "extrude(direction: Vector) → Shape",
+    "revolve":      "revolve(center: Vector, axis: Vector, angle: float) → Shape",
+    "print":        "print(*objects, sep=' ', end='\\n', file=sys.stdout)",
+    "range":        "range(stop)  |  range(start, stop[, step])",
+    "len":          "len(obj) → int",
+    "enumerate":    "enumerate(iterable, start=0)",
+    "zip":          "zip(*iterables)",
+}
+
+
+# Auswahl-Popup für bekannte Funktionsargumente (erscheint nach "(")
+_FC_ARG_COMPLETIONS: dict[str, list[str]] = {
+    "addObject": [
+        '"Part::Sphere"',     '"Part::Box"',       '"Part::Cylinder"',
+        '"Part::Cone"',       '"Part::Torus"',     '"Part::Cut"',
+        '"Part::Fuse"',       '"Part::Common"',    '"Part::Feature"',
+        '"Part::Extrusion"',  '"Part::Revolution"','"Part::Fillet"',
+        '"Part::Chamfer"',    '"Part::Mirror"',
+        '"Sketcher::SketchObject"',
+        '"PartDesign::Body"', '"PartDesign::Pad"', '"PartDesign::Pocket"',
+        '"PartDesign::Revolution"',
+        '"Mesh::Feature"',
+        '"Draft::Wire"',      '"Draft::Circle"',   '"Draft::Rectangle"',
+        '"App::DocumentObjectGroup"', '"App::Part"',
+    ],
+    "Constraint": [
+        '"Coincident"',  '"PointOnObject"', '"Vertical"',   '"Horizontal"',
+        '"Parallel"',    '"Perpendicular"', '"Tangent"',    '"Equal"',
+        '"Symmetric"',   '"Block"',         '"Distance"',   '"DistanceX"',
+        '"DistanceY"',   '"Radius"',        '"Diameter"',   '"Angle"',
+        '"InternalAlignment"',
+    ],
+}
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # JediEditor – Code-Editor + Autovervollständigung + FreeCAD-Schutz
 # ══════════════════════════════════════════════════════════════════════════════
@@ -327,6 +438,10 @@ class JediEditor(CodeEditor):
         self._jedi_timer.setInterval(300)
         self._jedi_timer.timeout.connect(self._start_jedi_thread)
         self._completions_ready.connect(self._show_completions)
+        self._hint_timer = QtCore.QTimer(self)
+        self._hint_timer.setSingleShot(True)
+        self._hint_timer.setInterval(150)
+        self._hint_timer.timeout.connect(self._zeige_param_hint)
 
     def _text_under_cursor(self) -> str:
         cursor = self.textCursor()
@@ -334,8 +449,6 @@ class JediEditor(CodeEditor):
         return cursor.selectedText()
 
     def _start_jedi_thread(self):
-        if not _HAS_JEDI:
-            return
         aktuelle_zeile = self.textCursor().block().text()
         if _jedi_ausnahme(aktuelle_zeile):
             self.completer.popup().hide()
@@ -351,18 +464,33 @@ class JediEditor(CodeEditor):
         ).start()
 
     def _fetch_completions(self, code: str, line: int, col: int, prefix: str):
-        try:
-            matches = jedi.Script(code=code).complete(line=line, column=col)
-            names   = [m.name for m in matches]
-            if names:
-                self._completions_ready.emit(names, prefix)
-        except Exception:
-            pass
+        names: list[str] = []
+        if _HAS_JEDI:
+            try:
+                matches = jedi.Script(code=code).complete(line=line, column=col)
+                names   = [m.name for m in matches]
+            except Exception:
+                pass
+
+        # Fallback: jedi nicht verfügbar oder jedi kennt FreeCAD-Typen nicht
+        if not names:
+            zeilen = code.splitlines()
+            zeile  = zeilen[line - 1] if 0 < line <= len(zeilen) else ""
+            m = re.search(r'(\w+)\.$', zeile[:col])
+            if m:
+                obj_name = m.group(1)
+                names = _freecad_dir(obj_name) or _FC_METHODEN_ALLGEMEIN
+
+        if names:
+            self._completions_ready.emit(names, prefix)
 
     @QtCore.Slot(list, str)
     def _show_completions(self, names: list, prefix: str):
         current = self._text_under_cursor()
-        if not current or not current.endswith(prefix[-1] if prefix else ""):
+        # Abbrechen nur wenn sich das Wort unter dem Cursor seit dem Jedi-Aufruf
+        # komplett geändert hat (z.B. Nutzer hat anderswo geklickt).
+        # Leeres current ist ok: normaler Fall nach Punkt (doc.| oder obj.|)
+        if prefix and current and not current.startswith(prefix):
             return
         popup = self.completer.popup()
         self.completer.setModel(QtCore.QStringListModel(names, self.completer))
@@ -520,8 +648,23 @@ class JediEditor(CodeEditor):
         if event.text() and event.text().isalpha():
             self._korrigiere_block_fort()
 
+        zeichen = event.text()
+
+        # Nach "(": Arg-Popup für bekannte Funktionen, sonst Tooltip-Hint
+        if zeichen == "(":
+            zeile_text = self.textCursor().block().text()
+            col_now    = self.textCursor().columnNumber()
+            m = re.search(r'(\w+)\s*\($', zeile_text[:col_now].rstrip())
+            func_name  = m.group(1) if m else ""
+            if not self._zeige_arg_popup(func_name):
+                self._hint_timer.start()
+        elif zeichen == ")":
+            self._hint_timer.stop()
+            self.completer.popup().hide()
+            QtWidgets.QToolTip.hideText()
+
         # Autovervollständigung nach jedem Buchstaben / Punkt / Unterstrich starten
-        if _HAS_JEDI and event.text() and event.text() in (
+        if zeichen and zeichen in (
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ._"):
             self._jedi_timer.start()
         elif event.key() == QtCore.Qt.Key_Backspace:
@@ -662,8 +805,54 @@ class JediEditor(CodeEditor):
         self.setTextCursor(cursor)
         return True
 
+    # ── Argument-Popup nach "(" ──────────────────────────────────────────────
+    def _zeige_arg_popup(self, func_name: str) -> bool:
+        optionen = _FC_ARG_COMPLETIONS.get(func_name)
+        if not optionen:
+            return False
+        self._jedi_timer.stop()
+        popup = self.completer.popup()
+        self.completer.setModel(QtCore.QStringListModel(optionen, self.completer))
+        self.completer.setCompletionPrefix("")
+        cr = self.cursorRect()
+        cr.setWidth(
+            popup.sizeHintForColumn(0)
+            + popup.verticalScrollBar().sizeHint().width()
+        )
+        self.completer.complete(cr)
+        return True
+
+    # ── Parameter-Hint (Tooltip) ─────────────────────────────────────────────
+    def _zeige_param_hint(self):
+        if self.completer.popup().isVisible():
+            return
+        zeile = self.textCursor().block().text()
+        col   = self.textCursor().columnNumber()
+        links = zeile[:col].rstrip()
+        sig_text = ""
+        if _HAS_JEDI:
+            try:
+                code = self.toPlainText()
+                line = self.textCursor().blockNumber() + 1
+                sigs = jedi.Script(code=code).get_signatures(line=line, column=col)
+                if sigs:
+                    sig      = sigs[0]
+                    params   = [p.description for p in sig.params]
+                    sig_text = f"{sig.name}({', '.join(params)})"
+            except Exception:
+                pass
+        if not sig_text:
+            m = re.search(r'(\w+)\s*\($', links)
+            if m:
+                sig_text = _FC_SIGNATUREN.get(m.group(1), "")
+        if sig_text:
+            pos = self.mapToGlobal(self.cursorRect().bottomLeft())
+            QtWidgets.QToolTip.showText(pos, sig_text, self)
+
     def focusOutEvent(self, event):
         self._jedi_timer.stop()
+        self._hint_timer.stop()
+        QtWidgets.QToolTip.hideText()
         self.completer.popup().hide()
         super().focusOutEvent(event)
 
